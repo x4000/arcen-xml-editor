@@ -10,10 +10,9 @@ namespace ArcenXE.Utilities
         //public XmlVisualizer() => this.currentXmlForVis.AddRange( MainWindow.Instance.CurrentXmlForVis );
 
         private readonly SuperBasicPool<Label> labelPool = new SuperBasicPool<Label>();
-        private readonly ConcurrentQueue<Label> labelQueue = new ConcurrentQueue<Label>();
-
         private readonly SuperBasicPool<TextBox> textBoxPool = new SuperBasicPool<TextBox>();
-        private readonly ConcurrentQueue<TextBox> textBoxQueue = new ConcurrentQueue<TextBox>();
+
+        public readonly Dictionary<Control, IEditedXmlElement> EditedXmlElementsByControl = new Dictionary<Control, IEditedXmlElement>();
 
         private static class Caret
         {
@@ -28,11 +27,36 @@ namespace ArcenXE.Utilities
             }
         }
 
+        #region ReturnAllToPool
+        public void ReturnAllToPool()
+        {
+            Control.ControlCollection controls = MainWindow.Instance.VisPanel.Controls;
+
+            foreach ( Control control in controls )
+            {
+                if ( control is Label )
+                {
+                    Label lbl = (Label)control;
+                    labelPool.ReturnToPool( lbl );
+                }
+                else if ( control is TextBox )
+                {
+                    TextBox txt = (TextBox)control;
+                    textBoxPool.ReturnToPool( txt );
+                }
+            }
+
+            controls.Clear();
+            EditedXmlElementsByControl.Clear();
+        }
+        #endregion
+
         public void Visualize( IEditedXmlNodeOrComment editedXmlNodeOrComment )
         {
             IEditedXmlNodeOrComment item = editedXmlNodeOrComment;
             Caret.x = 0; // new item, reset caret to start line
             Graphics graphics = MainWindow.Instance.VisPanel.CreateGraphics();
+            Control.ControlCollection controls = MainWindow.Instance.VisPanel.Controls;
 
             using ( graphics )
             {
@@ -45,8 +69,9 @@ namespace ArcenXE.Utilities
                     label.Width = (int)Math.Ceiling( size.Width );
                     label.Bounds = new Rectangle( Caret.x, Caret.y, label.Width + 5, label.Height );
                     label.Text = comment.Data;
-                    MainWindow.Instance.VisPanel.Controls.Add( label );
-                    labelQueue.Enqueue( label );
+                    comment.CurrentViewControl = label;
+                    EditedXmlElementsByControl[label] = comment;
+                    controls.Add( label );
 
                     Caret.NextLine( label.Height );
                 }
@@ -63,8 +88,9 @@ namespace ArcenXE.Utilities
                             label.Width = (int)Math.Ceiling( size.Width );
                             label.Bounds = new Rectangle( Caret.x, Caret.y, label.Width + 5, label.Height );
                             label.Text = node.NodeName.Value;
-                            MainWindow.Instance.VisPanel.Controls.Add( label );
-                            labelQueue.Enqueue( label );
+                            node.CurrentViewControl = label;
+                            EditedXmlElementsByControl[label] = node;
+                            controls.Add( label );
 
                             Caret.MoveHorz( label.Width + 2 );
                         }
@@ -80,8 +106,8 @@ namespace ArcenXE.Utilities
                             label.Width = (int)Math.Ceiling( size.Width );
                             label.Bounds = new Rectangle( Caret.x, Caret.y, label.Width + 5, label.Height );
                             label.Text = att.Name;
-                            MainWindow.Instance.VisPanel.Controls.Add( label );
-                            labelQueue.Enqueue( label );
+                            att.CurrentViewControl_Label = label;
+                            controls.Add( label );
                             Caret.MoveHorz( label.Width + 2 );
 
                             size = graphics.MeasureString( att.Value, MainWindow.Instance.VisPanel.Font );
@@ -89,8 +115,10 @@ namespace ArcenXE.Utilities
                             labelV.Width = (int)Math.Ceiling( size.Width );
                             labelV.Bounds = new Rectangle( Caret.x, Caret.y, labelV.Width + 5, labelV.Height );
                             labelV.Text = att.Value;
-                            MainWindow.Instance.VisPanel.Controls.Add( labelV );
-                            labelQueue.Enqueue( labelV );
+                            node.CurrentViewControl = label;
+                            att.CurrentViewControl_Label = labelV;
+                            EditedXmlElementsByControl[labelV] = att;
+                            controls.Add( labelV );
 
                             Caret.NextLine( labelV.Height );
                             Caret.MoveHorz( -(label.Width + 2) );

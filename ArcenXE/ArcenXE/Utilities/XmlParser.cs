@@ -53,32 +53,56 @@ namespace ArcenXE.Utilities
             return editedNode;
         }
     }
-    public class EditedXmlNode : IEditedXmlNodeOrComment
+    public class EditedXmlNode : IEditedXmlNodeOrComment, IEditedXmlElement
     {
         public EditedXmlAttribute? NodeName = null; // if != null, then this is top node
         public List<EditedXmlAttribute> Attributes = new List<EditedXmlAttribute>();
         public List<IEditedXmlNodeOrComment> ChildNodes = new List<IEditedXmlNodeOrComment>();
 
         public bool IsComment => false;
+
+        /// <summary>
+        /// For use in XmlVisualizer only
+        /// </summary>
+        public Label? CurrentViewControl;
     }
 
-    public class EditedXmlComment : IEditedXmlNodeOrComment
+    public class EditedXmlComment : IEditedXmlNodeOrComment, IEditedXmlElement
     {
         public string Data = string.Empty;
 
         public bool IsComment => true;
+
+        /// <summary>
+        /// For use in XmlVisualizer only
+        /// </summary>
+        public Control? CurrentViewControl;
     }
 
-    public class EditedXmlAttribute
+    public class EditedXmlAttribute : IEditedXmlElement
     {
         public string Name = string.Empty;
         public ArcenXmlAttributeType Type = ArcenXmlAttributeType.Unknown; //to be filled by metadata
         public string Value = string.Empty;
+
+        /// <summary>
+        /// For use in XmlVisualizer only
+        /// </summary>
+        public Control? CurrentViewControl_Label;
+        /// <summary>
+        /// For use in XmlVisualizer only
+        /// </summary>
+        public Control? CurrentViewControl_Data;
     }
 
     public interface IEditedXmlNodeOrComment
     {
         public bool IsComment { get; }
+    }
+
+    public interface IEditedXmlElement
+    {
+
     }
 
     public enum ArcenXmlAttributeType
@@ -94,5 +118,4 @@ namespace ArcenXE.Utilities
         ArbitraryStringOptions,
         Length
     }
-
 }

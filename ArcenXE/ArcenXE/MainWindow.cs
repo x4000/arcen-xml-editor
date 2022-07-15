@@ -7,7 +7,9 @@ namespace ArcenXE
 {
     public sealed partial class MainWindow : Form
     {
-        public static MainWindow? Instance = null;
+#pragma warning disable CS8618
+        public static MainWindow Instance;
+#pragma warning restore CS8618
 
         public readonly SuperBasicPool<Panel> PanelPool = new SuperBasicPool<Panel>();
 
