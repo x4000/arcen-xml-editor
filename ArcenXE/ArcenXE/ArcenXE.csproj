@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Assets\Icons\mono-icons\" />
     <Folder Include="Utilities\Interfaces\" />
   </ItemGroup>
 

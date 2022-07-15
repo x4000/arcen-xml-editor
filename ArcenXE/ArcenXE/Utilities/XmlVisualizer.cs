@@ -4,11 +4,6 @@ namespace ArcenXE.Utilities
 {
     public class XmlVisualizer
     {
-        //private readonly List<IEditedXmlNodeOrComment> currentXmlForVis = new List<IEditedXmlNodeOrComment>();
-        //public void GetXmlForVis() => this.currentXmlForVis.AddRange( MainWindow.Instance.CurrentXmlForVis );
-
-        //public XmlVisualizer() => this.currentXmlForVis.AddRange( MainWindow.Instance.CurrentXmlForVis );
-
         private readonly SuperBasicPool<Label> labelPool = new SuperBasicPool<Label>();
         private readonly SuperBasicPool<TextBox> textBoxPool = new SuperBasicPool<TextBox>();
 
@@ -17,14 +12,13 @@ namespace ArcenXE.Utilities
         private static class Caret
         {
             public static int x = 0, y = 0;
-            public static void MoveHorz( int amount )
+            public static void MoveHorz( int amount ) => x += amount;
+            public static void NextLine( int amount ) => y += amount;
+            public static void Reset()
             {
-                x += amount;
-            }
-            public static void NextLine( int amount )
-            {
-                y += amount;
-            }
+                x = 0;
+                y = 0;
+            } 
         }
 
         #region ReturnAllToPool
@@ -34,18 +28,13 @@ namespace ArcenXE.Utilities
 
             foreach ( Control control in controls )
             {
-                if ( control is Label )
-                {
-                    Label lbl = (Label)control;
-                    labelPool.ReturnToPool( lbl );
-                }
-                else if ( control is TextBox )
-                {
-                    TextBox txt = (TextBox)control;
-                    textBoxPool.ReturnToPool( txt );
-                }
+                if ( control is Label label )
+                    labelPool.ReturnToPool( label );
+                else if ( control is TextBox textBox )
+                    textBoxPool.ReturnToPool( textBox );
             }
 
+            Caret.Reset();
             controls.Clear();
             EditedXmlElementsByControl.Clear();
         }

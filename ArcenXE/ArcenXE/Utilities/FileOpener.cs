@@ -3,18 +3,19 @@ using ArcenXE.Utilities.MessagesToMainThread;
 
 namespace ArcenXE.Utilities
 {
-    public class FileOpener //make static or singleton?
+    public class FileOpener //make singleton?
     {
         public void OpenFileWindow()
-        {            
-            OpenFileDialog openFileDialog = new OpenFileDialog
+        {
+            /*OpenFileDialog openFileDialog = new OpenFileDialog
             {
                 InitialDirectory = "c:\\",
                 Filter = "Xml Files (*.xml)|*.xml|All files (*.*)|*.*",
                 RestoreDirectory = true
             };
             
-            DialogResult dialogResult = openFileDialog.ShowDialog();
+            DialogResult dialogResult = openFileDialog.ShowDialog();*/
+            DialogResult dialogResult = DialogResult.OK;
             switch ( dialogResult )
             {
                 //check if file is xml
@@ -29,16 +30,18 @@ namespace ArcenXE.Utilities
                             };
                             try
                             {
-                                doc.Load( openFileDialog.FileName );
+                                //doc.Load( openFileDialog.FileName );
+                                doc.Load( "C:\\Users\\Daniel\\ArcenDev\\AIWar2_dev\\GameData\\Configuration\\Expansion\\KDL_Expansions.xml" );
                             }
                             catch ( Exception e )
                             {
                                 MessageBox.Show( e.ToString() );
                             }
                             //parse xml document into complex data structure (with other bg threads)
-                            SendEditedXmlTopNodeToList message = new SendEditedXmlTopNodeToList();
                             Task.Run( () =>
                             {
+                                SaveEditedXmlToList messageSaveXml = new SaveEditedXmlToList();
+                                SendEditedXmlTopNodeToList messageSendXmlTopNode = new SendEditedXmlTopNodeToList();
                                 XmlParser parser = new XmlParser();
                                 XmlElement? root = doc?.DocumentElement;
                                 if ( root != null )
@@ -58,14 +61,14 @@ namespace ArcenXE.Utilities
                                                 case XmlNodeType.Element:
                                                     IEditedXmlNodeOrComment? result = parser.ProcessXmlElement( (XmlElement)node, true ); //task.run on this? risk of losing the correct order of parts, so need a thread-safe structure
                                                     if ( result != null )
-                                                        message.Nodes.Add( result );
+                                                        messageSendXmlTopNode.Nodes.Add( result );
                                                     break;
                                                 case XmlNodeType.Comment:
                                                     EditedXmlComment comment = new EditedXmlComment
                                                     {
                                                         Data = node.InnerText
                                                     };
-                                                    message.Nodes.Add( comment );
+                                                    messageSendXmlTopNode.Nodes.Add( comment );
                                                     break;
                                                 default:
                                                     MessageBox.Show( "why do we have a " + node.NodeType + " directly under the root node?" );
@@ -77,10 +80,11 @@ namespace ArcenXE.Utilities
                                     {
                                         IEditedXmlNodeOrComment? result = parser.ProcessXmlElement( root, false );
                                         if ( result != null )
-                                            message.Nodes.Add( result );
+                                            messageSendXmlTopNode.Nodes.Add( result );
                                     }
-                                    MainWindow.Instance.CurrentXmlForVis.AddRange( message.Nodes ); //need to save message.Nodes elsewhere because it's needed for Vis. No longer necessary?
-                                    MainWindow.Instance.MessagesToFrontEnd.Enqueue( message );
+                                    messageSaveXml.Nodes.AddRange( messageSendXmlTopNode.Nodes) ;
+                                    MainWindow.Instance.MessagesToFrontEnd.Enqueue( messageSaveXml );
+                                    MainWindow.Instance.MessagesToFrontEnd.Enqueue( messageSendXmlTopNode );
                                 }
                                 else
                                 {
