@@ -56,6 +56,7 @@
             this.pasteToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.helpToolStripButton = new System.Windows.Forms.ToolStripButton();
+            this.toolStripDropDownButton3 = new System.Windows.Forms.ToolStripDropDownButton();
             this.toolStrip1.SuspendLayout();
             this.toolStrip2.SuspendLayout();
             this.SuspendLayout();
@@ -191,7 +192,7 @@
             // ExplorerToolStripMenuItem
             // 
             this.ExplorerToolStripMenuItem.Name = "ExplorerToolStripMenuItem";
-            this.ExplorerToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
+            this.ExplorerToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.ExplorerToolStripMenuItem.Text = "Explorer";
             this.ExplorerToolStripMenuItem.Click += new System.EventHandler(this.ExplorerToolStripMenuItem_Click);
             // 
@@ -296,6 +297,15 @@
             this.helpToolStripButton.Size = new System.Drawing.Size(23, 22);
             this.helpToolStripButton.Text = "He&lp";
             // 
+            // toolStripDropDownButton3
+            // 
+            this.toolStripDropDownButton3.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.toolStripDropDownButton3.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButton3.Image")));
+            this.toolStripDropDownButton3.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripDropDownButton3.Name = "toolStripDropDownButton3";
+            this.toolStripDropDownButton3.Size = new System.Drawing.Size(23, 23);
+            this.toolStripDropDownButton3.Text = "toolStripDropDownButton3";
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -349,5 +359,6 @@
         private ToolStripSeparator toolStripSeparator1;
         private ToolStripButton helpToolStripButton;
         private ToolStripMenuItem FileToolStripMenuItem;
+        private ToolStripDropDownButton toolStripDropDownButton3;
     }
 }
