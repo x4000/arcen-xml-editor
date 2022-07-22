@@ -57,9 +57,9 @@ namespace ArcenXE
         public static void WriteStopwatchTime( bool SingleLine )
         {
             if ( SingleLine )
-                LogSingleLine( sw.ElapsedMilliseconds + "ms   " + swClickOns + " click-ons", Verbosity.Chat );
+                LogSingleLine( sw.ElapsedMilliseconds + "ms   " + swClickOns + " click-ons", Verbosity.ShowAsWarning );
             else
-                LogWithStack( sw.ElapsedMilliseconds + "ms   " + swClickOns + " click-ons", Verbosity.Chat );
+                LogWithStack( sw.ElapsedMilliseconds + "ms   " + swClickOns + " click-ons", Verbosity.ShowAsWarning );
         }
         #endregion
 
@@ -158,8 +158,7 @@ namespace ArcenXE
 
             while ( true )
             {
-                DelayedMessagePayLoad message;
-                if ( !delayedLines.TryDequeue( out message ) )
+                if ( !delayedLines.TryDequeue( out DelayedMessagePayLoad message ) )
                     break;
                 workingDelayedLinesToWriteMainThreadOnly.Add( message );
             }
@@ -173,7 +172,7 @@ namespace ArcenXE
                 foreach ( DelayedMessagePayLoad message in workingDelayedLinesToWriteMainThreadOnly )
                 {
                     ArcenLog_InnerOnMainThreadOnly( "DELAYED" + message.DelayedIndex + " TID" + message.DelayedThreadID + " " +
-                        message.Message, DebugLogDestination.Arcology5DebugLog, false, message.Verbosity, message.Timestamp );
+                        message.Message, DebugLogDestination.XEDebugLog, false, message.Verbosity, message.Timestamp );
                 }
                 workingDelayedLinesToWriteMainThreadOnly.Clear();
             }
@@ -188,7 +187,7 @@ namespace ArcenXE
                 return; //if we're not on the main thread, then we need to do a delayed write!  Regular writes will sometimes get lost
             }
 
-            ArcenLog_InnerOnMainThreadOnly( message, DebugLogDestination.Arcology5DebugLog, false, Verbosity.ShowAsError, DateTime.Now );
+            ArcenLog_InnerOnMainThreadOnly( message, DebugLogDestination.XEDebugLog, false, Verbosity.ShowAsError, DateTime.Now );
         }
 
         public static void LogSilentWithStack( string Message )
@@ -199,7 +198,7 @@ namespace ArcenXE
                 LogSingleLineDelayed( Message, Verbosity.DoNotShow );
                 return; //if we're not on the main thread, then we need to do a delayed write and add the stack trace here!  Regular writes will sometimes get lost
             }
-            ArcenLog_InnerOnMainThreadOnly( Message, DebugLogDestination.Arcology5DebugLog, true, Verbosity.DoNotShow, DateTime.Now );
+            ArcenLog_InnerOnMainThreadOnly( Message, DebugLogDestination.XEDebugLog, true, Verbosity.DoNotShow, DateTime.Now );
         }
 
         public static void LogDebugStageWithStack( string Header, int DebugStage, Exception e, Verbosity Verbosity )
@@ -207,7 +206,7 @@ namespace ArcenXE
             LogDebugStageWithStack( Header, DebugStage, null, e, Verbosity );
         }
 
-        public static void LogDebugStageWithStack( string Header, int DebugStage, string AddedMessage, Exception e, Verbosity Verbosity )
+        public static void LogDebugStageWithStack( string Header, int DebugStage, string? AddedMessage, Exception e, Verbosity Verbosity )
         {
             string fullMessage = " '" + Header + "' error at DebugStage " + DebugStage + "\r\n" +
                 (AddedMessage == null || AddedMessage.Length <= 0 ? string.Empty : AddedMessage + "\r\n") +
@@ -238,7 +237,7 @@ namespace ArcenXE
                 LogSingleLineDelayed( Message, Verbosity );
                 return; //if we're not on the main thread, then we need to do a delayed write and add the stack trace here!  Regular writes will sometimes get lost
             }
-            ArcenLog_InnerOnMainThreadOnly( Message, DebugLogDestination.Arcology5DebugLog, true, Verbosity, DateTime.Now );
+            ArcenLog_InnerOnMainThreadOnly( Message, DebugLogDestination.XEDebugLog, true, Verbosity, DateTime.Now );
         }
 
         public static void LogSingleLine( string Message, Verbosity Verbosity )
@@ -255,10 +254,10 @@ namespace ArcenXE
                 LogSingleLineDelayed( Message, Verbosity );
                 return; //if we're not on the main thread, then we need to do a delayed write!  Regular writes will sometimes get lost
             }
-            ArcenLog_InnerOnMainThreadOnly( Message, DebugLogDestination.Arcology5DebugLog, false, Verbosity, DateTime.Now );
+            ArcenLog_InnerOnMainThreadOnly( Message, DebugLogDestination.XEDebugLog, false, Verbosity, DateTime.Now );
         }
 
-        private static void InnerActualUnityDebugLogCall( string Message )
+        private static void LogToConsole( string Message )
         {
             Console.WriteLine( Message );
         }
@@ -269,21 +268,21 @@ namespace ArcenXE
             bool isEditor = false;
             if ( isMainThread || isEditor )
             {
-                if ( Verbosity != Verbosity.DoNotShowAndAlsoDoNotSendToUnityLog )
+                if ( Verbosity != Verbosity.DoNotShowAndDoNotLogToConsole )
                 {
                     if ( !isMainThread )
-                        InnerActualUnityDebugLogCall( Message + "\n\n" + Environment.StackTrace );
+                        LogToConsole( Message + "\n\n" + Environment.StackTrace );
                     else
                     {
                         if ( isEditor )
-                            InnerActualUnityDebugLogCall( Message );
+                            LogToConsole( Message );
                         else
                         {
                             switch ( Verbosity )
                             {
                                 case Verbosity.ShowAsError:
-                                case Verbosity.DoNotShowButSendToUnityLogEvenOutsideEditor:
-                                    InnerActualUnityDebugLogCall( Message );
+                                case Verbosity.DoNotShowButLogToConsole:
+                                    LogToConsole( Message );
                                     break;
                             }
 
@@ -304,7 +303,7 @@ namespace ArcenXE
                     if ( ShouldSkipErrorMessage( Message ) )
                         return;
 
-                    InnerActualUnityDebugLogCall( Message ); //before CurrentLogDirectory is initialized, log to debug log instead
+                    LogToConsole( Message ); //before CurrentLogDirectory is initialized, log to debug log instead
                 }
                 else
                 {
@@ -323,10 +322,18 @@ namespace ArcenXE
                         return;
 
                     Program.AppendTextToFile( Program.CurrentLogDirectory + Destination.ToString() + ".txt", fullMessageMaybeStack, Program.MAX_ERROR_FILE_SIZE );
-                    if ( Verbosity == Verbosity.Chat )
+                    switch ( Verbosity )
                     {
                         //todo
-                        //World.Instance.GameSpecificSubObject.QueueChatMessageOrCommand( Message, ChatType.ShowLocallyOnly );
+                        case Verbosity.ShowAsError:
+                            MessageBox.Show( Message, fullMessageNoStack, MessageBoxButtons.OK, MessageBoxIcon.Error );
+                            break;
+                        case Verbosity.ShowAsInfo:
+                            MessageBox.Show( Message, fullMessageNoStack, MessageBoxButtons.OK, MessageBoxIcon.Information );
+                            break;
+                        case Verbosity.ShowAsWarning:
+                            MessageBox.Show( Message, fullMessageNoStack, MessageBoxButtons.OK, MessageBoxIcon.Warning );
+                            break;
                     }
                 }
             }
@@ -342,14 +349,6 @@ namespace ArcenXE
                 return true;
             if ( Message.Contains( "data archive" ) )
                 return true;
-            if ( Message.Contains( "UnityEngine.Material.GetFloat" ) )
-                return true;
-            if ( Message.Contains( "UnityEngine.EventSystems.ExecuteEvents.GetEventList" ) )
-                return true;
-            if ( Message.Contains( "UnityEngine.UI.Graphic.Raycast" ) )
-                return true;
-            if ( Message.Contains( "SteamNetworkingUtils.AllocateMessage" ) ) //these are just network connections that are in the process of shutting down
-                return true;
             return false;
         }
 
@@ -362,21 +361,21 @@ namespace ArcenXE
             bool isEditor = false;
             if ( isMainThread || isEditor )
             {
-                if ( Verbosity != Verbosity.DoNotShowAndAlsoDoNotSendToUnityLog )
+                if ( Verbosity != Verbosity.DoNotShowAndDoNotLogToConsole )
                 {
                     if ( !isMainThread )
-                        InnerActualUnityDebugLogCall( Message + "\n\n" + Environment.StackTrace );
+                        LogToConsole( Message + "\n\n" + Environment.StackTrace );
                     else
                     {
                         if ( isEditor )
-                            InnerActualUnityDebugLogCall( Message );
+                            LogToConsole( Message );
                         else
                         {
                             switch ( Verbosity )
                             {
                                 case Verbosity.ShowAsError:
-                                case Verbosity.DoNotShowButSendToUnityLogEvenOutsideEditor:
-                                    InnerActualUnityDebugLogCall( Message );
+                                case Verbosity.DoNotShowButLogToConsole:
+                                    LogToConsole( Message );
                                     break;
                             }
 
@@ -394,17 +393,25 @@ namespace ArcenXE
             {
                 if ( ArcenStrings.IsEmpty( Program.CurrentLogDirectory ) )
                 {
-                    InnerActualUnityDebugLogCall( Message ); //before CurrentLogDirectory is initialized, log to debug log instead
+                    LogToConsole( Message ); //before CurrentLogDirectory is initialized, log to debug log instead
                 }
                 else
                 {
                     Program.AppendTextToFile( Program.CurrentLogDirectory + Destination.ToString() + ".txt",
                         Environment.NewLine + Message, Program.MAX_BIG_ERROR_FILE_SIZE );
                 }
-                if ( Verbosity == Verbosity.Chat )
+                switch ( Verbosity )
                 {
                     //todo
-                    //World.Instance.GameSpecificSubObject.QueueChatMessageOrCommand( Message, ChatType.ShowLocallyOnly, null );
+                    case Verbosity.ShowAsError:
+                        MessageBox.Show( Message, "test", MessageBoxButtons.OK, MessageBoxIcon.Error );
+                        break;
+                    case Verbosity.ShowAsInfo:
+                        MessageBox.Show( Message, "test", MessageBoxButtons.OK, MessageBoxIcon.Information );
+                        break;
+                    case Verbosity.ShowAsWarning:
+                        MessageBox.Show( Message, "test", MessageBoxButtons.OK, MessageBoxIcon.Warning );
+                        break;
                 }
             }
             catch
@@ -435,8 +442,8 @@ namespace ArcenXE
                 } );
         }
 
-        public static DebugLogToDisk DebugLog_GeneralMessages = null;
-        public static DebugLogToDisk DebugLog_GeneralErrors = null;
+        public static DebugLogToDisk? DebugLog_GeneralMessages = null;
+        public static DebugLogToDisk? DebugLog_GeneralErrors = null;
 
         private string DebugLogFile = string.Empty;
 
@@ -508,18 +515,19 @@ namespace ArcenXE
 
     public enum DebugLogDestination
     {
-        Arcology5DebugLog,
+        XEDebugLog,
         ChunkGenTimes,
         MarketItemSubTypes
     }
 
     public enum Verbosity
     {
-        ShowAsError,
-        Chat,
+        ShowAsError, //todo
+        ShowAsInfo, //todo
+        ShowAsWarning,
         DoNotShow,
-        DoNotShowAndAlsoDoNotSendToUnityLog,
-        DoNotShowButSendToUnityLogEvenOutsideEditor
+        DoNotShowButLogToConsole,
+        DoNotShowAndDoNotLogToConsole
     }
 
     public struct DelayedMessagePayLoad
@@ -529,11 +537,5 @@ namespace ArcenXE
         public Verbosity Verbosity;
         public int DelayedIndex;
         public int DelayedThreadID;
-    }
-
-    public enum ChatType
-    {
-        ShowLocallyOnly,
-        LogToCentralChat
     }
 }

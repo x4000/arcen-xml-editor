@@ -15,12 +15,10 @@ namespace ArcenXE
         [STAThread]
         static void Main()
         {
-            MainThreadID = System.Threading.Thread.CurrentThread.ManagedThreadId;
+            MainThreadID = Thread.CurrentThread.ManagedThreadId;
 
             CurrentLogDirectory = Environment.CurrentDirectory;
-            CurrentLogDirectory = CurrentLogDirectory.Replace( @"bin\Debug\net6.0-windows", string.Empty );
-
-            MessageBox.Show( CurrentLogDirectory );
+            CurrentLogDirectory = CurrentLogDirectory.Replace( @"bin\Debug\net6.0-windows", @"logs\" );
 
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.

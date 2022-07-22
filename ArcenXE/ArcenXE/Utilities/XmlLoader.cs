@@ -3,7 +3,7 @@ using ArcenXE.Utilities.MessagesToMainThread;
 
 namespace ArcenXE.Utilities
 {
-    public class FileOpener //make singleton?
+    public class XmlLoader //make singleton?
     {
         public void OpenFileWindow()
         {
@@ -20,7 +20,7 @@ namespace ArcenXE.Utilities
             {
                 //check if file is xml
                 case DialogResult.OK:
-                    Task.Run( () =>
+                    //Task.Run( () =>
                     {
                         try //remove try catch?
                         {
@@ -35,10 +35,10 @@ namespace ArcenXE.Utilities
                             }
                             catch ( Exception e )
                             {
-                                MessageBox.Show( e.ToString() );
+                                ArcenDebugging.LogErrorWithStack( e );
                             }
                             //parse xml document into complex data structure (with other bg threads)
-                            Task.Run( () =>
+                            //Task.Run( () =>
                             {
                                 SaveEditedXmlToList messageSaveXml = new SaveEditedXmlToList();
                                 SendEditedXmlTopNodeToList messageSendXmlTopNode = new SendEditedXmlTopNodeToList();
@@ -59,7 +59,8 @@ namespace ArcenXE.Utilities
                                             switch ( node.NodeType )
                                             {
                                                 case XmlNodeType.Element:
-                                                    IEditedXmlNodeOrComment? result = parser.ProcessXmlElement( (XmlElement)node, true ); //task.run on this? risk of losing the correct order of parts, so need a thread-safe structure
+                                                    //task.run on this? risk of losing the correct order of parts, so need a thread-safe structure
+                                                    IEditedXmlNodeOrComment? result = parser.ProcessXmlElement( (XmlElement)node, true );
                                                     if ( result != null )
                                                         messageSendXmlTopNode.Nodes.Add( result );
                                                     break;
@@ -71,7 +72,7 @@ namespace ArcenXE.Utilities
                                                     messageSendXmlTopNode.Nodes.Add( comment );
                                                     break;
                                                 default:
-                                                    MessageBox.Show( "why do we have a " + node.NodeType + " directly under the root node?" );
+                                                    ArcenDebugging.LogSingleLine( "Why do we have a " + node.NodeType + " directly under the element node?", Verbosity.DoNotShow );
                                                     break;
                                             }
                                         }
@@ -86,20 +87,18 @@ namespace ArcenXE.Utilities
                                     MainWindow.Instance.MessagesToFrontEnd.Enqueue( messageSaveXml );
                                     MainWindow.Instance.MessagesToFrontEnd.Enqueue( messageSendXmlTopNode );
                                 }
-                                else
-                                {
-                                    MessageBox.Show( "Error: root in OpenFileWindow() is null" );
-                                }
-                            } );
+                                else                                
+                                    ArcenDebugging.LogSingleLine( "Error: root in OpenFileWindow() is null", Verbosity.DoNotShow );                               
+                            } //);
                         }
                         catch ( Exception e )
                         {
-                            MessageBox.Show( e.ToString() );
+                            ArcenDebugging.LogErrorWithStack( e );
                         }
-                    } );
+                    } //);
                     break;
                 default:
-                    MessageBox.Show( dialogResult.ToString() );
+                    ArcenDebugging.LogSingleLine( dialogResult.ToString(), Verbosity.DoNotShow );
                     break;
             }
         }

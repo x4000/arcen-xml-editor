@@ -31,11 +31,9 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWindow));
             this.Button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
             this.MainTimer = new System.Windows.Forms.Timer(this.components);
             this.VisPanel = new System.Windows.Forms.Panel();
-            this.treeView1 = new System.Windows.Forms.TreeView();
-            this.cboGameAndMods = new System.Windows.Forms.ComboBox();
+            this.FileList = new System.Windows.Forms.TreeView();
             this.TopNodesList = new System.Windows.Forms.ListBox();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
@@ -57,28 +55,21 @@
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.helpToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripDropDownButton3 = new System.Windows.Forms.ToolStripDropDownButton();
+            this.LoadMeta = new System.Windows.Forms.Button();
+            this.ErrorLogToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.toolStrip1.SuspendLayout();
             this.toolStrip2.SuspendLayout();
             this.SuspendLayout();
             // 
             // Button1
             // 
-            this.Button1.Location = new System.Drawing.Point(4, 53);
+            this.Button1.Location = new System.Drawing.Point(1, 53);
             this.Button1.Name = "Button1";
             this.Button1.Size = new System.Drawing.Size(83, 22);
             this.Button1.TabIndex = 0;
-            this.Button1.Text = "LoadTest";
+            this.Button1.Text = "Load Test";
             this.Button1.UseVisualStyleBackColor = true;
             this.Button1.Click += new System.EventHandler(this.Button1_Click);
-            // 
-            // button2
-            // 
-            this.button2.Location = new System.Drawing.Point(93, 53);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(83, 22);
-            this.button2.TabIndex = 1;
-            this.button2.Text = "button2";
-            this.button2.UseVisualStyleBackColor = true;
             // 
             // MainTimer
             // 
@@ -92,28 +83,20 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.VisPanel.AutoScroll = true;
             this.VisPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.VisPanel.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.VisPanel.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.VisPanel.Location = new System.Drawing.Point(402, 53);
             this.VisPanel.Name = "VisPanel";
             this.VisPanel.Size = new System.Drawing.Size(1089, 644);
             this.VisPanel.TabIndex = 2;
             // 
-            // treeView1
+            // FileList
             // 
-            this.treeView1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.FileList.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
-            this.treeView1.Location = new System.Drawing.Point(1, 114);
-            this.treeView1.Name = "treeView1";
-            this.treeView1.Size = new System.Drawing.Size(175, 583);
-            this.treeView1.TabIndex = 3;
-            // 
-            // cboGameAndMods
-            // 
-            this.cboGameAndMods.FormattingEnabled = true;
-            this.cboGameAndMods.Location = new System.Drawing.Point(1, 85);
-            this.cboGameAndMods.Name = "cboGameAndMods";
-            this.cboGameAndMods.Size = new System.Drawing.Size(175, 23);
-            this.cboGameAndMods.TabIndex = 4;
+            this.FileList.Location = new System.Drawing.Point(1, 78);
+            this.FileList.Name = "FileList";
+            this.FileList.Size = new System.Drawing.Size(194, 619);
+            this.FileList.TabIndex = 3;
             // 
             // TopNodesList
             // 
@@ -121,9 +104,9 @@
             | System.Windows.Forms.AnchorStyles.Left)));
             this.TopNodesList.FormattingEnabled = true;
             this.TopNodesList.ItemHeight = 15;
-            this.TopNodesList.Location = new System.Drawing.Point(182, 85);
+            this.TopNodesList.Location = new System.Drawing.Point(202, 78);
             this.TopNodesList.Name = "TopNodesList";
-            this.TopNodesList.Size = new System.Drawing.Size(214, 604);
+            this.TopNodesList.Size = new System.Drawing.Size(194, 619);
             this.TopNodesList.TabIndex = 5;
             this.TopNodesList.SelectedIndexChanged += new System.EventHandler(this.TopNodesList_SelectedIndexChanged);
             // 
@@ -192,7 +175,7 @@
             // ExplorerToolStripMenuItem
             // 
             this.ExplorerToolStripMenuItem.Name = "ExplorerToolStripMenuItem";
-            this.ExplorerToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.ExplorerToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.ExplorerToolStripMenuItem.Text = "Explorer";
             this.ExplorerToolStripMenuItem.Click += new System.EventHandler(this.ExplorerToolStripMenuItem_Click);
             // 
@@ -208,7 +191,8 @@
             this.copyToolStripButton,
             this.pasteToolStripButton,
             this.toolStripSeparator1,
-            this.helpToolStripButton});
+            this.helpToolStripButton,
+            this.ErrorLogToolStripButton});
             this.toolStrip2.Location = new System.Drawing.Point(0, 25);
             this.toolStrip2.Name = "toolStrip2";
             this.toolStrip2.Size = new System.Drawing.Size(1491, 25);
@@ -306,18 +290,37 @@
             this.toolStripDropDownButton3.Size = new System.Drawing.Size(23, 23);
             this.toolStripDropDownButton3.Text = "toolStripDropDownButton3";
             // 
+            // LoadMeta
+            // 
+            this.LoadMeta.Location = new System.Drawing.Point(90, 53);
+            this.LoadMeta.Name = "LoadMeta";
+            this.LoadMeta.Size = new System.Drawing.Size(83, 22);
+            this.LoadMeta.TabIndex = 8;
+            this.LoadMeta.Text = "Load Meta";
+            this.LoadMeta.UseVisualStyleBackColor = true;
+            this.LoadMeta.Click += new System.EventHandler(this.LoadMeta_Click);
+            // 
+            // ErrorLogToolStripButton
+            // 
+            this.ErrorLogToolStripButton.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.ErrorLogToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.ErrorLogToolStripButton.Image = ((System.Drawing.Image)(resources.GetObject("ErrorLogToolStripButton.Image")));
+            this.ErrorLogToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ErrorLogToolStripButton.Name = "ErrorLogToolStripButton";
+            this.ErrorLogToolStripButton.Size = new System.Drawing.Size(63, 22);
+            this.ErrorLogToolStripButton.Text = "Error List: ";
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1491, 709);
+            this.Controls.Add(this.LoadMeta);
             this.Controls.Add(this.toolStrip2);
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.TopNodesList);
-            this.Controls.Add(this.cboGameAndMods);
-            this.Controls.Add(this.treeView1);
+            this.Controls.Add(this.FileList);
             this.Controls.Add(this.VisPanel);
-            this.Controls.Add(this.button2);
             this.Controls.Add(this.Button1);
             this.Name = "MainWindow";
             this.Text = "Arcen XE";
@@ -334,11 +337,9 @@
         #endregion
 
         private Button Button1;
-        private Button button2;
         private System.Windows.Forms.Timer MainTimer;
         public Panel VisPanel;
-        private TreeView treeView1;
-        private ComboBox cboGameAndMods;
+        private TreeView FileList;
         public ListBox TopNodesList;
         private ToolStrip toolStrip1;
         private ToolStripDropDownButton toolStripDropDownButton1;
@@ -360,5 +361,7 @@
         private ToolStripButton helpToolStripButton;
         private ToolStripMenuItem FileToolStripMenuItem;
         private ToolStripDropDownButton toolStripDropDownButton3;
+        private Button LoadMeta;
+        private ToolStripButton ErrorLogToolStripButton;
     }
 }

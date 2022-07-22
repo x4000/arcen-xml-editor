@@ -28,7 +28,9 @@ namespace ArcenXE.Utilities
                             editedNode.ChildNodes.Add( childComment );
                             break;
                         default:
-                            MessageBox.Show( "why do we have a " + node.NodeType + " directly under the element node?" );
+                            string complaint = "Why do we have a " + node.NodeType + " directly under the element node?";
+                            ArcenDebugging.LogSingleLine( complaint, Verbosity.DoNotShow );
+                            MessageBox.Show( complaint );
                             return null;
                     }
                 }
@@ -46,13 +48,15 @@ namespace ArcenXE.Utilities
                     };
                     editedNode.Attributes.Add( att );
 
-                    if ( IsTopLevelNode && editedNode.NodeName == null && string.Equals( att.Name, "name" ) )
+                    if ( IsTopLevelNode && editedNode.NodeName == null && string.Equals( att.Name, "name", StringComparison.CurrentCultureIgnoreCase ) )
                         editedNode.NodeName = att;
                 }
             }
             return editedNode;
         }
     }
+
+    #region EditedXmlNode
     public class EditedXmlNode : IEditedXmlNodeOrComment, IEditedXmlElement
     {
         public EditedXmlAttribute? NodeName = null; // if != null, then this is top node
@@ -66,7 +70,9 @@ namespace ArcenXE.Utilities
         /// </summary>
         public Label? CurrentViewControl;
     }
+    #endregion
 
+    #region EditedXmlComment
     public class EditedXmlComment : IEditedXmlNodeOrComment, IEditedXmlElement
     {
         public string Data = string.Empty;
@@ -78,7 +84,9 @@ namespace ArcenXE.Utilities
         /// </summary>
         public Control? CurrentViewControl;
     }
+    #endregion
 
+    #region EditedXmlAttribute
     public class EditedXmlAttribute : IEditedXmlElement
     {
         public string Name = string.Empty;
@@ -88,13 +96,15 @@ namespace ArcenXE.Utilities
         /// <summary>
         /// For use in XmlVisualizer only
         /// </summary>
-        public Control? CurrentViewControl_Label;
+        public Label? CurrentViewControl_Name;
         /// <summary>
         /// For use in XmlVisualizer only
         /// </summary>
-        public Control? CurrentViewControl_Data;
+        public Control? CurrentViewControl_Value;
     }
+    #endregion
 
+    #region IEditedXml
     public interface IEditedXmlNodeOrComment
     {
         public bool IsComment { get; }
@@ -104,8 +114,9 @@ namespace ArcenXE.Utilities
     {
 
     }
+    #endregion
 
-    public enum ArcenXmlAttributeType
+    public enum ArcenXmlAttributeType // use AttributeType?
     {
         Unknown = 0,
         Bool,
