@@ -54,7 +54,11 @@ namespace ArcenXE
         }
         private void MainTimer_Tick( object sender, EventArgs e )
         {
+            ArcenDebugging.DumpAllPriorDelayedSingleLines();
+
             this.MainThreadLoop();
+
+            ArcenDebugging.DumpAllPriorDelayedSingleLines();
         }
 
         private void MainThreadLoop()
