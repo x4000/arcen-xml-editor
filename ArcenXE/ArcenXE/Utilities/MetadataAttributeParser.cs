@@ -304,11 +304,11 @@ namespace ArcenXE.Utilities
                                     string[] minimums = attribute.Value.Split( ',' );
                                     float[] values = new float[3];
                                     if ( FloatExtensions.TryParsePrecise( minimums[0], out values[0] ) )
-                                        attributeData_Vector3.x.Default = values[0];
+                                        attributeData_Vector3.x.Min = values[0];
                                     if ( FloatExtensions.TryParsePrecise( minimums[1], out values[1] ) )
-                                        attributeData_Vector3.y.Default = values[1];
+                                        attributeData_Vector3.y.Min = values[1];
                                     if ( FloatExtensions.TryParsePrecise( minimums[2], out values[2] ) )
-                                        attributeData_Vector3.z.Default = values[2];
+                                        attributeData_Vector3.z.Min = values[2];
                                 }
                             }
 
@@ -318,11 +318,11 @@ namespace ArcenXE.Utilities
                                     string[] maximums = attribute.Value.Split( ',' );
                                     float[] values = new float[3];
                                     if ( FloatExtensions.TryParsePrecise( maximums[0], out values[0] ) )
-                                        attributeData_Vector3.x.Default = values[0];
+                                        attributeData_Vector3.x.Max = values[0];
                                     if ( FloatExtensions.TryParsePrecise( maximums[1], out values[1] ) )
-                                        attributeData_Vector3.y.Default = values[1];
+                                        attributeData_Vector3.y.Max = values[1];
                                     if ( FloatExtensions.TryParsePrecise( maximums[2], out values[2] ) )
-                                        attributeData_Vector3.z.Default = values[2];
+                                        attributeData_Vector3.z.Max = values[2];
                                 }
                             }
                             break;
