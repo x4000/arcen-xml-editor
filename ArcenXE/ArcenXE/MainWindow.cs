@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using ArcenXE.Universal;
 using ArcenXE.Utilities;
 using ArcenXE.Utilities.MessagesToMainThread;
@@ -22,35 +23,35 @@ namespace ArcenXE
         public readonly List<IEditedXmlNodeOrComment> CurrentXmlForVis = new List<IEditedXmlNodeOrComment>();
         public readonly XmlVisualizer xmlVisualizer = new XmlVisualizer();
 
-        public readonly List<string> DataTableNames = new List<string>(); // full path of data table and its name
+        public readonly List<string> DataTableNames = new List<string>(); //todo: full path of data table and its name
         public readonly Dictionary<string, DataTable> GlobalMetadata = new Dictionary<string, DataTable>();
         public MetadataDocument? metadataDocument;
 
         public IEditedXmlElement? XmlElementCurrentlyBeingEdited { get; } //todo: should be updated with the current node being selected/edited
 
-        private int selectedTopNodeIndex = -1;
-        public int SelectedTopNodeIndex
-        {
-            get => this.selectedTopNodeIndex;
-            private set
+        private int errorsWrittenToLog = 0;
+        public int ErrorsWrittenToLog 
+        { 
+            get => errorsWrittenToLog;
+            set
             {
-                if ( value < 0 )
-                    throw new ArgumentOutOfRangeException( "selectedTopNodeIndex", "must be greater or equal to 0" );
-                else
-                    this.selectedTopNodeIndex = value;
+                errorsWrittenToLog = value;
+                ErrorLogToolStripButtonCounterUpdate();
             }
         }
-        public List<string> FilesNames { get; } = new List<string>();
 
+        public int SelectedTopNodeIndex { get; set; } = -1;
 
-        private readonly string path = Path.GetFullPath( Application.ExecutablePath );
+        public List<string> FilesNames { get; } = new List<string>(); //todo
+
+        private readonly string path = Path.GetFullPath( Application.ExecutablePath );//todo
 
         public MainWindow()
         {
             if ( Instance == null )
                 Instance = this;
 
-            InitializeComponent();            
+            InitializeComponent();
         }
         private void MainTimer_Tick( object sender, EventArgs e )
         {
@@ -72,7 +73,7 @@ namespace ArcenXE
 
         private void MainWindow_Load( object sender, EventArgs e )
         {
-            
+            ErrorLogToolStripButton.Text = "Error List: " + ErrorsWrittenToLog;
         }
 
         private void FolderToolStripMenuItem_Click( object sender, EventArgs e )
@@ -108,7 +109,7 @@ namespace ArcenXE
             visualizer.Visualize( CurrentXmlForVis.ElementAt( TopNodesList.SelectedIndex ) );
         }
 
-        public void FillFileList()
+        public void FillFileList() //todo
         {
             TreeNode treeNode = new TreeNode
             {
@@ -126,6 +127,23 @@ namespace ArcenXE
         private void LoadMeta_Click( object sender, EventArgs e )
         {
             MetadataLoader.LoadAllDataTables( @"C:\Users\Daniel\ArcenDev\Arcology5\GameData\Configuration" );
+        }
+
+        private void ErrorLogToolStripButton_Click( object sender, EventArgs e )
+        {
+            ProcessStartInfo debugLogStartInfo = new ProcessStartInfo
+            {
+                FileName = @"C:\Users\Daniel\ArcenDev\arcen-xml-editor\ArcenXE\ArcenXE\logs\XEDebugLog.txt",
+                UseShellExecute = true
+            };
+            Process.Start( debugLogStartInfo );
+            this.ErrorLogToolStripButton.ForeColor = Color.Black;
+        }
+
+        private void ErrorLogToolStripButtonCounterUpdate()
+        {
+            this.ErrorLogToolStripButton.Text = "Error List: " + this.ErrorsWrittenToLog;
+            this.ErrorLogToolStripButton.ForeColor = Color.Red;
         }
     }
 

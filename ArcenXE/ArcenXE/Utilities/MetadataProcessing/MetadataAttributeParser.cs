@@ -5,15 +5,14 @@ namespace ArcenXE.Utilities.MetadataProcessing
 {
     public static class MetadataAttributeParser
     {
-        public static List<AttributeData_Base>? ProcessMetadataAttributes( XmlElement element, MetadataDocument doc )
+        public static void ProcessMetadataAttributes( XmlElement element, MetadataDocument doc, List<string> dump2, out AttributeData_Base? result )
         {
-            List<AttributeData_Base> processedAttributeData = new List<AttributeData_Base>();
-
             XmlAttributeCollection originalAttributes = element.Attributes;
 
             if ( originalAttributes.Count > 0 )
             {
                 Dictionary<string, XmlAttributeToRead> attributes = new Dictionary<string, XmlAttributeToRead>();
+                //dump2.Add( " DUMP2 HEADER: " + element.GetAttribute( "key" ) );
                 foreach ( XmlAttribute att in originalAttributes )
                 {
                     XmlAttributeToRead xmlAttributeToRead = new XmlAttributeToRead
@@ -22,6 +21,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
                         Value = att.Value.ToLowerInvariant()
                     };
                     attributes[xmlAttributeToRead.Name] = xmlAttributeToRead;
+                    //dump2.Add( att.Name + "  " + attributes.Count );
                 }
 
                 attributes.TryGetValue( "type", out XmlAttributeToRead? mainAttributeType );
@@ -36,7 +36,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
                                 SpiffyBaseAttributesReader( attributeData_Bool, attributes, doc );
                                 if ( attributes.TryGetValue( "default", out XmlAttributeToRead? attribute ) )
                                     attributeData_Bool.Default = bool.Parse( attribute.Value );
-                                processedAttributeData.Add( attributeData_Bool );
+                                result = attributeData_Bool;
 
                             }
                             break;
@@ -48,8 +48,9 @@ namespace ArcenXE.Utilities.MetadataProcessing
                                 SpiffyBaseAttributesReader( attributeData_BoolInt, attributes, doc );
                                 if ( attributes.TryGetValue( "default", out XmlAttributeToRead? attribute ) )
                                     attributeData_BoolInt.Default = int.Parse( attribute.Value );
-                                processedAttributeData.Add( attributeData_BoolInt );
+                                result = attributeData_BoolInt;
                             }
+                            
                             break;
                         #endregion
                         #region String
@@ -68,7 +69,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
                                 if ( attributes.TryGetValue( "maxlength", out XmlAttributeToRead? attribute ) )
                                     attributeData_String.MaxLength = int.Parse( attribute.Value );
                             }
-                            processedAttributeData.Add( attributeData_String );
+                            result = attributeData_String;
 
                             break;
                         #endregion
@@ -93,6 +94,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
                                     attributeData_StringMultiline.ShowLines = int.Parse( attribute.Value );
                             }
                             //throw new Exception( "Unknown attribute " + attribute.Name + " in type " + type );
+                            result = attributeData_StringMultiline;
                             break;
                         #endregion
                         #region ArbitraryString
@@ -113,6 +115,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
                                             ArcenDebugging.LogSingleLine( "Why do we have a " + subNode.Name + " as subNode?", Verbosity.DoNotShow );
                                     else if ( subNode.NodeType != XmlNodeType.Comment ) // ignore comments
                                         ArcenDebugging.LogSingleLine( "Why do we have a " + subNode.NodeType + " directly under the element node?", Verbosity.DoNotShow );
+                            result = attributeData_ArbitraryString;
                             break;
                         #endregion
                         #region Int
@@ -135,6 +138,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
                                 if ( attributes.TryGetValue( "minimum_digits", out XmlAttributeToRead? attribute ) )
                                     attributeData_Int.MinimumDigits = int.Parse( attribute.Value );
                             }
+                            result = attributeData_Int;
                             break;
                         #endregion
                         #region Float
@@ -164,6 +168,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
                                 if ( attributes.TryGetValue( "minimum_digits", out XmlAttributeToRead? attribute ) )
                                     attributeData_Float.MinimumDigits = int.Parse( attribute.Value );
                             }
+                            result = attributeData_Float;
                             break;
                         #endregion
                         #region ArbitraryNode
@@ -178,6 +183,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
                                 if ( attributes.TryGetValue( "node_source", out XmlAttributeToRead? attribute ) )
                                     attributeData_ArbitraryNode.NodeSource = attribute.Value;
                             }
+                            result = attributeData_ArbitraryNode;
                             break;
                         #endregion
                         #region NodeList
@@ -193,6 +199,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
                                     attributeData_NodeList.NodeSource = attribute.Value;
                             }
                             //todo
+                            result = attributeData_NodeList;
                             break;
                         #endregion
                         #region FolderList
@@ -203,6 +210,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
                                 if ( attributes.TryGetValue( "folder_source", out XmlAttributeToRead? attribute ) )
                                     attributeData_FolderList.FoldeSource = attribute.Value;
                             }
+                            result = attributeData_FolderList;
                             break;
                         #endregion
                         #region Point
@@ -233,6 +241,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
                                     attributeData_Point.y.Max = int.Parse( maximums[1] );
                                 }
                             }
+                            result = attributeData_Point;
                             break;
                         #endregion
                         #region Vector2
@@ -272,6 +281,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
                                         attributeData_Vector2.y.Max = values[1];
                                 }
                             }
+                            result = attributeData_Vector2;
                             break;
                         #endregion
                         #region Vector3
@@ -318,13 +328,20 @@ namespace ArcenXE.Utilities.MetadataProcessing
                                         attributeData_Vector3.z.Max = values[2];
                                 }
                             }
+                            result = attributeData_Vector3;
                             break;
                         #endregion
                         default:
                             ArcenDebugging.LogSingleLine( "Unknown attribute type: " + mainAttributeType.Value, Verbosity.DoNotShow );
-                            return null;
+                            result = null;
+                            return;
 
                     }
+                else
+                {
+                    result = null;
+                    ArcenDebugging.LogSingleLine( "No Main Attribute Type found at all. File name:" + doc.Name + "\nElement: " + element.OuterXml, Verbosity.DoNotShow );
+                }
                 List<string> missing = new List<string>();
                 foreach ( XmlAttributeToRead attribute in attributes.Values )
                     if ( !attribute.HasReadValue )
@@ -337,7 +354,11 @@ namespace ArcenXE.Utilities.MetadataProcessing
                     ArcenDebugging.LogSingleLine( "Attributes:\n" + missingToDisplay + "haven't been read! File name:" + doc.Name + "\nElement: " + element.OuterXml, Verbosity.DoNotShow );
                 }
             }
-            return processedAttributeData;
+            else
+            {
+                result = null;
+                ArcenDebugging.LogSingleLine( "No attributes found at all. File name:" + doc.Name + "\nElement: " + element.OuterXml, Verbosity.DoNotShow );
+            }
         }
 
         private static void SpiffyBaseAttributesReader( AttributeData_Base attributeData, Dictionary<string, XmlAttributeToRead> attributes, MetadataDocument doc )
@@ -401,6 +422,10 @@ namespace ArcenXE.Utilities.MetadataProcessing
                 if ( attributes.TryGetValue( "tooltip", out XmlAttributeToRead? attribute ) )
                     attributeData.Tooltip = attribute.Value;
             }
+            {
+                if ( attributes.TryGetValue( "is_user_facing_name", out XmlAttributeToRead? attribute ) )
+                    attributeData.Tooltip = attribute.Value;
+            }            
         }
 
         private class XmlAttributeToRead

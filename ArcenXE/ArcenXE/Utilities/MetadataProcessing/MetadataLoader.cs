@@ -60,9 +60,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
             Interlocked.Increment( ref NumberOfMetaDatasStillLoading );
 
             Task.Run( () =>
-            {
-                //Program.AppendTextToFile( Program.CurrentLogDirectory + "taskRunLogging.txt", DateTime.Now + " Task.Run in LoadMetadata() invoked. File name:\n", Program.MAX_ERROR_FILE_SIZE );
-                ArcenDebugging.LogSingleLine( "Task.Run in LoadMetadata() invoked. File name: " + FileName, Verbosity.DoNotShow );
+            { 
                 try
                 {
                     MetadataDocument metaDoc = new MetadataDocument();

@@ -16,6 +16,8 @@
         public virtual LineBreakType LinebreakAfter { get; set; } = LineBreakType.PreferNot;
         public string Tooltip { get; set; } = string.Empty;
         public string OnlyExistsIfConditionalPasses { get; set; } = string.Empty;
+        public bool IsUserFacingName { get; set; } = false;
+        
     }
 
     public class AttributeData_Bool : AttributeData_Base
@@ -109,6 +111,7 @@
         public override AttributeType Type => AttributeType.NodeList;
         public ReferenceXmlNode Default { get; set; } = new ReferenceXmlNode();
         public string NodeSource { get; set; } = string.Empty;
+        public List<ReferenceXmlNode> Nodes { get; set; } = new List<ReferenceXmlNode>();
     }
 
     public class AttributeData_FolderList : AttributeData_Base

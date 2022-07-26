@@ -54,9 +54,9 @@
             this.pasteToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.helpToolStripButton = new System.Windows.Forms.ToolStripButton();
+            this.ErrorLogToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripDropDownButton3 = new System.Windows.Forms.ToolStripDropDownButton();
             this.LoadMeta = new System.Windows.Forms.Button();
-            this.ErrorLogToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.toolStrip1.SuspendLayout();
             this.toolStrip2.SuspendLayout();
             this.SuspendLayout();
@@ -135,7 +135,7 @@
             // NewToolStripMenuItem
             // 
             this.NewToolStripMenuItem.Name = "NewToolStripMenuItem";
-            this.NewToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
+            this.NewToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.NewToolStripMenuItem.Text = "New";
             // 
             // OpenToolStripMenuItem
@@ -144,7 +144,7 @@
             this.FileToolStripMenuItem,
             this.FolderToolStripMenuItem});
             this.OpenToolStripMenuItem.Name = "OpenToolStripMenuItem";
-            this.OpenToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
+            this.OpenToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.OpenToolStripMenuItem.Text = "Open";
             // 
             // FileToolStripMenuItem
@@ -281,6 +281,17 @@
             this.helpToolStripButton.Size = new System.Drawing.Size(23, 22);
             this.helpToolStripButton.Text = "He&lp";
             // 
+            // ErrorLogToolStripButton
+            // 
+            this.ErrorLogToolStripButton.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.ErrorLogToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.ErrorLogToolStripButton.Image = ((System.Drawing.Image)(resources.GetObject("ErrorLogToolStripButton.Image")));
+            this.ErrorLogToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ErrorLogToolStripButton.Name = "ErrorLogToolStripButton";
+            this.ErrorLogToolStripButton.Size = new System.Drawing.Size(63, 22);
+            this.ErrorLogToolStripButton.Text = "Error List: ";
+            this.ErrorLogToolStripButton.Click += new System.EventHandler(this.ErrorLogToolStripButton_Click);
+            // 
             // toolStripDropDownButton3
             // 
             this.toolStripDropDownButton3.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
@@ -299,16 +310,6 @@
             this.LoadMeta.Text = "Load Meta";
             this.LoadMeta.UseVisualStyleBackColor = true;
             this.LoadMeta.Click += new System.EventHandler(this.LoadMeta_Click);
-            // 
-            // ErrorLogToolStripButton
-            // 
-            this.ErrorLogToolStripButton.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.ErrorLogToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.ErrorLogToolStripButton.Image = ((System.Drawing.Image)(resources.GetObject("ErrorLogToolStripButton.Image")));
-            this.ErrorLogToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ErrorLogToolStripButton.Name = "ErrorLogToolStripButton";
-            this.ErrorLogToolStripButton.Size = new System.Drawing.Size(63, 22);
-            this.ErrorLogToolStripButton.Text = "Error List: ";
             // 
             // MainWindow
             // 

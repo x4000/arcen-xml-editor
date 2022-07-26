@@ -70,6 +70,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                     Caret.NextLine( textBox.Height + 2 );
                 }
                 else
+                {
                     if ( item is EditedXmlNode node )
                     {
                         if ( node.NodeName != null ) // top node
@@ -94,32 +95,32 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                             Caret.NextLine( label.Height + 2 );
                         }
 
-                        foreach ( EditedXmlAttribute att in node.Attributes )
+                        foreach ( KeyValuePair<string, EditedXmlAttribute> pair in node.Attributes )
                         {
                             Label label = this.labelPool.GetOrAdd();
                             Label labelV = this.labelPool.GetOrAdd();
-                            SizeF size = graphics.MeasureString( att.Name, MainWindow.Instance.VisPanel.Font );
+                            SizeF size = graphics.MeasureString( pair.Key, MainWindow.Instance.VisPanel.Font );
 
                             label.Height = (int)Math.Ceiling( size.Height );
                             label.Width = (int)Math.Ceiling( size.Width );
                             label.Bounds = new Rectangle( Caret.x, Caret.y, label.Width + 5, label.Height );
-                            label.Text = att.Name;
+                            label.Text = pair.Key;
 
-                            att.CurrentViewControl_Name = label;
+                            pair.Value.CurrentViewControl_Name = label;
                             controls.Add( label );
 
                             Caret.MoveHorz( label.Width + 2 );
 
-                            size = graphics.MeasureString( att.Value, MainWindow.Instance.VisPanel.Font );
+                            size = graphics.MeasureString( pair.Value.Value, MainWindow.Instance.VisPanel.Font );
 
                             labelV.Height = (int)Math.Ceiling( size.Height );
                             labelV.Width = (int)Math.Ceiling( size.Width );
                             labelV.Bounds = new Rectangle( Caret.x, Caret.y, labelV.Width + 5, labelV.Height );
-                            labelV.Text = att.Value;
+                            labelV.Text = pair.Value.Value;
 
                             node.CurrentViewControl = label;
-                            att.CurrentViewControl_Name = labelV;
-                            this.EditedXmlElementsByControl[labelV] = att;
+                            pair.Value.CurrentViewControl_Value = labelV;
+                            this.EditedXmlElementsByControl[labelV] = pair.Value;
 
                             controls.Add( labelV );
 
@@ -131,6 +132,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                         foreach ( IEditedXmlNodeOrComment child in node.ChildNodes )
                             this.Visualize( child );
                     }
+                }
         }
     }
 }

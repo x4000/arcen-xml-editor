@@ -74,7 +74,8 @@ namespace ArcenXE.Utilities.MetadataProcessing
 
             //then parse our real data.
             topLevelNode.ParseLayer( mainRoot );
-
+            topLevelNode.ProcessConditionals();
+            //topLevelNode.DumpLayerData();
             //check for IsDataCopyIdentifierAlreadyRead still false; it has to be true by the end
             if ( !this.IsSingleRootTypeDocument )
                 if ( !this.IsDataCopyIdentifierAlreadyRead )

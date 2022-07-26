@@ -18,7 +18,7 @@ namespace ArcenXE.Utilities.MetadataProcessing.BooleanLogic
                             if ( RootLogicalGroup == null )
                                 RootLogicalGroup = child;
                             else
-                                ArcenDebugging.LogSingleLine( "INFO: There should be only one \"or_group\" or \"and_group\" at the first depth of a conditional node in " 
+                                ArcenDebugging.LogSingleLine( "INFO: There should be only one \"or_group\" or \"and_group\" at the first depth of a conditional node in "
                                     + element.BaseURI + ". Only the first one will be used!", Verbosity.DoNotShow );
                             break;
                         case XmlNodeType.Comment: //ignore it
@@ -31,12 +31,12 @@ namespace ArcenXE.Utilities.MetadataProcessing.BooleanLogic
                 if ( rootName == "or_group" )
                 {
                     BooleanLogicCheckerTree.OrGroup orGroup = new BooleanLogicCheckerTree.OrGroup();
-                    return new BooleanLogicCheckerTree( element.GetAttribute("name"), orGroup );
+                    return new BooleanLogicCheckerTree( element.GetAttribute( "name" ), orGroup );
                 }
                 else if ( rootName == "and_group" )
                 {
                     BooleanLogicCheckerTree.AndGroup andGroup = new BooleanLogicCheckerTree.AndGroup();
-                    return new BooleanLogicCheckerTree( element.GetAttribute("name"), andGroup );
+                    return new BooleanLogicCheckerTree( element.GetAttribute( "name" ), andGroup );
                 }
                 else
                 {
@@ -46,17 +46,17 @@ namespace ArcenXE.Utilities.MetadataProcessing.BooleanLogic
             }
             else
             {
-                ArcenDebugging.LogSingleLine( "ERROR in ProcessMetadataConditionalOuterShell(): missing or unrecognized LogicGroup inside the conditional " + element.GetAttribute("name"), Verbosity.ShowAsError );
+                ArcenDebugging.LogSingleLine( "ERROR in ProcessMetadataConditionalOuterShell(): missing or unrecognized LogicGroup inside the conditional " + element.GetAttribute( "name" ), Verbosity.ShowAsError );
                 return null;
             }
         }
 
-        public static void ProcessMetadataConditionals( XmlElement element, BooleanLogicCheckerTree.LogicGroup logicGroup, Dictionary<string, AttributeData_Base> attributesData, bool firstRun = false ) // recursive on logicGroup
+        public static void ProcessMetadataConditionals( XmlElement element, BooleanLogicCheckerTree.LogicGroup logicGroup, Dictionary<string, AttributeData_Base> attributesData, bool firstRun = false )
         {
             XmlNode? RootLogicalGroup = null;
-            if ( firstRun )// this has to be done only the first call, not in the recursive ones
+            if ( firstRun ) // this has to be done only the first call, not in the recursive ones
             {
-                if ( element.ChildNodes.Count > 0 ) 
+                if ( element.ChildNodes.Count > 0 )
                     foreach ( XmlElement child in element.ChildNodes )
                         switch ( child.NodeType )
                         {
@@ -65,7 +65,7 @@ namespace ArcenXE.Utilities.MetadataProcessing.BooleanLogic
                                     RootLogicalGroup = child;
                                 else
                                     ArcenDebugging.LogSingleLine( "INFO: There should be only one \"or_group\" or \"and_group\" at the first depth of the conditional named: "
-                                        + element.GetAttribute("name") + ". Only the first one will be used!", Verbosity.DoNotShow );
+                                        + element.GetAttribute( "name" ) + ". Only the first one will be used!", Verbosity.DoNotShow );
                                 break;
                             case XmlNodeType.Comment: //ignore it
                                 break;
@@ -76,19 +76,19 @@ namespace ArcenXE.Utilities.MetadataProcessing.BooleanLogic
 
             if ( RootLogicalGroup == null )
             {
-                ArcenDebugging.LogSingleLine( "ERROR in ProcessMetadataConditional(): missing or unrecognized LogicGroup inside the conditional " + element.GetAttribute("name"), Verbosity.ShowAsError );
+                ArcenDebugging.LogSingleLine( "ERROR in ProcessMetadataConditional(): missing or unrecognized LogicGroup inside the conditional " + element.GetAttribute( "name" ), Verbosity.ShowAsError );
                 return;
             }
 
             foreach ( XmlElement child in RootLogicalGroup.ChildNodes )
             {
-                string childName = child.Name.ToLowerInvariant();
                 if ( child.NodeType == XmlNodeType.Element )
+                {
+                    string childName = child.Name.ToLowerInvariant();
                     if ( childName == "type" )
                     {
                         XmlAttributeCollection attributes = child.Attributes;
-                        string? metadataAttributeKey;
-                        metadataAttributeKey = attributes.GetNamedItem( "attribute" )?.Value?.ToLowerInvariant();
+                        string? metadataAttributeKey = attributes.GetNamedItem( "attribute" )?.Value?.ToLowerInvariant();
                         if ( metadataAttributeKey != null )
                         {
                             attributesData.TryGetValue( metadataAttributeKey, out AttributeData_Base? attribute );
@@ -102,14 +102,14 @@ namespace ArcenXE.Utilities.MetadataProcessing.BooleanLogic
                                     logicType = (BooleanLogicType)Enum.Parse( typeof( BooleanLogicType ), condType );
                                 else
                                 {
-                                    ArcenDebugging.LogSingleLine( "ERROR: condition_type inside one of the types in" + element.GetAttribute("name") + "is null!", Verbosity.ShowAsError );
+                                    ArcenDebugging.LogSingleLine( "ERROR: condition_type inside one of the types in " + element.GetAttribute( "name" ) + " is null!", Verbosity.DoNotShow );
                                     return;
                                 }
 
                                 string? valueString = attributes.GetNamedItem( "value" )?.Value;
                                 if ( valueString == null )
                                 {
-                                    ArcenDebugging.LogSingleLine( "ERROR: value inside one of the types in" + element.GetAttribute("name") + "is null!", Verbosity.ShowAsError );
+                                    ArcenDebugging.LogSingleLine( "ERROR: value inside one of the types in " + element.GetAttribute( "name" ) + " is null!", Verbosity.DoNotShow );
                                     return;
                                 }
 
@@ -119,8 +119,7 @@ namespace ArcenXE.Utilities.MetadataProcessing.BooleanLogic
                                     case AttributeType.Bool:
                                         logicGroup.DirectCheckers.Add( new BooleanLogicCheckerTree.BoolChecker( bool.Parse( valueString ), logicType, () =>
                                         {
-                                            EditedXmlNode? node = MainWindow.Instance.XmlElementCurrentlyBeingEdited as EditedXmlNode;
-                                            if ( node != null )
+                                            if ( MainWindow.Instance.XmlElementCurrentlyBeingEdited is EditedXmlNode node )
                                             {
                                                 if ( node.Attributes.TryGetValue( attribute.Key, out EditedXmlAttribute? att ) )
                                                 {
@@ -141,10 +140,14 @@ namespace ArcenXE.Utilities.MetadataProcessing.BooleanLogic
                                         } ) );
                                         break;
                                     #endregion
+
                                     #region String
                                     case AttributeType.String:
                                     case AttributeType.StringMultiLine:
                                     case AttributeType.ArbitraryString:
+                                    case AttributeType.ArbitraryNode:
+                                    case AttributeType.NodeList:
+                                    case AttributeType.FolderList:
                                         logicGroup.DirectCheckers.Add( new BooleanLogicCheckerTree.StringChecker( valueString, logicType, () =>
                                         {
                                             EditedXmlNode? node = MainWindow.Instance.XmlElementCurrentlyBeingEdited as EditedXmlNode;
@@ -167,6 +170,7 @@ namespace ArcenXE.Utilities.MetadataProcessing.BooleanLogic
                                         } ) );
                                         break;
                                     #endregion
+
                                     #region Int
                                     case AttributeType.BoolInt:
                                     case AttributeType.Int:
@@ -195,6 +199,7 @@ namespace ArcenXE.Utilities.MetadataProcessing.BooleanLogic
                                         } ) );
                                         break;
                                     #endregion
+
                                     #region Float
                                     case AttributeType.Float:
                                     case AttributeType.Vector2:
@@ -240,7 +245,7 @@ namespace ArcenXE.Utilities.MetadataProcessing.BooleanLogic
                                         }
                                         break;
                                     #endregion
-                                    //other cases??
+
                                     default:
                                         ArcenDebugging.LogSingleLine( "Unknown AttributeType: " + type.ToString(), Verbosity.ShowAsError );
                                         break;
@@ -248,13 +253,20 @@ namespace ArcenXE.Utilities.MetadataProcessing.BooleanLogic
                             }
                             else
                             {
-                                ArcenDebugging.LogSingleLine( "ERROR: attribute with name" + metadataAttributeKey + "is null! This should't happen at all!", Verbosity.ShowAsError );
+                                //ArcenDebugging.LogSingleLine( "ERROR: attribute with name " + metadataAttributeKey + " in " + element.GetAttribute( "name" ) + " is null! This should't happen at all!", Verbosity.DoNotShow );
+                                string error = "ERROR: attribute with name " + metadataAttributeKey + " in " + element.GetAttribute( "name" ) + " is null! This should't happen at all!";
+                                error += "\nattributesData contents: ";
+                                foreach ( KeyValuePair<string, AttributeData_Base> kv in attributesData )
+                                {
+                                    error += "\n" + kv.Key + "  " + (kv.Value != null);
+                                }
+                                ArcenDebugging.LogSingleLine( error, Verbosity.DoNotShow );
                                 return;
                             }
                         }
                         else
                         {
-                            ArcenDebugging.LogSingleLine( "ERROR: attribute inside one of the types in" + element.GetAttribute("name") + "is null!", Verbosity.ShowAsError );
+                            ArcenDebugging.LogSingleLine( "ERROR: attribute inside one of the types in " + element.GetAttribute( "name" ) + " is null!", Verbosity.ShowAsError );
                             return;
                         }
                     }
@@ -279,6 +291,7 @@ namespace ArcenXE.Utilities.MetadataProcessing.BooleanLogic
                             return;
                         }
                     }
+                }
             }
         }
     }

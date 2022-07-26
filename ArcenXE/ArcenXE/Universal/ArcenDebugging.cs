@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Text;
-using System.IO;
-using System.Threading;
+﻿using System.Collections.Concurrent;
 
 namespace ArcenXE
 {
@@ -322,6 +317,7 @@ namespace ArcenXE
                         return;
 
                     Program.AppendTextToFile( Program.CurrentLogDirectory + Destination.ToString() + ".txt", fullMessageMaybeStack, Program.MAX_ERROR_FILE_SIZE );
+                    MainWindow.Instance.ErrorsWrittenToLog++;
                     switch ( Verbosity )
                     {
                         //todo
@@ -399,6 +395,7 @@ namespace ArcenXE
                 {
                     Program.AppendTextToFile( Program.CurrentLogDirectory + Destination.ToString() + ".txt",
                         Environment.NewLine + Message, Program.MAX_BIG_ERROR_FILE_SIZE );
+                    MainWindow.Instance.ErrorsWrittenToLog++;
                 }
                 switch ( Verbosity )
                 {
