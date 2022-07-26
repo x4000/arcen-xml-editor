@@ -1,6 +1,7 @@
-﻿using System.Collections.Concurrent;
+﻿using ArcenXE.Universal;
+using System.Collections.Concurrent;
 
-namespace ArcenXE.Utilities
+namespace ArcenXE.Utilities.XmlDataProcessing
 {
     public class XmlVisualizer
     {
@@ -29,7 +30,6 @@ namespace ArcenXE.Utilities
             Control.ControlCollection controls = MainWindow.Instance.VisPanel.Controls;
 
             foreach ( Control control in controls )
-            {
                 if ( control is Label label )
                 {
                     label.Font = MainWindow.Instance.VisPanel.Font; //set to default; to be moved in separate SetToDefaults() method
@@ -37,7 +37,6 @@ namespace ArcenXE.Utilities
                 }
                 else if ( control is TextBox textBox )
                     textBoxPool.ReturnToPool( textBox );
-            }
 
             Caret.Reset();
             controls.Clear();
@@ -53,7 +52,6 @@ namespace ArcenXE.Utilities
             Control.ControlCollection controls = MainWindow.Instance.VisPanel.Controls;
 
             using ( graphics )
-            {
                 if ( item is EditedXmlComment comment )
                 {
                     TextBox textBox = this.textBoxPool.GetOrAdd();
@@ -72,7 +70,6 @@ namespace ArcenXE.Utilities
                     Caret.NextLine( textBox.Height + 2 );
                 }
                 else
-                {
                     if ( item is EditedXmlNode node )
                     {
                         if ( node.NodeName != null ) // top node
@@ -87,7 +84,7 @@ namespace ArcenXE.Utilities
                             label.Width = (int)Math.Ceiling( size.Width );
                             label.Bounds = new Rectangle( Caret.x, Caret.y, label.Width + 5, label.Height );
                             label.Text = toWrite;
-                            
+
 
                             node.CurrentViewControl = label;
                             this.EditedXmlElementsByControl[label] = node;
@@ -134,8 +131,6 @@ namespace ArcenXE.Utilities
                         foreach ( IEditedXmlNodeOrComment child in node.ChildNodes )
                             this.Visualize( child );
                     }
-                }
-            }
         }
     }
 }

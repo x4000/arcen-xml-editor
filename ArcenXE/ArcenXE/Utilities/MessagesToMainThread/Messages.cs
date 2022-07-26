@@ -1,4 +1,7 @@
-﻿namespace ArcenXE.Utilities.MessagesToMainThread
+﻿using ArcenXE.Utilities.MetadataProcessing;
+using ArcenXE.Utilities.XmlDataProcessing;
+
+namespace ArcenXE.Utilities.MessagesToMainThread
 {
     public class SendEditedXmlTopNodeToList : IBGMessageToMainThread
     {

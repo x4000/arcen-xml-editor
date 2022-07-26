@@ -15,6 +15,7 @@
         public virtual LineBreakType LinebreakBefore { get; set; } = LineBreakType.PreferNot;
         public virtual LineBreakType LinebreakAfter { get; set; } = LineBreakType.PreferNot;
         public string Tooltip { get; set; } = string.Empty;
+        public string OnlyExistsIfConditionalPasses { get; set; } = string.Empty;
     }
 
     public class AttributeData_Bool : AttributeData_Base

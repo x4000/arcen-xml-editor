@@ -1,7 +1,7 @@
 ﻿using System.Xml;
 using ArcenXE.Utilities.MessagesToMainThread;
 
-namespace ArcenXE.Utilities
+namespace ArcenXE.Utilities.XmlDataProcessing
 {
     public class XmlLoader //make singleton?
     {
@@ -48,14 +48,12 @@ namespace ArcenXE.Utilities
                                 {
                                     XmlNodeList childNodes = root.ChildNodes;
                                     if ( childNodes.Count > 0 )
-                                    {
                                         //Parallel.For( int = 0; i < childNodes.Count; i++;
                                         //delegate ( int index )
                                         //{
                                         //    XmlNode node = childNodes[index];
                                         //} );
                                         foreach ( XmlNode node in childNodes )
-                                        {
                                             switch ( node.NodeType )
                                             {
                                                 case XmlNodeType.Element:
@@ -75,20 +73,18 @@ namespace ArcenXE.Utilities
                                                     ArcenDebugging.LogSingleLine( "Why do we have a " + node.NodeType + " directly under the element node?", Verbosity.DoNotShow );
                                                     break;
                                             }
-                                        }
-                                    }
                                     else //no children, so root is primary
                                     {
                                         IEditedXmlNodeOrComment? result = parser.ProcessXmlElement( root, false );
                                         if ( result != null )
                                             messageSendXmlTopNode.Nodes.Add( result );
                                     }
-                                    messageSaveXml.Nodes.AddRange( messageSendXmlTopNode.Nodes) ;
+                                    messageSaveXml.Nodes.AddRange( messageSendXmlTopNode.Nodes );
                                     MainWindow.Instance.MessagesToFrontEnd.Enqueue( messageSaveXml );
                                     MainWindow.Instance.MessagesToFrontEnd.Enqueue( messageSendXmlTopNode );
                                 }
-                                else                                
-                                    ArcenDebugging.LogSingleLine( "Error: root in OpenFileWindow() is null", Verbosity.DoNotShow );                               
+                                else
+                                    ArcenDebugging.LogSingleLine( "Error: root in OpenFileWindow() is null", Verbosity.DoNotShow );
                             } //);
                         }
                         catch ( Exception e )

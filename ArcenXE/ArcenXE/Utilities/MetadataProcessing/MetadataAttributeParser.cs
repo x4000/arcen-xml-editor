@@ -1,7 +1,7 @@
 ﻿using System.Xml;
 using ArcenXE.Universal;
 
-namespace ArcenXE.Utilities
+namespace ArcenXE.Utilities.MetadataProcessing
 {
     public static class MetadataAttributeParser
     {
@@ -27,7 +27,6 @@ namespace ArcenXE.Utilities
                 attributes.TryGetValue( "type", out XmlAttributeToRead? mainAttributeType );
 
                 if ( mainAttributeType != null )
-                {
                     switch ( mainAttributeType.Value )
                     {
                         #region Bool
@@ -106,20 +105,14 @@ namespace ArcenXE.Utilities
                             }
                             XmlNodeList subNodes = element.ChildNodes; //"option" only
                             if ( subNodes.Count > 0 )
-                            {
                                 foreach ( XmlNode subNode in subNodes )
-                                {
                                     if ( subNode.NodeType == XmlNodeType.Element )
-                                    {
                                         if ( subNode.Name.ToLowerInvariant() == "option" )
                                             attributeData_ArbitraryString.Strings.Add( subNode.InnerText );
                                         else
                                             ArcenDebugging.LogSingleLine( "Why do we have a " + subNode.Name + " as subNode?", Verbosity.DoNotShow );
-                                    }
                                     else if ( subNode.NodeType != XmlNodeType.Comment ) // ignore comments
                                         ArcenDebugging.LogSingleLine( "Why do we have a " + subNode.NodeType + " directly under the element node?", Verbosity.DoNotShow );
-                                }
-                            }
                             break;
                         #endregion
                         #region Int
@@ -332,15 +325,10 @@ namespace ArcenXE.Utilities
                             return null;
 
                     }
-                }
                 List<string> missing = new List<string>();
                 foreach ( XmlAttributeToRead attribute in attributes.Values )
-                {
                     if ( !attribute.HasReadValue )
-                    {
                         missing.Add( attribute.Name );
-                    }
-                }
                 if ( missing.Count > 0 )
                 {
                     string missingToDisplay = string.Empty;
@@ -364,9 +352,7 @@ namespace ArcenXE.Utilities
             }
             {
                 if ( attributes.TryGetValue( "is_central_identifier", out XmlAttributeToRead? attribute ) )
-                {
                     if ( attribute.Value.ToLowerInvariant() == "true" )
-                    {
                         if ( !doc.IsDataCopyIdentifierAlreadyRead )
                         {
                             attributeData.IsCentralIdentifier = bool.Parse( attribute.Value );
@@ -374,8 +360,6 @@ namespace ArcenXE.Utilities
                         }
                         else
                             ArcenDebugging.LogSingleLine( "There is more than 1 IsCentralIdentifier inside of metadata " + doc.Name, Verbosity.DoNotShow );
-                    }
-                }
             }
             {
                 if ( attributes.TryGetValue( "is_partial_identifier", out XmlAttributeToRead? attribute ) )
@@ -410,14 +394,13 @@ namespace ArcenXE.Utilities
                     attributeData.LinebreakAfter = (LineBreakType)Enum.Parse( typeof( LineBreakType ), attribute.Value, true );
             }
             {
-                if ( attributes.TryGetValue( "only_exists_if_conditional_passes", out XmlAttributeToRead? attribute ) ) ;
-                //todo
+                if ( attributes.TryGetValue( "only_exists_if_conditional_passes", out XmlAttributeToRead? attribute ) )
+                    attributeData.OnlyExistsIfConditionalPasses = attribute.Value;
             }
             {
                 if ( attributes.TryGetValue( "tooltip", out XmlAttributeToRead? attribute ) )
                     attributeData.Tooltip = attribute.Value;
             }
-
         }
 
         private class XmlAttributeToRead

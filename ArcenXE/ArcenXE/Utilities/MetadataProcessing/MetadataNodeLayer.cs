@@ -1,20 +1,21 @@
 ﻿using System.Xml;
+using ArcenXE.Utilities.MetadataProcessing.BooleanLogic;
 
-namespace ArcenXE.Utilities
+namespace ArcenXE.Utilities.MetadataProcessing
 {
-    public class MetadataAttributeLayer
+    public class MetadataNodeLayer
     {
         public MetadataDocument ParentDoc;
         public string Name = string.Empty;
 
-        public MetadataAttributeLayer( MetadataDocument parentDoc )
+        public MetadataNodeLayer( MetadataDocument parentDoc )
         {
             this.ParentDoc = parentDoc;
         }
 
-        private readonly Dictionary<string, MetadataAttributeLayer> SubNodes = new Dictionary<string, MetadataAttributeLayer>();
-
-        public readonly List<AttributeData_Base> AttributeDataList = new List<AttributeData_Base>();
+        private readonly Dictionary<string, BooleanLogicCheckerTree> ConditionalsTree = new Dictionary<string, BooleanLogicCheckerTree>();
+        private readonly Dictionary<string, AttributeData_Base> AttributesData = new Dictionary<string, AttributeData_Base>();
+        private readonly Dictionary<string, MetadataNodeLayer> SubNodes = new Dictionary<string, MetadataNodeLayer>();
 
         public void ParseLayer( XmlElement? layerRoot )
         {
@@ -29,11 +30,8 @@ namespace ArcenXE.Utilities
 
                 XmlNodeList nodesForThisLayer = layerRoot.ChildNodes;
                 if ( nodesForThisLayer.Count > 0 )
-                {
                     foreach ( XmlNode node in nodesForThisLayer )
-                    {
                         if ( node != null ) // if node is null then it must have been a comment
-                        {
                             switch ( node.Name.ToLowerInvariant() )
                             {
                                 case "conditional":
@@ -51,16 +49,19 @@ namespace ArcenXE.Utilities
                                     ArcenDebugging.LogSingleLine( "Node " + node.Name + " is not recognized!", Verbosity.DoNotShow );
                                     break;
                             }
-                        }
-                    }
-                }
-                else
-                    ArcenDebugging.LogSingleLine( "There is no nodes in " + layerRoot.OwnerDocument.Name + " !", Verbosity.DoNotShow );
+                        else
+                            ArcenDebugging.LogSingleLine( "There is no nodes in " + layerRoot.OwnerDocument.Name + " !", Verbosity.DoNotShow );
 
                 //now process these:
 
-                //1: process conditionals
+                //1: process outer conditionals 
+                foreach ( XmlNode node in nodesConditional )
+                {
+                    BooleanLogicCheckerTree? result = BooleanLogicCheckerTreeParser.ProcessMetadataConditionalOuterShell( (XmlElement)node );
 
+                    if ( result != null )
+                        ConditionalsTree.TryAdd( result.Name, result );
+                }
                 //2: process attributes
                 foreach ( XmlNode attNode in nodesAttribute )
                 {
@@ -68,15 +69,22 @@ namespace ArcenXE.Utilities
 
                     if ( results != null )
                         foreach ( AttributeData_Base attributeData in results )
-                            AttributeDataList.Add( attributeData );
+                            AttributesData.TryAdd( attributeData.Key, attributeData );
                 }
 
                 //3: process subnodes
                 foreach ( XmlNode node in nodesSubNode )
                 {
-                    MetadataAttributeLayer subNode = new MetadataAttributeLayer( this.ParentDoc );
+                    MetadataNodeLayer subNode = new MetadataNodeLayer( this.ParentDoc );
                     subNode.ParseLayer( (XmlElement)node );
                     this.SubNodes.Add( subNode.Name, subNode );
+                }
+
+                //4: process conditionals 
+                foreach ( XmlElement node in nodesConditional )
+                {                    
+                    if ( ConditionalsTree.TryGetValue( node.GetAttribute("name"), out BooleanLogicCheckerTree? checkerTree ) )
+                        BooleanLogicCheckerTreeParser.ProcessMetadataConditionals( node, checkerTree.RootGroup, AttributesData, true );
                 }
             }
         }

@@ -1,6 +1,9 @@
 using System.Collections.Concurrent;
+using ArcenXE.Universal;
 using ArcenXE.Utilities;
 using ArcenXE.Utilities.MessagesToMainThread;
+using ArcenXE.Utilities.MetadataProcessing;
+using ArcenXE.Utilities.XmlDataProcessing;
 
 namespace ArcenXE
 {
@@ -22,6 +25,8 @@ namespace ArcenXE
         public readonly List<string> DataTableNames = new List<string>(); // full path of data table and its name
         public readonly Dictionary<string, DataTable> GlobalMetadata = new Dictionary<string, DataTable>();
         public MetadataDocument? metadataDocument;
+
+        public IEditedXmlElement? XmlElementCurrentlyBeingEdited { get; } //todo: should be updated with the current node being selected/edited
 
         private int selectedTopNodeIndex = -1;
         public int SelectedTopNodeIndex

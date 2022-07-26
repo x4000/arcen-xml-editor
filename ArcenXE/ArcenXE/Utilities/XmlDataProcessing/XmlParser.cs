@@ -1,6 +1,6 @@
 ﻿using System.Xml;
 
-namespace ArcenXE.Utilities
+namespace ArcenXE.Utilities.XmlDataProcessing
 {
     public class XmlParser
     {
@@ -10,9 +10,7 @@ namespace ArcenXE.Utilities
 
             XmlNodeList childNodes = element.ChildNodes;
             if ( childNodes.Count > 0 )
-            {
                 foreach ( XmlNode node in childNodes )
-                {
                     switch ( node.NodeType )
                     {
                         case XmlNodeType.Element:
@@ -33,12 +31,9 @@ namespace ArcenXE.Utilities
                             MessageBox.Show( complaint );
                             return null;
                     }
-                }
-            }
 
             XmlAttributeCollection attributes = element.Attributes;
             if ( attributes.Count > 0 )
-            {
                 foreach ( XmlAttribute attribute in attributes )
                 {
                     EditedXmlAttribute att = new EditedXmlAttribute
@@ -46,12 +41,11 @@ namespace ArcenXE.Utilities
                         Name = attribute.Name,
                         Value = attribute.Value
                     };
-                    editedNode.Attributes.Add( att );
+                    editedNode.Attributes.TryAdd( att.Name, att );
 
                     if ( IsTopLevelNode && editedNode.NodeName == null && string.Equals( att.Name, "name", StringComparison.CurrentCultureIgnoreCase ) )
                         editedNode.NodeName = att;
                 }
-            }
             return editedNode;
         }
     }
@@ -60,7 +54,7 @@ namespace ArcenXE.Utilities
     public class EditedXmlNode : IEditedXmlNodeOrComment, IEditedXmlElement
     {
         public EditedXmlAttribute? NodeName = null; // if != null, then this is top node
-        public List<EditedXmlAttribute> Attributes = new List<EditedXmlAttribute>();
+        public Dictionary<string, EditedXmlAttribute> Attributes = new Dictionary<string, EditedXmlAttribute>();
         public List<IEditedXmlNodeOrComment> ChildNodes = new List<IEditedXmlNodeOrComment>();
 
         public bool IsComment => false;

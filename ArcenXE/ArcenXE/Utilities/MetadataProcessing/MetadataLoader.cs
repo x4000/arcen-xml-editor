@@ -2,7 +2,7 @@
 using System.IO;
 using ArcenXE.Utilities.MessagesToMainThread;
 
-namespace ArcenXE.Utilities
+namespace ArcenXE.Utilities.MetadataProcessing
 {
     #region FolderTable
     public class DataTable
@@ -23,13 +23,11 @@ namespace ArcenXE.Utilities
         {
             string[] sharedFiles = Directory.GetFiles( FolderRoot, "*.metadata" );
             if ( sharedFiles.Length != 1 )
-            {
                 //complain if 0, or more than 1
                 if ( sharedFiles.Length < 1 )
                     ArcenDebugging.LogSingleLine( "Missing shared metadata file in the root folder! Please add one!", Verbosity.DoNotShow );
-                else if ( sharedFiles.Length > 1 )              
+                else if ( sharedFiles.Length > 1 )
                     ArcenDebugging.LogSingleLine( "There's more than one shared metadata file in the root folder! Please remove the extra ones!", Verbosity.DoNotShow );
-            }
 
             string sharedMetaDataFile = sharedFiles[0];
 
@@ -47,11 +45,9 @@ namespace ArcenXE.Utilities
                 informMainListOfTables.DataTableNames.Add( dataTableNamePath );
 
                 if ( metaDataFiles.Length > 1 )
-                {
                     //complain about that, but continue
                     ArcenDebugging.LogSingleLine( $" There's more than one metadata file in the {dir} folder! Please remove the extra ones!" +
                         $" The program will continue the execution.", Verbosity.DoNotShow );
-                }
 
                 LoadMetadata( metaDataFiles[0], sharedMetaDataFile );
             }
@@ -61,7 +57,7 @@ namespace ArcenXE.Utilities
         public static void LoadMetadata( string FileName, string sharedMetaDataFile )
         {
             //not inside Task.Run to ensure it's actually incremented immediately and avoid subtle bugs
-            Interlocked.Increment( ref MetadataLoader.NumberOfMetaDatasStillLoading );
+            Interlocked.Increment( ref NumberOfMetaDatasStillLoading );
 
             Task.Run( () =>
             {
@@ -80,7 +76,7 @@ namespace ArcenXE.Utilities
                     ArcenDebugging.LogErrorWithStack( e );
                 }
 
-                Interlocked.Decrement( ref MetadataLoader.NumberOfMetaDatasStillLoading );
+                Interlocked.Decrement( ref NumberOfMetaDatasStillLoading );
             } );
         }
     }

@@ -1,4 +1,4 @@
-﻿namespace ArcenXE.Utilities
+﻿namespace ArcenXE.Universal
 {
     public class SuperBasicPool<T> where T : Control, new()
     {

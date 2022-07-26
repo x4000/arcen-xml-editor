@@ -1,22 +1,22 @@
 ﻿using System.Xml;
 
-namespace ArcenXE.Utilities
+namespace ArcenXE.Utilities.MetadataProcessing
 {
     public class MetadataDocument
     {
         public bool IsSingleRootTypeDocument { get; set; } = false;
         private bool isDataCopyIdentifierAlreadyRead = false;
-        public bool IsDataCopyIdentifierAlreadyRead 
-        { 
-            get => isDataCopyIdentifierAlreadyRead; 
+        public bool IsDataCopyIdentifierAlreadyRead
+        {
+            get => isDataCopyIdentifierAlreadyRead;
             set
             {
-            //    if ( isDataCopyIdentifierAlreadyRead )
-            //    {
-            //        ArcenDebugging.LogSingleLine( "Set a 2nd time\nOld stack: " + workingStackStrace + "\nNew stack: " + Environment.StackTrace +
-            //            "\nOld threadID: " + WorkingThreadID + "\nNew threadID: " + Thread.CurrentThread.ManagedThreadId, Verbosity.DoNotShow );
-            //        return;
-            //    }
+                //    if ( isDataCopyIdentifierAlreadyRead )
+                //    {
+                //        ArcenDebugging.LogSingleLine( "Set a 2nd time\nOld stack: " + workingStackStrace + "\nNew stack: " + Environment.StackTrace +
+                //            "\nOld threadID: " + WorkingThreadID + "\nNew threadID: " + Thread.CurrentThread.ManagedThreadId, Verbosity.DoNotShow );
+                //        return;
+                //    }
                 isDataCopyIdentifierAlreadyRead = value;
                 //workingStackStrace = Environment.StackTrace;
                 //WorkingThreadID = Thread.CurrentThread.ManagedThreadId;
@@ -27,7 +27,7 @@ namespace ArcenXE.Utilities
         //private long WorkingThreadID;
         public string Name { get; set; } = string.Empty;
 
-        private MetadataAttributeLayer? topLevelNode;
+        private MetadataNodeLayer? topLevelNode;
 
         public void ParseDocument( string Filename, string sharedMetaDataFile )
         {
@@ -45,7 +45,7 @@ namespace ArcenXE.Utilities
             }
             this.Name = Filename;
             XmlElement? mainRoot = mainDoc?.DocumentElement;
-            topLevelNode = new MetadataAttributeLayer( this );
+            topLevelNode = new MetadataNodeLayer( this );
 
             //Decision time!  Is this a "single root" type document?
             if ( mainRoot != null && mainRoot.HasAttribute( "is_for_single_root" ) )
