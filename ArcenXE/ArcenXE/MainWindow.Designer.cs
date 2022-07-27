@@ -33,7 +33,6 @@
             this.Button1 = new System.Windows.Forms.Button();
             this.MainTimer = new System.Windows.Forms.Timer(this.components);
             this.VisPanel = new System.Windows.Forms.Panel();
-            this.FileList = new System.Windows.Forms.TreeView();
             this.TopNodesList = new System.Windows.Forms.ListBox();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
@@ -57,6 +56,7 @@
             this.ErrorLogToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripDropDownButton3 = new System.Windows.Forms.ToolStripDropDownButton();
             this.LoadMeta = new System.Windows.Forms.Button();
+            this.FileList = new System.Windows.Forms.ListBox();
             this.toolStrip1.SuspendLayout();
             this.toolStrip2.SuspendLayout();
             this.SuspendLayout();
@@ -86,17 +86,8 @@
             this.VisPanel.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.VisPanel.Location = new System.Drawing.Point(402, 53);
             this.VisPanel.Name = "VisPanel";
-            this.VisPanel.Size = new System.Drawing.Size(1089, 644);
+            this.VisPanel.Size = new System.Drawing.Size(1089, 647);
             this.VisPanel.TabIndex = 2;
-            // 
-            // FileList
-            // 
-            this.FileList.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-            this.FileList.Location = new System.Drawing.Point(1, 78);
-            this.FileList.Name = "FileList";
-            this.FileList.Size = new System.Drawing.Size(194, 619);
-            this.FileList.TabIndex = 3;
             // 
             // TopNodesList
             // 
@@ -104,7 +95,7 @@
             | System.Windows.Forms.AnchorStyles.Left)));
             this.TopNodesList.FormattingEnabled = true;
             this.TopNodesList.ItemHeight = 15;
-            this.TopNodesList.Location = new System.Drawing.Point(202, 78);
+            this.TopNodesList.Location = new System.Drawing.Point(200, 81);
             this.TopNodesList.Name = "TopNodesList";
             this.TopNodesList.Size = new System.Drawing.Size(194, 619);
             this.TopNodesList.TabIndex = 5;
@@ -135,7 +126,7 @@
             // NewToolStripMenuItem
             // 
             this.NewToolStripMenuItem.Name = "NewToolStripMenuItem";
-            this.NewToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.NewToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
             this.NewToolStripMenuItem.Text = "New";
             // 
             // OpenToolStripMenuItem
@@ -144,7 +135,7 @@
             this.FileToolStripMenuItem,
             this.FolderToolStripMenuItem});
             this.OpenToolStripMenuItem.Name = "OpenToolStripMenuItem";
-            this.OpenToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.OpenToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
             this.OpenToolStripMenuItem.Text = "Open";
             // 
             // FileToolStripMenuItem
@@ -311,16 +302,26 @@
             this.LoadMeta.UseVisualStyleBackColor = true;
             this.LoadMeta.Click += new System.EventHandler(this.LoadMeta_Click);
             // 
+            // FileList
+            // 
+            this.FileList.FormattingEnabled = true;
+            this.FileList.ItemHeight = 15;
+            this.FileList.Location = new System.Drawing.Point(1, 81);
+            this.FileList.Name = "FileList";
+            this.FileList.Size = new System.Drawing.Size(193, 619);
+            this.FileList.TabIndex = 9;
+            this.FileList.SelectedIndexChanged += new System.EventHandler(this.FileList_SelectedIndexChanged);
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1491, 709);
+            this.Controls.Add(this.FileList);
             this.Controls.Add(this.LoadMeta);
             this.Controls.Add(this.toolStrip2);
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.TopNodesList);
-            this.Controls.Add(this.FileList);
             this.Controls.Add(this.VisPanel);
             this.Controls.Add(this.Button1);
             this.Name = "MainWindow";
@@ -340,7 +341,6 @@
         private Button Button1;
         private System.Windows.Forms.Timer MainTimer;
         public Panel VisPanel;
-        private TreeView FileList;
         public ListBox TopNodesList;
         private ToolStrip toolStrip1;
         private ToolStripDropDownButton toolStripDropDownButton1;
@@ -364,5 +364,6 @@
         private ToolStripDropDownButton toolStripDropDownButton3;
         private Button LoadMeta;
         private ToolStripButton ErrorLogToolStripButton;
+        private ListBox FileList;
     }
 }

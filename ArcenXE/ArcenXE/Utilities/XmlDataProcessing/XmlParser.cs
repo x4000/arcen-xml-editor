@@ -11,12 +11,16 @@ namespace ArcenXE.Utilities.XmlDataProcessing
             XmlNodeList childNodes = element.ChildNodes;
             if ( childNodes.Count > 0 )
                 foreach ( XmlNode node in childNodes )
+                {
+                    //ArcenDebugging.LogSingleLine( "Node: " + node.Name + " name=" + ((XmlElement)node).GetAttribute("name"), Verbosity.DoNotShow );
                     switch ( node.NodeType )
                     {
                         case XmlNodeType.Element:
                             EditedXmlNode? childResult = (EditedXmlNode?)ProcessXmlElement( (XmlElement)node, false ); //task.run on this? risk of losing the correct order of parts, so need a thread-safe structure
                             if ( childResult != null )
                                 editedNode.ChildNodes.Add( childResult );
+                            else
+                                ArcenDebugging.LogSingleLine( "ERROR: Processing of " + ((XmlElement)node).GetAttribute( "key" ) + " node failed.", Verbosity.DoNotShow );
                             break;
                         case XmlNodeType.Comment:
                             EditedXmlComment childComment = new EditedXmlComment
@@ -28,10 +32,9 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                         default:
                             string complaint = "Why do we have a " + node.NodeType + " directly under the element node?";
                             ArcenDebugging.LogSingleLine( complaint, Verbosity.DoNotShow );
-                            MessageBox.Show( complaint );
                             return null;
                     }
-
+                }
             XmlAttributeCollection attributes = element.Attributes;
             if ( attributes.Count > 0 )
                 foreach ( XmlAttribute attribute in attributes )
@@ -46,6 +49,10 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                     if ( IsTopLevelNode && editedNode.NodeName == null && string.Equals( att.Name, "name", StringComparison.CurrentCultureIgnoreCase ) )
                         editedNode.NodeName = att;
                 }
+            else
+            {
+                ArcenDebugging.LogSingleLine( "WARNING: attributes from node " + element.Name + " in file " + element.BaseURI + " are missing.", Verbosity.DoNotShow );
+            }
             return editedNode;
         }
     }

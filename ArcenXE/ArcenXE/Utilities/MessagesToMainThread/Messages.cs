@@ -5,21 +5,26 @@ namespace ArcenXE.Utilities.MessagesToMainThread
 {
     public class SendEditedXmlTopNodeToList : IBGMessageToMainThread
     {
-        public List<IEditedXmlNodeOrComment> Nodes = new List<IEditedXmlNodeOrComment>();
+        public readonly List<IEditedXmlNodeOrComment> Nodes = new List<IEditedXmlNodeOrComment>();
+        private readonly Dictionary<string, EditedXmlNode> mainDict = MainWindow.Instance.TopNodesVis;
 
         public void ProcessMessageOnMainThread()
         {
-            foreach ( EditedXmlNode node in Nodes )
+            if ( mainDict.Count > 0 )
+                mainDict.Clear();
+            for ( int i = 0; i < Nodes.Count; i++ )
             {
-                if ( node.NodeName != null )
-                    MainWindow.Instance.TopNodesList.Items.Add( node.NodeName.Value );
+                if ( Nodes[i] is EditedXmlNode node )
+                    if ( node.NodeName != null )
+                        mainDict.TryAdd( node.NodeName.Value, node );
             }
+            MainWindow.Instance.VisualizeTopNodesFromSelectedFile();
         }
     }
 
     public class SaveEditedXmlToList : IBGMessageToMainThread
     {
-        public List<IEditedXmlNodeOrComment> Nodes = new List<IEditedXmlNodeOrComment>();
+        public readonly List<IEditedXmlNodeOrComment> Nodes = new List<IEditedXmlNodeOrComment>();
         public void ProcessMessageOnMainThread() => MainWindow.Instance.CurrentXmlForVis.AddRange( this.Nodes );
     }
 
@@ -38,8 +43,23 @@ namespace ArcenXE.Utilities.MessagesToMainThread
         public readonly List<string> DataTableNames = new List<string>();
         public void ProcessMessageOnMainThread()
         {
-            MainWindow.Instance.DataTableNames.AddRange( this.DataTableNames );
+            foreach ( string tableName in DataTableNames )
+                MainWindow.Instance.DataTableNames.Add( tableName );
+        }
+    }
+
+    public class ListOfXmlPathsIsReady : IBGMessageToMainThread
+    {
+        public readonly List<string> XmlPathsList = new List<string>();
+        private readonly List<string> mainList = MainWindow.Instance.XmlPaths;
+        public void ProcessMessageOnMainThread()
+        {
+            if ( mainList.Count > 0 )
+                mainList.Clear();
+            foreach ( string path in XmlPathsList )
+                mainList.Add( path );
             MainWindow.Instance.FillFileList();
         }
     }
 }
+

@@ -18,19 +18,24 @@ namespace ArcenXE.Utilities.MetadataProcessing
         private readonly Dictionary<string, MetadataNodeLayer> SubNodes = new Dictionary<string, MetadataNodeLayer>();
         private readonly List<XmlNode> nodesConditional = new List<XmlNode>();
 
+        //for debugging
         private readonly List<string> dump1 = new List<string>();
         private readonly List<string> dump2 = new List<string>();
 
 
         public void ParseLayer( XmlElement? layerRoot )
         {
-            List<XmlNode> nodesAttribute = new List<XmlNode>();
-            List<XmlNode> nodesSubNode = new List<XmlNode>();
-
             if ( layerRoot != null )
             {
                 if ( layerRoot.HasAttribute( "name" ) )
                     this.Name = layerRoot.GetAttribute( "name" );
+                else if ( layerRoot.Name == "root" )
+                    this.Name = "root";
+                else
+                    ArcenDebugging.LogSingleLine( "INFO: Metadata file \"" + layerRoot.BaseURI + "\" has no \"name\" attribute. Please provide one.", Verbosity.DoNotShow );
+
+                List<XmlNode> nodesAttribute = new List<XmlNode>();
+                List<XmlNode> nodesSubNode = new List<XmlNode>();
 
                 XmlNodeList nodesForThisLayer = layerRoot.ChildNodes;
                 if ( nodesForThisLayer.Count > 0 )
@@ -51,38 +56,40 @@ namespace ArcenXE.Utilities.MetadataProcessing
                                 case "#comment": // do nothing, ignore it
                                     break;
                                 default:
-                                    ArcenDebugging.LogSingleLine( "Node " + node.Name + " is not recognized!", Verbosity.DoNotShow );
+                                    ArcenDebugging.LogSingleLine( "WARNING: Node " + node.Name + " is not recognized!", Verbosity.DoNotShow );
                                     break;
                             }
                         else
-                            ArcenDebugging.LogSingleLine( "There is no nodes in " + layerRoot.OwnerDocument.Name + " !", Verbosity.DoNotShow );
-
+                            ArcenDebugging.LogSingleLine( "ERROR: Null Node in the " + this.Name + " layer in this file" + layerRoot.BaseURI + " !", Verbosity.DoNotShow );
+                else
+                {
+                    ArcenDebugging.LogSingleLine( "ERROR: Metadata file \"" + layerRoot.BaseURI + "\" is missing nodes in the " + this.Name + " layer. Please verify the file.", Verbosity.DoNotShow );
+                    return;
+                }
                 //now process these:
-
-                //1: process outer conditionals 
-
-                //2: process attributes
+                //1: process attributes
                 foreach ( XmlNode attNode in nodesAttribute )
                 {
-                   
-                   MetadataAttributeParser.ProcessMetadataAttributes( (XmlElement)attNode, this.ParentDoc, this.dump2, out AttributeData_Base? result );
+
+                    MetadataAttributeParser.ProcessMetadataAttributes( (XmlElement)attNode, this.ParentDoc, out AttributeData_Base? result );
 
                     if ( result != null )
-                            AttributesData.TryAdd( result.Key, result );
+                        AttributesData.TryAdd( result.Key, result );
                     else
                         ArcenDebugging.LogSingleLine( "WARNING: AttributeData_Base returned from ProcessMetadataAttributes() is null!", Verbosity.DoNotShow );
                 }
 
-                //3: process subnodes
+                //2: process subnodes
                 foreach ( XmlNode node in nodesSubNode )
                 {
                     MetadataNodeLayer subNode = new MetadataNodeLayer( this.ParentDoc );
                     subNode.ParseLayer( (XmlElement)node );
                     this.SubNodes.Add( subNode.Name, subNode );
                 }
-
-                //4: process conditionals 
-
+            }
+            else
+            {
+                ArcenDebugging.LogSingleLine( "ERROR: layerRoot is null! No metadata will be processed for this file! " , Verbosity.DoNotShow );
             }
         }
 
@@ -93,19 +100,12 @@ namespace ArcenXE.Utilities.MetadataProcessing
                 BooleanLogicCheckerTree? result = BooleanLogicCheckerTreeParser.ProcessMetadataConditionalOuterShell( (XmlElement)node );
 
                 if ( result != null )
+                {
                     ConditionalsTree.TryAdd( result.Name, result );
+                    BooleanLogicCheckerTreeParser.ProcessMetadataConditionals( (XmlElement)node, result.RootGroup, AttributesData, true );
+                }
                 else
                     ArcenDebugging.LogSingleLine( "WARNING: BooleanLogicCheckerTree returned from ProcessMetadataConditionalOuterShell() is null!", Verbosity.DoNotShow );
-
-            }
-
-            foreach ( XmlElement node in nodesConditional )
-            {
-                string conditionalName = node.GetAttribute( "name" );
-                if ( ConditionalsTree.TryGetValue( conditionalName, out BooleanLogicCheckerTree? checkerTree ) )
-                    BooleanLogicCheckerTreeParser.ProcessMetadataConditionals( node, checkerTree.RootGroup, AttributesData, true );
-                else
-                    ArcenDebugging.LogSingleLine( "ERROR: BooleanLogicCheckerTree with name" + conditionalName + "is null! This should't happen at all!", Verbosity.DoNotShow );
             }
 
             foreach ( KeyValuePair<string, MetadataNodeLayer> layer in this.SubNodes )
@@ -114,7 +114,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
             }
         }
 
-        public void DumpLayerData()
+        public void DumpLayerData() // for debugging
         {
             string error = "Parent Doc calling: " + this.ParentDoc.Name + " Layer name: " + this.Name;
             error += "\nattributesData contents: ";
@@ -143,7 +143,6 @@ namespace ArcenXE.Utilities.MetadataProcessing
             {
                 layer.Value.DumpLayerData();
             }
-
         }
     }
 }

@@ -44,42 +44,60 @@ namespace ArcenXE.Utilities.MetadataProcessing
                 ArcenDebugging.LogErrorWithStack( e );
             }
             this.Name = Filename;
-            XmlElement? mainRoot = mainDoc?.DocumentElement;
-            topLevelNode = new MetadataNodeLayer( this );
 
             //Decision time!  Is this a "single root" type document?
-            if ( mainRoot != null && mainRoot.HasAttribute( "is_for_single_root" ) )
-                this.IsSingleRootTypeDocument = mainRoot.GetAttribute( "is_for_single_root" ).ToLowerInvariant() == "true";
-
-            if ( !this.IsSingleRootTypeDocument )
+            if ( mainDoc != null )
             {
-                // We also need to load the SharedMetaData.metadata file, since this is not a single-root (ExternalData type) document
-                XmlDocument sharedDoc = new XmlDocument()
+                XmlElement? mainRoot = mainDoc.DocumentElement;
+                if ( mainRoot != null )
                 {
-                    PreserveWhitespace = false
-                };
-                try
-                {
-                    sharedDoc.Load( sharedMetaDataFile );
-                }
-                catch ( Exception e )
-                {
-                    ArcenDebugging.LogErrorWithStack( e );
-                }
+                    topLevelNode = new MetadataNodeLayer( this );
+                    if ( mainRoot.HasAttribute( "is_for_single_root" ) )
+                        this.IsSingleRootTypeDocument = mainRoot.GetAttribute( "is_for_single_root" ).ToLowerInvariant() == "true";
 
-                XmlElement? sharedRoot = sharedDoc?.DocumentElement;
-                //parse the shared data document first, if not a single-root document
-                topLevelNode.ParseLayer( sharedRoot );
+                    if ( !this.IsSingleRootTypeDocument )
+                    {
+                        // We also need to load the SharedMetaData.metadata file, since this is not a single-root (ExternalData type) document
+                        XmlDocument sharedDoc = new XmlDocument()
+                        {
+                            PreserveWhitespace = false
+                        };
+                        try
+                        {
+                            sharedDoc.Load( sharedMetaDataFile );
+                        }
+                        catch ( Exception e )
+                        {
+                            ArcenDebugging.LogErrorWithStack( e );
+                        }
+
+                        XmlElement? sharedRoot = sharedDoc?.DocumentElement;
+                        //parse the shared data document first, if not a single-root document
+                        topLevelNode.ParseLayer( sharedRoot );
+                    }
+
+                    //then parse our real data.
+                    topLevelNode.ParseLayer( mainRoot );
+                    topLevelNode.ProcessConditionals();
+                    // for debugging
+                    //topLevelNode.DumpLayerData();
+
+                    //check for IsDataCopyIdentifierAlreadyRead still false; it has to be true by the end
+                    if ( !this.IsSingleRootTypeDocument )
+                        if ( !this.IsDataCopyIdentifierAlreadyRead )
+                            ArcenDebugging.LogSingleLine( "Parsing error: \"is_central_identifier\" attribute in" + this.Name + "is absent. Please provide one.", Verbosity.ShowAsWarning );
+                }
+                else
+                {
+                    ArcenDebugging.LogSingleLine( "ERROR: Filename " + Filename + " has an invalid root element.", Verbosity.DoNotShow );
+                    return;
+                }
             }
-
-            //then parse our real data.
-            topLevelNode.ParseLayer( mainRoot );
-            topLevelNode.ProcessConditionals();
-            //topLevelNode.DumpLayerData();
-            //check for IsDataCopyIdentifierAlreadyRead still false; it has to be true by the end
-            if ( !this.IsSingleRootTypeDocument )
-                if ( !this.IsDataCopyIdentifierAlreadyRead )
-                    ArcenDebugging.LogSingleLine( "Parsing error: \"is_central_identifier\" attribute in" + this.Name + "is absent. Please provide one.", Verbosity.ShowAsWarning );
+            else
+            {
+                ArcenDebugging.LogSingleLine( "ERROR: Filename " + Filename + " is invalid and can't be read.", Verbosity.DoNotShow );
+                return;
+            }
         }
     }
 }

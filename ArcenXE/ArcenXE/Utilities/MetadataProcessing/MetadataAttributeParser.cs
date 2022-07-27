@@ -5,7 +5,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
 {
     public static class MetadataAttributeParser
     {
-        public static void ProcessMetadataAttributes( XmlElement element, MetadataDocument doc, List<string> dump2, out AttributeData_Base? result )
+        public static void ProcessMetadataAttributes( XmlElement element, MetadataDocument doc, out AttributeData_Base? result )
         {
             XmlAttributeCollection originalAttributes = element.Attributes;
 
@@ -24,7 +24,12 @@ namespace ArcenXE.Utilities.MetadataProcessing
                     //dump2.Add( att.Name + "  " + attributes.Count );
                 }
 
-                attributes.TryGetValue( "type", out XmlAttributeToRead? mainAttributeType );
+                if ( !attributes.TryGetValue( "type", out XmlAttributeToRead? mainAttributeType ) )
+                {
+                    ArcenDebugging.LogSingleLine( "ERROR: Required attribute \"type\" in file " + doc.Name + " is missing. You must provide one.", Verbosity.DoNotShow );
+                    result = null;
+                    return;
+                }
 
                 if ( mainAttributeType != null )
                     switch ( mainAttributeType.Value )
@@ -50,7 +55,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
                                     attributeData_BoolInt.Default = int.Parse( attribute.Value );
                                 result = attributeData_BoolInt;
                             }
-                            
+
                             break;
                         #endregion
                         #region String
@@ -366,14 +371,19 @@ namespace ArcenXE.Utilities.MetadataProcessing
             {
                 if ( attributes.TryGetValue( "key", out XmlAttributeToRead? attribute ) )
                     attributeData.Key = attribute.Value;
+                else
+                    ArcenDebugging.LogSingleLine( "WARNING: Required attribute \"key\" in file " + doc.Name + " is missing.", Verbosity.DoNotShow );
             }
             {
                 if ( attributes.TryGetValue( "is_required", out XmlAttributeToRead? attribute ) )
                     attributeData.IsRequired = bool.Parse( attribute.Value );
+                else { }
             }
             {
                 if ( attributes.TryGetValue( "is_central_identifier", out XmlAttributeToRead? attribute ) )
+                {
                     if ( attribute.Value.ToLowerInvariant() == "true" )
+                    {
                         if ( !doc.IsDataCopyIdentifierAlreadyRead )
                         {
                             attributeData.IsCentralIdentifier = bool.Parse( attribute.Value );
@@ -381,51 +391,65 @@ namespace ArcenXE.Utilities.MetadataProcessing
                         }
                         else
                             ArcenDebugging.LogSingleLine( "There is more than 1 IsCentralIdentifier inside of metadata " + doc.Name, Verbosity.DoNotShow );
+                    }
+                }
+                else { } //do nothing, because this field is optional (there has to be 1 per file)
             }
             {
                 if ( attributes.TryGetValue( "is_partial_identifier", out XmlAttributeToRead? attribute ) )
                     attributeData.IsPartialIdentifier = bool.Parse( attribute.Value );
+                else { } //do nothing, because this field is optional
             }
             {
                 if ( attributes.TryGetValue( "is_data_copy_identifier", out XmlAttributeToRead? attribute ) )
                     attributeData.IsDataCopyIdentifier = bool.Parse( attribute.Value );
+                else { } //do nothing, because this field is optional
             }
             {
                 if ( attributes.TryGetValue( "causes_all_fields_to_be_optional_except_central_identifier", out XmlAttributeToRead? attribute ) )
                     attributeData.CausesAllFieldsToBeOptionalExceptCentralIdentifier = bool.Parse( attribute.Value );
+                else { } //do nothing, because this field is optional
             }
             {
                 if ( attributes.TryGetValue( "is_description", out XmlAttributeToRead? attribute ) )
                     attributeData.IsDescription = bool.Parse( attribute.Value );
+                else { } //do nothing, because this field is optional
             }
             {
                 if ( attributes.TryGetValue( "is_localized", out XmlAttributeToRead? attribute ) )
                     attributeData.IsLocalized = bool.Parse( attribute.Value );
+                else { } //do nothing, because this field is optional
             }
             {
                 if ( attributes.TryGetValue( "content_width_px", out XmlAttributeToRead? attribute ) )
                     attributeData.ContentWidthPx = int.Parse( attribute.Value );
+                else { } //do nothing, because this field is optional
             }
             {
                 if ( attributes.TryGetValue( "linebreak_before", out XmlAttributeToRead? attribute ) )
                     attributeData.LinebreakBefore = (LineBreakType)Enum.Parse( typeof( LineBreakType ), attribute.Value, true );
+                else { } //do nothing, because this field is optional
             }
             {
                 if ( attributes.TryGetValue( "linebreak_after", out XmlAttributeToRead? attribute ) )
                     attributeData.LinebreakAfter = (LineBreakType)Enum.Parse( typeof( LineBreakType ), attribute.Value, true );
+                else { } //do nothing, because this field is optional
             }
             {
                 if ( attributes.TryGetValue( "only_exists_if_conditional_passes", out XmlAttributeToRead? attribute ) )
                     attributeData.OnlyExistsIfConditionalPasses = attribute.Value;
+                else { } //do nothing, because this field is optional
             }
             {
                 if ( attributes.TryGetValue( "tooltip", out XmlAttributeToRead? attribute ) )
                     attributeData.Tooltip = attribute.Value;
+                else { } //do nothing, because this field is optional
             }
             {
                 if ( attributes.TryGetValue( "is_user_facing_name", out XmlAttributeToRead? attribute ) )
                     attributeData.Tooltip = attribute.Value;
-            }            
+                else { } //do nothing, because this field is optional
+            }
         }
 
         private class XmlAttributeToRead

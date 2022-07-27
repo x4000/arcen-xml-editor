@@ -38,7 +38,7 @@
                 if ( value == 0 || value == 1 )
                     def = value;
                 else
-                    throw new ArgumentOutOfRangeException( "Default Value in AttributeData_BoolInt", "Value must be 0 or 1" );
+                    ArcenDebugging.LogSingleLine( "Default Value in AttributeData_BoolInt - Value must be 0 or 1", Verbosity.DoNotShow );
             }
         }
     }

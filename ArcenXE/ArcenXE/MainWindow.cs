@@ -16,22 +16,24 @@ namespace ArcenXE
 #pragma warning restore CS8618
 #pragma warning restore CA2211
 
-        public readonly SuperBasicPool<Panel> PanelPool = new SuperBasicPool<Panel>();
-
         public readonly ConcurrentQueue<IBGMessageToMainThread> MessagesToFrontEnd = new ConcurrentQueue<IBGMessageToMainThread>();
 
         public readonly List<IEditedXmlNodeOrComment> CurrentXmlForVis = new List<IEditedXmlNodeOrComment>();
         public readonly XmlVisualizer xmlVisualizer = new XmlVisualizer();
 
         public readonly List<string> DataTableNames = new List<string>(); //todo: full path of data table and its name
-        public readonly Dictionary<string, DataTable> GlobalMetadata = new Dictionary<string, DataTable>();
-        public MetadataDocument? metadataDocument;
+        public readonly List<string> XmlPaths = new List<string>(); //full path to filename
+
+        public readonly Dictionary<string, DataTable> GlobalMetadata = new Dictionary<string, DataTable>();//todo
+        public MetadataDocument? metadataDocument;//todo
+
+        public readonly Dictionary<string, EditedXmlNode> TopNodesVis = new Dictionary<string, EditedXmlNode>();
 
         public IEditedXmlElement? XmlElementCurrentlyBeingEdited { get; } //todo: should be updated with the current node being selected/edited
 
         private int errorsWrittenToLog = 0;
-        public int ErrorsWrittenToLog 
-        { 
+        public int ErrorsWrittenToLog
+        {
             get => errorsWrittenToLog;
             set
             {
@@ -40,6 +42,7 @@ namespace ArcenXE
             }
         }
 
+        public int SelectedFileIndex { get; set; } = -1;
         public int SelectedTopNodeIndex { get; set; } = -1;
 
         public List<string> FilesNames { get; } = new List<string>(); //todo
@@ -76,30 +79,6 @@ namespace ArcenXE
             ErrorLogToolStripButton.Text = "Error List: " + ErrorsWrittenToLog;
         }
 
-        private void FolderToolStripMenuItem_Click( object sender, EventArgs e )
-        {
-            FolderOpener opener = new FolderOpener();
-            opener.OpenFolderWindow();
-        }
-
-        private void FileToolStripMenuItem_Click( object sender, EventArgs e )
-        {
-            XmlLoader opener = new XmlLoader();
-            opener.OpenFileWindow();
-        }
-
-        private void ExplorerToolStripMenuItem_Click( object sender, EventArgs e )
-        {
-            Explorer explorer = new Explorer();
-            explorer.Show();
-        }
-
-        private void Button1_Click( object sender, EventArgs e )
-        {
-            XmlLoader opener = new XmlLoader();
-            opener.OpenFileWindow();
-        }
-
         private void TopNodesList_SelectedIndexChanged( object sender, EventArgs e )
         {
             this.SelectedTopNodeIndex = TopNodesList.SelectedIndex;
@@ -109,18 +88,44 @@ namespace ArcenXE
             visualizer.Visualize( CurrentXmlForVis.ElementAt( TopNodesList.SelectedIndex ) );
         }
 
-        public void FillFileList() //todo
+        public void FillFileList() //todo colour coding based on origin (basegame (to not display), dlc, mod)
         {
-            TreeNode treeNode = new TreeNode
+            if ( this.FileList.Items.Count > 0 )
             {
-                Text = "Base Game"
-            };
-            this.FileList.TopNode = treeNode;
-            foreach ( string dataTable in this.DataTableNames )
+                this.FileList.Items.Clear();
+            }
+
+            foreach ( string path in this.XmlPaths )
             {
-                string[] dataTablePathSplit = dataTable.Split( "\\\\", StringSplitOptions.RemoveEmptyEntries );
-                string dataTableName = dataTablePathSplit[^1];
-                treeNode.Nodes.Add( dataTableName );
+                this.FileList.Items.Add( Path.GetFileNameWithoutExtension( path ) );
+            }
+        }
+
+        private void FileList_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            int currentlySelectedIndex = this.SelectedFileIndex;
+            this.SelectedFileIndex = FileList.SelectedIndex;
+            //ArcenDebugging.LogSingleLine( "FileList.SelectedIndex: " + FileList.SelectedIndex, Verbosity.DoNotShow );
+            if ( currentlySelectedIndex != this.SelectedFileIndex ) //todo: introduce lazy loading of all xml files
+            {
+                string selectedItem = XmlPaths[this.SelectedFileIndex];
+                XmlLoader.LoadXml( selectedItem );
+            }
+        }
+
+        public void VisualizeTopNodesFromSelectedFile()
+        {
+            if ( XmlLoader.NumberOfDatasStillLoading == 0 ) // extra safety control - not strictly necessary
+            {
+                if ( TopNodesList.Items.Count > 0 )
+                    TopNodesList.Items.Clear();
+                foreach ( KeyValuePair<string, EditedXmlNode> kv in this.TopNodesVis )
+                    TopNodesList.Items.Add( kv.Key );
+                if ( TopNodesList.Items.Count == 0 )
+                {
+                    string noNodes = "There are no nodes to display in this file!";
+                    TopNodesList.Items.Add( noNodes );
+                }
             }
         }
 
@@ -144,6 +149,28 @@ namespace ArcenXE
         {
             this.ErrorLogToolStripButton.Text = "Error List: " + this.ErrorsWrittenToLog;
             this.ErrorLogToolStripButton.ForeColor = Color.Red;
+        }
+
+        private void FolderToolStripMenuItem_Click( object sender, EventArgs e )
+        {
+            FolderOpener opener = new FolderOpener();
+            opener.OpenFolderWindow();
+        }
+
+        private void FileToolStripMenuItem_Click( object sender, EventArgs e )
+        {
+            FileOpeners.OpenFileDialog();
+        }
+
+        private void ExplorerToolStripMenuItem_Click( object sender, EventArgs e )
+        {
+            Explorer explorer = new Explorer();
+            explorer.Show();
+        }
+
+        private void Button1_Click( object sender, EventArgs e )
+        {
+            FileOpeners.OpenFileDialog();
         }
     }
 

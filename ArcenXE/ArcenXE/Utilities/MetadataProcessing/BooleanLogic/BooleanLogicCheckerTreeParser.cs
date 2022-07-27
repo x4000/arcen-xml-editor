@@ -11,6 +11,7 @@ namespace ArcenXE.Utilities.MetadataProcessing.BooleanLogic
             XmlNode? RootLogicalGroup = null;
 
             if ( element.ChildNodes.Count > 0 )
+            {
                 foreach ( XmlElement child in element.ChildNodes )
                     switch ( child.NodeType )
                     {
@@ -24,7 +25,12 @@ namespace ArcenXE.Utilities.MetadataProcessing.BooleanLogic
                         case XmlNodeType.Comment: //ignore it
                             break;
                     }
-
+            }
+            else
+            {
+                ArcenDebugging.LogSingleLine( "ERROR: The conditional node \"" + element.GetAttribute( "name" ) + "\" has no Logical Groups underneath.", Verbosity.DoNotShow );
+                return null;
+            }
             if ( RootLogicalGroup != null ) // setting up the outer structure of the conditional node without the actual types inside
             {
                 string rootName = RootLogicalGroup.Name.ToLowerInvariant();
@@ -57,6 +63,7 @@ namespace ArcenXE.Utilities.MetadataProcessing.BooleanLogic
             if ( firstRun ) // this has to be done only the first call, not in the recursive ones
             {
                 if ( element.ChildNodes.Count > 0 )
+                {
                     foreach ( XmlElement child in element.ChildNodes )
                         switch ( child.NodeType )
                         {
@@ -70,6 +77,12 @@ namespace ArcenXE.Utilities.MetadataProcessing.BooleanLogic
                             case XmlNodeType.Comment: //ignore it
                                 break;
                         }
+                }
+                else
+                {
+                    ArcenDebugging.LogSingleLine( "ERROR: The conditional node \"" + element.GetAttribute( "name" ) + "\" has no Logical Groups underneath.", Verbosity.DoNotShow );
+                    return;
+                }
             }
             else
                 RootLogicalGroup = element;
@@ -122,9 +135,7 @@ namespace ArcenXE.Utilities.MetadataProcessing.BooleanLogic
                                             if ( MainWindow.Instance.XmlElementCurrentlyBeingEdited is EditedXmlNode node )
                                             {
                                                 if ( node.Attributes.TryGetValue( attribute.Key, out EditedXmlAttribute? att ) )
-                                                {
                                                     return bool.Parse( att.Value );
-                                                }
                                                 else
                                                 {
                                                     ArcenDebugging.LogSingleLine( "ERROR: Failed to retrieve attribute with Key: " + attribute.Key
@@ -247,26 +258,20 @@ namespace ArcenXE.Utilities.MetadataProcessing.BooleanLogic
                                     #endregion
 
                                     default:
-                                        ArcenDebugging.LogSingleLine( "Unknown AttributeType: " + type.ToString(), Verbosity.ShowAsError );
+                                        ArcenDebugging.LogSingleLine( "Unknown AttributeType: " + type.ToString(), Verbosity.DoNotShow );
                                         break;
                                 }
                             }
                             else
                             {
-                                //ArcenDebugging.LogSingleLine( "ERROR: attribute with name " + metadataAttributeKey + " in " + element.GetAttribute( "name" ) + " is null! This should't happen at all!", Verbosity.DoNotShow );
-                                string error = "ERROR: attribute with name " + metadataAttributeKey + " in " + element.GetAttribute( "name" ) + " is null! This should't happen at all!";
-                                error += "\nattributesData contents: ";
-                                foreach ( KeyValuePair<string, AttributeData_Base> kv in attributesData )
-                                {
-                                    error += "\n" + kv.Key + "  " + (kv.Value != null);
-                                }
-                                ArcenDebugging.LogSingleLine( error, Verbosity.DoNotShow );
+                                ArcenDebugging.LogSingleLine( "ERROR: attribute with name " + metadataAttributeKey + " in " + element.GetAttribute( "name" ) 
+                                                              + " is null! This should't happen at all!", Verbosity.DoNotShow );
                                 return;
                             }
                         }
                         else
                         {
-                            ArcenDebugging.LogSingleLine( "ERROR: attribute inside one of the types in " + element.GetAttribute( "name" ) + " is null!", Verbosity.ShowAsError );
+                            ArcenDebugging.LogSingleLine( "ERROR: attribute inside one of the types in " + element.GetAttribute( "name" ) + " is null!", Verbosity.DoNotShow );
                             return;
                         }
                     }
@@ -287,7 +292,7 @@ namespace ArcenXE.Utilities.MetadataProcessing.BooleanLogic
                         else
                         {
                             ArcenDebugging.LogSingleLine( "Error in ProcessMetadataConditional(): unknown child type: " + child.Name +
-                                ".\nThis element will be ignored.", Verbosity.ShowAsError );
+                                ".\nThis element will be ignored.", Verbosity.DoNotShow );
                             return;
                         }
                     }

@@ -22,6 +22,10 @@ namespace ArcenXE
 
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
+            string pathToDebugLog =  Environment.CurrentDirectory.Replace( @"bin\Debug\net6.0-windows", @"logs\" ) + "XEDebugLog.txt";
+            string textToAppend = "\n\n" + DateTime.Now.ToString() + "\t\tPROGRAM START\n";
+            AppendTextToFile( pathToDebugLog, textToAppend, MAX_ERROR_FILE_SIZE );
+
             ApplicationConfiguration.Initialize();
             Application.Run( new MainWindow() );
         }
