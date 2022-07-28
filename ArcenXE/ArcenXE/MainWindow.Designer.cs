@@ -30,9 +30,12 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWindow));
-            this.Button1 = new System.Windows.Forms.Button();
             this.MainTimer = new System.Windows.Forms.Timer(this.components);
-            this.VisPanel = new System.Windows.Forms.Panel();
+            this.BigSplitContainer = new System.Windows.Forms.SplitContainer();
+            this.LeftSplitContainer = new System.Windows.Forms.SplitContainer();
+            this.FolderList = new System.Windows.Forms.ListBox();
+            this.FileList = new System.Windows.Forms.ListBox();
+            this.RightSplitContainer = new System.Windows.Forms.SplitContainer();
             this.TopNodesList = new System.Windows.Forms.ListBox();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
@@ -44,7 +47,7 @@
             this.ExplorerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip2 = new System.Windows.Forms.ToolStrip();
             this.newToolStripButton = new System.Windows.Forms.ToolStripButton();
-            this.openToolStripButton = new System.Windows.Forms.ToolStripButton();
+            this.OpenFolderToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.saveToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.printToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator = new System.Windows.Forms.ToolStripSeparator();
@@ -54,50 +57,119 @@
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.helpToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.ErrorLogToolStripButton = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.LoadMeta = new System.Windows.Forms.ToolStripButton();
             this.toolStripDropDownButton3 = new System.Windows.Forms.ToolStripDropDownButton();
-            this.LoadMeta = new System.Windows.Forms.Button();
-            this.FileList = new System.Windows.Forms.ListBox();
+            ((System.ComponentModel.ISupportInitialize)(this.BigSplitContainer)).BeginInit();
+            this.BigSplitContainer.Panel1.SuspendLayout();
+            this.BigSplitContainer.Panel2.SuspendLayout();
+            this.BigSplitContainer.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.LeftSplitContainer)).BeginInit();
+            this.LeftSplitContainer.Panel1.SuspendLayout();
+            this.LeftSplitContainer.Panel2.SuspendLayout();
+            this.LeftSplitContainer.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.RightSplitContainer)).BeginInit();
+            this.RightSplitContainer.Panel1.SuspendLayout();
+            this.RightSplitContainer.SuspendLayout();
             this.toolStrip1.SuspendLayout();
             this.toolStrip2.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // Button1
-            // 
-            this.Button1.Location = new System.Drawing.Point(1, 53);
-            this.Button1.Name = "Button1";
-            this.Button1.Size = new System.Drawing.Size(83, 22);
-            this.Button1.TabIndex = 0;
-            this.Button1.Text = "Load Test";
-            this.Button1.UseVisualStyleBackColor = true;
-            this.Button1.Click += new System.EventHandler(this.Button1_Click);
             // 
             // MainTimer
             // 
             this.MainTimer.Enabled = true;
             this.MainTimer.Tick += new System.EventHandler(this.MainTimer_Tick);
             // 
-            // VisPanel
+            // BigSplitContainer
             // 
-            this.VisPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.VisPanel.AutoScroll = true;
-            this.VisPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.VisPanel.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.VisPanel.Location = new System.Drawing.Point(402, 53);
-            this.VisPanel.Name = "VisPanel";
-            this.VisPanel.Size = new System.Drawing.Size(1089, 647);
-            this.VisPanel.TabIndex = 2;
+            this.BigSplitContainer.BackColor = System.Drawing.SystemColors.MenuHighlight;
+            this.BigSplitContainer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.BigSplitContainer.Location = new System.Drawing.Point(0, 50);
+            this.BigSplitContainer.Name = "BigSplitContainer";
+            // 
+            // BigSplitContainer.Panel1
+            // 
+            this.BigSplitContainer.Panel1.Controls.Add(this.LeftSplitContainer);
+            // 
+            // BigSplitContainer.Panel2
+            // 
+            this.BigSplitContainer.Panel2.Controls.Add(this.RightSplitContainer);
+            this.BigSplitContainer.Size = new System.Drawing.Size(1491, 659);
+            this.BigSplitContainer.SplitterDistance = 203;
+            this.BigSplitContainer.SplitterWidth = 2;
+            this.BigSplitContainer.TabIndex = 11;
+            // 
+            // LeftSplitContainer
+            // 
+            this.LeftSplitContainer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.LeftSplitContainer.Location = new System.Drawing.Point(0, 0);
+            this.LeftSplitContainer.Name = "LeftSplitContainer";
+            this.LeftSplitContainer.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // LeftSplitContainer.Panel1
+            // 
+            this.LeftSplitContainer.Panel1.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.LeftSplitContainer.Panel1.Controls.Add(this.FolderList);
+            // 
+            // LeftSplitContainer.Panel2
+            // 
+            this.LeftSplitContainer.Panel2.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.LeftSplitContainer.Panel2.Controls.Add(this.FileList);
+            this.LeftSplitContainer.Size = new System.Drawing.Size(203, 659);
+            this.LeftSplitContainer.SplitterDistance = 424;
+            this.LeftSplitContainer.SplitterWidth = 2;
+            this.LeftSplitContainer.TabIndex = 0;
+            // 
+            // FolderList
+            // 
+            this.FolderList.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.FolderList.FormattingEnabled = true;
+            this.FolderList.ItemHeight = 15;
+            this.FolderList.Location = new System.Drawing.Point(0, 0);
+            this.FolderList.Name = "FolderList";
+            this.FolderList.Size = new System.Drawing.Size(203, 424);
+            this.FolderList.TabIndex = 10;
+            this.FolderList.SelectedIndexChanged += new System.EventHandler(this.FolderList_SelectedIndexChanged);
+            // 
+            // FileList
+            // 
+            this.FileList.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.FileList.FormattingEnabled = true;
+            this.FileList.ItemHeight = 15;
+            this.FileList.Location = new System.Drawing.Point(0, 0);
+            this.FileList.Name = "FileList";
+            this.FileList.Size = new System.Drawing.Size(203, 233);
+            this.FileList.TabIndex = 9;
+            this.FileList.SelectedIndexChanged += new System.EventHandler(this.FileList_SelectedIndexChanged);
+            // 
+            // RightSplitContainer
+            // 
+            this.RightSplitContainer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.RightSplitContainer.Location = new System.Drawing.Point(0, 0);
+            this.RightSplitContainer.Name = "RightSplitContainer";
+            // 
+            // RightSplitContainer.Panel1
+            // 
+            this.RightSplitContainer.Panel1.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.RightSplitContainer.Panel1.Controls.Add(this.TopNodesList);
+            // 
+            // RightSplitContainer.Panel2
+            // 
+            this.RightSplitContainer.Panel2.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.RightSplitContainer.Size = new System.Drawing.Size(1286, 659);
+            this.RightSplitContainer.SplitterDistance = 207;
+            this.RightSplitContainer.SplitterWidth = 2;
+            this.RightSplitContainer.TabIndex = 0;
             // 
             // TopNodesList
             // 
-            this.TopNodesList.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
+            this.TopNodesList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.TopNodesList.FormattingEnabled = true;
+            this.TopNodesList.HorizontalScrollbar = true;
             this.TopNodesList.ItemHeight = 15;
-            this.TopNodesList.Location = new System.Drawing.Point(200, 81);
+            this.TopNodesList.Location = new System.Drawing.Point(0, 0);
             this.TopNodesList.Name = "TopNodesList";
-            this.TopNodesList.Size = new System.Drawing.Size(194, 619);
+            this.TopNodesList.Size = new System.Drawing.Size(207, 659);
             this.TopNodesList.TabIndex = 5;
             this.TopNodesList.SelectedIndexChanged += new System.EventHandler(this.TopNodesList_SelectedIndexChanged);
             // 
@@ -174,7 +246,7 @@
             // 
             this.toolStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.newToolStripButton,
-            this.openToolStripButton,
+            this.OpenFolderToolStripButton,
             this.saveToolStripButton,
             this.printToolStripButton,
             this.toolStripSeparator,
@@ -183,7 +255,9 @@
             this.pasteToolStripButton,
             this.toolStripSeparator1,
             this.helpToolStripButton,
-            this.ErrorLogToolStripButton});
+            this.ErrorLogToolStripButton,
+            this.toolStripSeparator2,
+            this.LoadMeta});
             this.toolStrip2.Location = new System.Drawing.Point(0, 25);
             this.toolStrip2.Name = "toolStrip2";
             this.toolStrip2.Size = new System.Drawing.Size(1491, 25);
@@ -199,14 +273,15 @@
             this.newToolStripButton.Size = new System.Drawing.Size(23, 22);
             this.newToolStripButton.Text = "&New";
             // 
-            // openToolStripButton
+            // OpenFolderToolStripButton
             // 
-            this.openToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.openToolStripButton.Image = ((System.Drawing.Image)(resources.GetObject("openToolStripButton.Image")));
-            this.openToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.openToolStripButton.Name = "openToolStripButton";
-            this.openToolStripButton.Size = new System.Drawing.Size(23, 22);
-            this.openToolStripButton.Text = "&Open";
+            this.OpenFolderToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.OpenFolderToolStripButton.Image = ((System.Drawing.Image)(resources.GetObject("OpenFolderToolStripButton.Image")));
+            this.OpenFolderToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.OpenFolderToolStripButton.Name = "OpenFolderToolStripButton";
+            this.OpenFolderToolStripButton.Size = new System.Drawing.Size(23, 22);
+            this.OpenFolderToolStripButton.Text = "&Open";
+            this.OpenFolderToolStripButton.Click += new System.EventHandler(this.OpenFolderToolStripButton_Click);
             // 
             // saveToolStripButton
             // 
@@ -283,6 +358,21 @@
             this.ErrorLogToolStripButton.Text = "Error List: ";
             this.ErrorLogToolStripButton.Click += new System.EventHandler(this.ErrorLogToolStripButton_Click);
             // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
+            // 
+            // LoadMeta
+            // 
+            this.LoadMeta.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.LoadMeta.Image = ((System.Drawing.Image)(resources.GetObject("LoadMeta.Image")));
+            this.LoadMeta.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.LoadMeta.Name = "LoadMeta";
+            this.LoadMeta.Size = new System.Drawing.Size(64, 22);
+            this.LoadMeta.Text = "LoadMeta";
+            this.LoadMeta.Click += new System.EventHandler(this.LoadMeta_Click);
+            // 
             // toolStripDropDownButton3
             // 
             this.toolStripDropDownButton3.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
@@ -292,41 +382,28 @@
             this.toolStripDropDownButton3.Size = new System.Drawing.Size(23, 23);
             this.toolStripDropDownButton3.Text = "toolStripDropDownButton3";
             // 
-            // LoadMeta
-            // 
-            this.LoadMeta.Location = new System.Drawing.Point(90, 53);
-            this.LoadMeta.Name = "LoadMeta";
-            this.LoadMeta.Size = new System.Drawing.Size(83, 22);
-            this.LoadMeta.TabIndex = 8;
-            this.LoadMeta.Text = "Load Meta";
-            this.LoadMeta.UseVisualStyleBackColor = true;
-            this.LoadMeta.Click += new System.EventHandler(this.LoadMeta_Click);
-            // 
-            // FileList
-            // 
-            this.FileList.FormattingEnabled = true;
-            this.FileList.ItemHeight = 15;
-            this.FileList.Location = new System.Drawing.Point(1, 81);
-            this.FileList.Name = "FileList";
-            this.FileList.Size = new System.Drawing.Size(193, 619);
-            this.FileList.TabIndex = 9;
-            this.FileList.SelectedIndexChanged += new System.EventHandler(this.FileList_SelectedIndexChanged);
-            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1491, 709);
-            this.Controls.Add(this.FileList);
-            this.Controls.Add(this.LoadMeta);
+            this.Controls.Add(this.BigSplitContainer);
             this.Controls.Add(this.toolStrip2);
             this.Controls.Add(this.toolStrip1);
-            this.Controls.Add(this.TopNodesList);
-            this.Controls.Add(this.VisPanel);
-            this.Controls.Add(this.Button1);
             this.Name = "MainWindow";
             this.Text = "Arcen XE";
             this.Load += new System.EventHandler(this.MainWindow_Load);
+            this.BigSplitContainer.Panel1.ResumeLayout(false);
+            this.BigSplitContainer.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.BigSplitContainer)).EndInit();
+            this.BigSplitContainer.ResumeLayout(false);
+            this.LeftSplitContainer.Panel1.ResumeLayout(false);
+            this.LeftSplitContainer.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.LeftSplitContainer)).EndInit();
+            this.LeftSplitContainer.ResumeLayout(false);
+            this.RightSplitContainer.Panel1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.RightSplitContainer)).EndInit();
+            this.RightSplitContainer.ResumeLayout(false);
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
             this.toolStrip2.ResumeLayout(false);
@@ -337,10 +414,7 @@
         }
 
         #endregion
-
-        private Button Button1;
         private System.Windows.Forms.Timer MainTimer;
-        public Panel VisPanel;
         public ListBox TopNodesList;
         private ToolStrip toolStrip1;
         private ToolStripDropDownButton toolStripDropDownButton1;
@@ -351,7 +425,7 @@
         private ToolStripMenuItem ExplorerToolStripMenuItem;
         private ToolStrip toolStrip2;
         private ToolStripButton newToolStripButton;
-        private ToolStripButton openToolStripButton;
+        private ToolStripButton OpenFolderToolStripButton;
         private ToolStripButton saveToolStripButton;
         private ToolStripButton printToolStripButton;
         private ToolStripSeparator toolStripSeparator;
@@ -362,8 +436,13 @@
         private ToolStripButton helpToolStripButton;
         private ToolStripMenuItem FileToolStripMenuItem;
         private ToolStripDropDownButton toolStripDropDownButton3;
-        private Button LoadMeta;
         private ToolStripButton ErrorLogToolStripButton;
         private ListBox FileList;
+        private ListBox FolderList;
+        private SplitContainer LeftSplitContainer;
+        public SplitContainer BigSplitContainer;
+        public SplitContainer RightSplitContainer;
+        private ToolStripSeparator toolStripSeparator2;
+        private ToolStripButton LoadMeta;
     }
 }

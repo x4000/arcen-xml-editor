@@ -46,7 +46,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                     };
                     editedNode.Attributes.TryAdd( att.Name, att );
 
-                    if ( IsTopLevelNode && editedNode.NodeName == null && string.Equals( att.Name, "name", StringComparison.CurrentCultureIgnoreCase ) )
+                    if ( IsTopLevelNode && editedNode.NodeName == null && string.Equals( att.Name, "name", StringComparison.InvariantCultureIgnoreCase) )
                         editedNode.NodeName = att;
                 }
             else

@@ -27,12 +27,12 @@ namespace ArcenXE.Utilities.XmlDataProcessing
         #region ReturnAllToPool
         public void ReturnAllToPool()
         {
-            Control.ControlCollection controls = MainWindow.Instance.VisPanel.Controls;
+            Control.ControlCollection controls = MainWindow.Instance.RightSplitContainer.Panel2.Controls;
 
             foreach ( Control control in controls )
                 if ( control is Label label )
                 {
-                    label.Font = MainWindow.Instance.VisPanel.Font; //set to default; to be moved in separate SetToDefaults() method
+                    label.Font = MainWindow.Instance.RightSplitContainer.Panel2.Font; //set to default; to be moved in separate SetToDefaults() method
                     labelPool.ReturnToPool( label );
                 }
                 else if ( control is TextBox textBox )
@@ -48,14 +48,14 @@ namespace ArcenXE.Utilities.XmlDataProcessing
         {
             IEditedXmlNodeOrComment item = editedXmlNodeOrComment;
             Caret.x = 0; // new item, reset caret to start line
-            Graphics graphics = MainWindow.Instance.VisPanel.CreateGraphics();
-            Control.ControlCollection controls = MainWindow.Instance.VisPanel.Controls;
+            Graphics graphics = MainWindow.Instance.RightSplitContainer.Panel2.CreateGraphics();
+            Control.ControlCollection controls = MainWindow.Instance.RightSplitContainer.Panel2.Controls;
 
             using ( graphics )
                 if ( item is EditedXmlComment comment )
                 {
                     TextBox textBox = this.textBoxPool.GetOrAdd();
-                    SizeF size = graphics.MeasureString( comment.Data, MainWindow.Instance.VisPanel.Font );
+                    SizeF size = graphics.MeasureString( comment.Data, MainWindow.Instance.RightSplitContainer.Panel2.Font );
 
                     textBox.Height = (int)Math.Ceiling( size.Height );
                     textBox.Width = (int)Math.Ceiling( size.Width );
@@ -99,7 +99,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                         {
                             Label label = this.labelPool.GetOrAdd();
                             Label labelV = this.labelPool.GetOrAdd();
-                            SizeF size = graphics.MeasureString( pair.Key, MainWindow.Instance.VisPanel.Font );
+                            SizeF size = graphics.MeasureString( pair.Key, MainWindow.Instance.RightSplitContainer.Panel2.Font );
 
                             label.Height = (int)Math.Ceiling( size.Height );
                             label.Width = (int)Math.Ceiling( size.Width );
@@ -111,7 +111,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
 
                             Caret.MoveHorz( label.Width + 2 );
 
-                            size = graphics.MeasureString( pair.Value.Value, MainWindow.Instance.VisPanel.Font );
+                            size = graphics.MeasureString( pair.Value.Value, MainWindow.Instance.RightSplitContainer.Panel2.Font );
 
                             labelV.Height = (int)Math.Ceiling( size.Height );
                             labelV.Width = (int)Math.Ceiling( size.Width );

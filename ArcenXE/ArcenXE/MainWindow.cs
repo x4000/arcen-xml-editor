@@ -21,7 +21,7 @@ namespace ArcenXE
         public readonly List<IEditedXmlNodeOrComment> CurrentXmlForVis = new List<IEditedXmlNodeOrComment>();
         public readonly XmlVisualizer xmlVisualizer = new XmlVisualizer();
 
-        public readonly List<string> DataTableNames = new List<string>(); //todo: full path of data table and its name
+        //useless? public readonly List<string> DataTableNames = new List<string>(); //todo: full path of data table and its name
         public readonly List<string> XmlPaths = new List<string>(); //full path to filename
 
         public readonly Dictionary<string, DataTable> GlobalMetadata = new Dictionary<string, DataTable>();//todo
@@ -42,12 +42,13 @@ namespace ArcenXE
             }
         }
 
+        public int SelectedFolderIndex { get; set; } = -1;
         public int SelectedFileIndex { get; set; } = -1;
         public int SelectedTopNodeIndex { get; set; } = -1;
 
-        public List<string> FilesNames { get; } = new List<string>(); //todo
+        public readonly List<string> FoldersPathsVis = new List<string>();
 
-        private readonly string path = Path.GetFullPath( Application.ExecutablePath );//todo
+        //private readonly string path = Path.GetFullPath( Application.ExecutablePath );//todo
 
         public MainWindow()
         {
@@ -79,26 +80,63 @@ namespace ArcenXE
             ErrorLogToolStripButton.Text = "Error List: " + ErrorsWrittenToLog;
         }
 
-        private void TopNodesList_SelectedIndexChanged( object sender, EventArgs e )
+        private void LoadMeta_Click( object sender, EventArgs e )
         {
-            this.SelectedTopNodeIndex = TopNodesList.SelectedIndex;
-            XmlVisualizer visualizer = new XmlVisualizer();
-            if ( this.SelectedTopNodeIndex != -1 )
-                visualizer.ReturnAllToPool();
-            visualizer.Visualize( CurrentXmlForVis.ElementAt( TopNodesList.SelectedIndex ) );
+            //MetadataLoader.LoadDataTables( @"C:\Users\Daniel\ArcenDev\Arcology5\GameData\Configuration" );
+        }
+
+        #region Folder
+        private void FolderToolStripMenuItem_Click( object sender, EventArgs e )
+        {
+            string? path = Openers.OpenFolderDialog();
+            if ( path != null )
+                Openers.LoadVisFolderList( path );
+        }
+
+        private void OpenFolderToolStripButton_Click( object sender, EventArgs e )
+        {
+            string? path = Openers.OpenFolderDialog();
+            if ( path != null )
+                Openers.LoadVisFolderList( path );
+        }
+
+        public void FillFolderList()
+        {
+            if ( FolderList.Items.Count > 0 )
+                FolderList.Items.Clear();
+            foreach ( string folderPath in FoldersPathsVis )
+                FolderList.Items.Add( Path.GetFileNameWithoutExtension( folderPath ) );
+        }
+
+        private void FolderList_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            int currentlySelectedIndex = this.SelectedFolderIndex;
+            this.SelectedFolderIndex = FolderList.SelectedIndex;
+            if ( currentlySelectedIndex != this.SelectedFolderIndex ) //todo: introduce lazy loading of all xml files
+            {
+                //if ( TopNodesList.Items.Count > 0 ) // clear TopNodesList when switching Folder. Where?
+                //    TopNodesList.Items.Clear();
+                string selectedItem = FoldersPathsVis[this.SelectedFolderIndex];
+                string? pathSharedMeta = ProgramPermanentSettings.FolderPathContainingSharedMetaData.Path;
+                if ( pathSharedMeta != null )
+                    MetadataLoader.LoadDataTables( selectedItem, pathSharedMeta );
+            }
+        }
+        #endregion
+
+        #region File
+        private void FileToolStripMenuItem_Click( object sender, EventArgs e )
+        {
+            Openers.OpenFileDialog();
         }
 
         public void FillFileList() //todo colour coding based on origin (basegame (to not display), dlc, mod)
         {
             if ( this.FileList.Items.Count > 0 )
-            {
-                this.FileList.Items.Clear();
-            }
+                this.FileList.Items.Clear();                
 
             foreach ( string path in this.XmlPaths )
-            {
                 this.FileList.Items.Add( Path.GetFileNameWithoutExtension( path ) );
-            }
         }
 
         private void FileList_SelectedIndexChanged( object sender, EventArgs e )
@@ -111,6 +149,18 @@ namespace ArcenXE
                 string selectedItem = XmlPaths[this.SelectedFileIndex];
                 XmlLoader.LoadXml( selectedItem );
             }
+        }
+        #endregion
+
+        #region TopNodes
+        private void TopNodesList_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            this.SelectedTopNodeIndex = TopNodesList.SelectedIndex;
+            XmlVisualizer visualizer = new XmlVisualizer();
+            if ( this.SelectedTopNodeIndex != -1 )
+                visualizer.ReturnAllToPool();
+            if ( CurrentXmlForVis.Count > 0 && TopNodesList.Items[0].ToString() != "There are no nodes to display in this file!" )
+                visualizer.Visualize( CurrentXmlForVis.ElementAt( TopNodesList.SelectedIndex ) );
         }
 
         public void VisualizeTopNodesFromSelectedFile()
@@ -128,12 +178,9 @@ namespace ArcenXE
                 }
             }
         }
+        #endregion
 
-        private void LoadMeta_Click( object sender, EventArgs e )
-        {
-            MetadataLoader.LoadAllDataTables( @"C:\Users\Daniel\ArcenDev\Arcology5\GameData\Configuration" );
-        }
-
+        #region ErrorButton
         private void ErrorLogToolStripButton_Click( object sender, EventArgs e )
         {
             ProcessStartInfo debugLogStartInfo = new ProcessStartInfo
@@ -150,18 +197,7 @@ namespace ArcenXE
             this.ErrorLogToolStripButton.Text = "Error List: " + this.ErrorsWrittenToLog;
             this.ErrorLogToolStripButton.ForeColor = Color.Red;
         }
-
-        private void FolderToolStripMenuItem_Click( object sender, EventArgs e )
-        {
-            FolderOpener opener = new FolderOpener();
-            opener.OpenFolderWindow();
-        }
-
-        private void FileToolStripMenuItem_Click( object sender, EventArgs e )
-        {
-            FileOpeners.OpenFileDialog();
-        }
-
+        #endregion
         private void ExplorerToolStripMenuItem_Click( object sender, EventArgs e )
         {
             Explorer explorer = new Explorer();
@@ -170,8 +206,7 @@ namespace ArcenXE
 
         private void Button1_Click( object sender, EventArgs e )
         {
-            FileOpeners.OpenFileDialog();
+            Openers.OpenFileDialog();
         }
     }
-
 }

@@ -13,7 +13,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
             //parse xml document into complex data structure (with other bg threads)
             Task.Run( () =>
             {
-                XmlDocument? doc = FileOpeners.GenericXmlFileLoader( fileName );
+                XmlDocument? doc = Openers.GenericXmlFileLoader( fileName );
                 SaveEditedXmlToList messageSaveXml = new SaveEditedXmlToList();
                 SendEditedXmlTopNodeToList messageSendXmlTopNode = new SendEditedXmlTopNodeToList();
                 XmlParser parser = new XmlParser();
