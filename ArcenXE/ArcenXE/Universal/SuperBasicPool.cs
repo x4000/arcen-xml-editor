@@ -1,10 +1,12 @@
-﻿namespace ArcenXE.Universal
+﻿using ArcenXE.Utilities;
+
+namespace ArcenXE.Universal
 {
     public class SuperBasicPool<T> where T : Control, new()
     {
         private readonly List<T> innerList = new List<T>();
 
-        public T GetOrAdd()
+        public T GetOrAdd( Action<T>? creationAction )
         {
             if ( innerList.Count > 0 )
             {
@@ -15,6 +17,9 @@
             else
             {
                 T item = new T();
+                item.Tag = new PooledControlTagInfo( item, () => { this.ReturnToPool( item ); } );
+                if ( creationAction != null )
+                    creationAction( item );
                 return item;
             }
         }

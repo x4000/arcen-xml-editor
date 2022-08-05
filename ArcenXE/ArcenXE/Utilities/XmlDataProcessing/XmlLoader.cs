@@ -1,5 +1,6 @@
 ﻿using System.Xml;
 using ArcenXE.Utilities.MessagesToMainThread;
+using ArcenXE.Utilities.MetadataProcessing;
 
 namespace ArcenXE.Utilities.XmlDataProcessing
 {
@@ -7,16 +8,16 @@ namespace ArcenXE.Utilities.XmlDataProcessing
     {
         private static int numberOfDatasStillLoading = 0;
         public static int NumberOfDatasStillLoading { get; }
-        public static void LoadXml( string fileName )
+        public static void LoadXml( string fileName, MetadataDocument metaDoc )
         {
             Interlocked.Increment( ref numberOfDatasStillLoading );
             //parse xml document into complex data structure (with other bg threads)
             Task.Run( () =>
             {
-                XmlDocument? doc = Openers.GenericXmlFileLoader( fileName );
-                SaveEditedXmlToList messageSaveXml = new SaveEditedXmlToList();
-                SendEditedXmlTopNodeToList messageSendXmlTopNode = new SendEditedXmlTopNodeToList();
+                CopyEditedXmlMessage messageSaveXml = new CopyEditedXmlMessage();
+                CopyEditedXmlTopNodesAndFillVisMessage messageSendXmlTopNode = new CopyEditedXmlTopNodesAndFillVisMessage();
                 XmlParser parser = new XmlParser();
+                XmlDocument? doc = Openers.GenericXmlFileLoader( fileName );
                 XmlElement? root = doc?.DocumentElement;
                 if ( root != null )
                 {
@@ -34,7 +35,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                             {
                                 case XmlNodeType.Element:
                                     //task.run on this? risk of losing the correct order of parts, so need a thread-safe structure
-                                    IEditedXmlNodeOrComment? result = parser.ProcessXmlElement( (XmlElement)node, true );
+                                    IEditedXmlNodeOrComment? result = parser.ProcessXmlElement( (XmlElement)node, metaDoc, true );
                                     if ( result != null )
                                         messageSendXmlTopNode.Nodes.Add( result );
                                     break;
@@ -52,7 +53,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                         }
                     else //no children, so root is primary
                     {
-                        IEditedXmlNodeOrComment? result = parser.ProcessXmlElement( root, false );
+                        IEditedXmlNodeOrComment? result = parser.ProcessXmlElement( root, metaDoc, false );
                         if ( result != null )
                             messageSendXmlTopNode.Nodes.Add( result );
                     }

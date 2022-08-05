@@ -25,77 +25,72 @@ namespace ArcenXE.Utilities.MetadataProcessing
         }
         //private string workingStackStrace = string.Empty;
         //private long WorkingThreadID;
-        public string Name { get; set; } = string.Empty;
+        public string MetadataFolder { get; set; } = string.Empty;
+        public string MetadataName { get; set; } = string.Empty;
 
-        private MetadataNodeLayer? topLevelNode;
 
-        public void ParseDocument( string Filename, string sharedMetaDataFile )
+        public MetadataNodeLayer? TopLevelNode { get; private set; } = null;
+
+        public MetaAttribute_Base? CentralID { get; set; } = null;
+        public MetaAttribute_Base? PartialId { get; set; } = null;
+        public MetaAttribute_Base? DataCopyId { get; set; } = null;
+        public MetaAttribute_Base? Description { get; set; } = null;
+        public MetaAttribute_Base? UserFacingName { get; set; } = null;
+
+        public void ParseDocument( string filename, string sharedMetaDataFile )
         {
-            XmlDocument mainDoc = new XmlDocument()
-            {
-                PreserveWhitespace = false
-            };
-            try
-            {
-                mainDoc.Load( Filename );
-            }
-            catch ( Exception e )
-            {
-                ArcenDebugging.LogErrorWithStack( e );
-            }
-            this.Name = Filename;
-
+            XmlDocument? mainDoc = Openers.GenericXmlFileLoader( filename );
             //Decision time!  Is this a "single root" type document?
             if ( mainDoc != null )
             {
+                string? tempString = Path.GetFileNameWithoutExtension( Path.GetDirectoryName( filename ) );
+                if ( tempString != null )
+                    this.MetadataFolder = tempString;
+                this.MetadataName = Path.GetFileNameWithoutExtension( filename );
                 XmlElement? mainRoot = mainDoc.DocumentElement;
                 if ( mainRoot != null )
                 {
-                    topLevelNode = new MetadataNodeLayer( this );
+                    TopLevelNode = new MetadataNodeLayer( this );
                     if ( mainRoot.HasAttribute( "is_for_single_root" ) )
                         this.IsSingleRootTypeDocument = mainRoot.GetAttribute( "is_for_single_root" ).ToLowerInvariant() == "true";
 
                     if ( !this.IsSingleRootTypeDocument )
                     {
                         // We also need to load the SharedMetaData.metadata file, since this is not a single-root (ExternalData type) document
-                        XmlDocument sharedDoc = new XmlDocument()
+                        XmlDocument? sharedDoc = Openers.GenericXmlFileLoader( sharedMetaDataFile );
+                        if ( sharedDoc != null )
                         {
-                            PreserveWhitespace = false
-                        };
-                        try
-                        {
-                            sharedDoc.Load( sharedMetaDataFile );
+                            XmlElement? sharedRoot = sharedDoc.DocumentElement;
+                            //parse the shared data document first, if not a single-root document
+                            if ( sharedRoot != null )
+                                TopLevelNode.ParseLayer( sharedRoot );
+                            else
+                                ArcenDebugging.LogSingleLine( "ERROR: SharedMetadata - Filename " + filename + " has an invalid root element.", Verbosity.DoNotShow );
                         }
-                        catch ( Exception e )
-                        {
-                            ArcenDebugging.LogErrorWithStack( e );
-                        }
-
-                        XmlElement? sharedRoot = sharedDoc?.DocumentElement;
-                        //parse the shared data document first, if not a single-root document
-                        topLevelNode.ParseLayer( sharedRoot );
+                        else
+                            ArcenDebugging.LogSingleLine( "ERROR: SharedMetadata - Filename " + filename + " is invalid and can't be read.", Verbosity.DoNotShow );
                     }
 
                     //then parse our real data.
-                    topLevelNode.ParseLayer( mainRoot );
-                    topLevelNode.ProcessConditionals();
+                    TopLevelNode.ParseLayer( mainRoot );
+                    TopLevelNode.ProcessConditionals();
                     // for debugging
                     //topLevelNode.DumpLayerData();
 
                     //check for IsDataCopyIdentifierAlreadyRead still false; it has to be true by the end
                     if ( !this.IsSingleRootTypeDocument )
                         if ( !this.IsDataCopyIdentifierAlreadyRead )
-                            ArcenDebugging.LogSingleLine( "Parsing error: \"is_central_identifier\" attribute in" + this.Name + "is absent. Please provide one.", Verbosity.ShowAsWarning );
+                            ArcenDebugging.LogSingleLine( "Parsing error: \"is_central_identifier\" attribute in" + this.MetadataName + "is absent. Please provide one.", Verbosity.ShowAsWarning );
                 }
                 else
                 {
-                    ArcenDebugging.LogSingleLine( "ERROR: Filename " + Filename + " has an invalid root element.", Verbosity.DoNotShow );
+                    ArcenDebugging.LogSingleLine( "ERROR: Filename " + filename + " has an invalid root element.", Verbosity.DoNotShow );
                     return;
                 }
             }
             else
             {
-                ArcenDebugging.LogSingleLine( "ERROR: Filename " + Filename + " is invalid and can't be read.", Verbosity.DoNotShow );
+                ArcenDebugging.LogSingleLine( "ERROR: Filename " + filename + " is invalid and can't be read.", Verbosity.DoNotShow );
                 return;
             }
         }

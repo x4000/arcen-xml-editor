@@ -57,7 +57,7 @@ namespace ArcenXE.Utilities.MetadataProcessing.BooleanLogic
             }
         }
 
-        public static void ProcessMetadataConditionals( XmlElement element, BooleanLogicCheckerTree.LogicGroup logicGroup, Dictionary<string, AttributeData_Base> attributesData, bool firstRun = false )
+        public static void ProcessMetadataConditionals( XmlElement element, BooleanLogicCheckerTree.LogicGroup logicGroup, Dictionary<string, MetaAttribute_Base> attributesData, bool firstRun = false )
         {
             XmlNode? RootLogicalGroup = null;
             if ( firstRun ) // this has to be done only the first call, not in the recursive ones
@@ -104,7 +104,7 @@ namespace ArcenXE.Utilities.MetadataProcessing.BooleanLogic
                         string? metadataAttributeKey = attributes.GetNamedItem( "attribute" )?.Value?.ToLowerInvariant();
                         if ( metadataAttributeKey != null )
                         {
-                            attributesData.TryGetValue( metadataAttributeKey, out AttributeData_Base? attribute );
+                            attributesData.TryGetValue( metadataAttributeKey, out MetaAttribute_Base? attribute );
                             if ( attribute != null )
                             {
                                 AttributeType type = attribute.Type;

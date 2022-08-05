@@ -1,11 +1,12 @@
 ﻿using System.Xml;
 using ArcenXE.Universal;
+using ArcenXE.Utilities.XmlDataProcessing;
 
 namespace ArcenXE.Utilities.MetadataProcessing
 {
     public static class MetadataAttributeParser
     {
-        public static void ProcessMetadataAttributes( XmlElement element, MetadataDocument doc, out AttributeData_Base? result )
+        public static void ProcessMetadataAttributes( XmlElement element, MetadataDocument doc, out MetaAttribute_Base? result )
         {
             XmlAttributeCollection originalAttributes = element.Attributes;
 
@@ -18,7 +19,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
                     XmlAttributeToRead xmlAttributeToRead = new XmlAttributeToRead
                     {
                         Name = att.Name.ToLowerInvariant(),
-                        Value = att.Value.ToLowerInvariant()
+                        Value = att.Value
                     };
                     attributes[xmlAttributeToRead.Name] = xmlAttributeToRead;
                     //dump2.Add( att.Name + "  " + attributes.Count );
@@ -26,7 +27,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
 
                 if ( !attributes.TryGetValue( "type", out XmlAttributeToRead? mainAttributeType ) )
                 {
-                    ArcenDebugging.LogSingleLine( "ERROR: Required attribute \"type\" in file " + doc.Name + " is missing. You must provide one.", Verbosity.DoNotShow );
+                    ArcenDebugging.LogSingleLine( "ERROR: Required attribute \"type\" in file " + doc.MetadataName + " is missing. You must provide one.", Verbosity.DoNotShow );
                     result = null;
                     return;
                 }
@@ -37,20 +38,19 @@ namespace ArcenXE.Utilities.MetadataProcessing
                         #region Bool
                         case "bool":
                             {
-                                AttributeData_Bool attributeData_Bool = new AttributeData_Bool();
-                                SpiffyBaseAttributesReader( attributeData_Bool, attributes, doc );
+                                MetaAttribute_Bool attributeData_Bool = new MetaAttribute_Bool();
+                                CommonAttributeMetaDataReader( attributeData_Bool, attributes, doc );
                                 if ( attributes.TryGetValue( "default", out XmlAttributeToRead? attribute ) )
                                     attributeData_Bool.Default = bool.Parse( attribute.Value );
                                 result = attributeData_Bool;
-
                             }
                             break;
                         #endregion
                         #region BoolInt
                         case "int-bool":
                             {
-                                AttributeData_BoolInt attributeData_BoolInt = new AttributeData_BoolInt();
-                                SpiffyBaseAttributesReader( attributeData_BoolInt, attributes, doc );
+                                MetaAttribute_BoolInt attributeData_BoolInt = new MetaAttribute_BoolInt();
+                                CommonAttributeMetaDataReader( attributeData_BoolInt, attributes, doc );
                                 if ( attributes.TryGetValue( "default", out XmlAttributeToRead? attribute ) )
                                     attributeData_BoolInt.Default = int.Parse( attribute.Value );
                                 result = attributeData_BoolInt;
@@ -60,8 +60,8 @@ namespace ArcenXE.Utilities.MetadataProcessing
                         #endregion
                         #region String
                         case "string":
-                            AttributeData_String attributeData_String = new AttributeData_String();
-                            SpiffyBaseAttributesReader( attributeData_String, attributes, doc );
+                            MetaAttribute_String attributeData_String = new MetaAttribute_String();
+                            CommonAttributeMetaDataReader( attributeData_String, attributes, doc );
                             {
                                 if ( attributes.TryGetValue( "default", out XmlAttributeToRead? attribute ) )
                                     attributeData_String.Default = attribute.Value;
@@ -80,8 +80,8 @@ namespace ArcenXE.Utilities.MetadataProcessing
                         #endregion
                         #region StringMultiLine
                         case "string-multiline":
-                            AttributeData_StringMultiline attributeData_StringMultiline = new AttributeData_StringMultiline();
-                            SpiffyBaseAttributesReader( attributeData_StringMultiline, attributes, doc );
+                            MetaAttribute_StringMultiline attributeData_StringMultiline = new MetaAttribute_StringMultiline();
+                            CommonAttributeMetaDataReader( attributeData_StringMultiline, attributes, doc );
                             {
                                 if ( attributes.TryGetValue( "default", out XmlAttributeToRead? attribute ) )
                                     attributeData_StringMultiline.Default = attribute.Value;
@@ -104,8 +104,8 @@ namespace ArcenXE.Utilities.MetadataProcessing
                         #endregion
                         #region ArbitraryString
                         case "string-dropdown":
-                            AttributeData_ArbitraryString attributeData_ArbitraryString = new AttributeData_ArbitraryString();
-                            SpiffyBaseAttributesReader( attributeData_ArbitraryString, attributes, doc );
+                            MetaAttribute_ArbitraryString attributeData_ArbitraryString = new MetaAttribute_ArbitraryString();
+                            CommonAttributeMetaDataReader( attributeData_ArbitraryString, attributes, doc );
                             {
                                 if ( attributes.TryGetValue( "default", out XmlAttributeToRead? attribute ) )
                                     attributeData_ArbitraryString.Default = attribute.Value;
@@ -115,7 +115,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
                                 foreach ( XmlNode subNode in subNodes )
                                     if ( subNode.NodeType == XmlNodeType.Element )
                                         if ( subNode.Name.ToLowerInvariant() == "option" )
-                                            attributeData_ArbitraryString.Strings.Add( subNode.InnerText );
+                                            attributeData_ArbitraryString.Options.Add( subNode.InnerText );
                                         else
                                             ArcenDebugging.LogSingleLine( "Why do we have a " + subNode.Name + " as subNode?", Verbosity.DoNotShow );
                                     else if ( subNode.NodeType != XmlNodeType.Comment ) // ignore comments
@@ -125,8 +125,8 @@ namespace ArcenXE.Utilities.MetadataProcessing
                         #endregion
                         #region Int
                         case "int-textbox":
-                            AttributeData_Int attributeData_Int = new AttributeData_Int();
-                            SpiffyBaseAttributesReader( attributeData_Int, attributes, doc );
+                            MetaAttribute_Int attributeData_Int = new MetaAttribute_Int();
+                            CommonAttributeMetaDataReader( attributeData_Int, attributes, doc );
                             {
                                 if ( attributes.TryGetValue( "default", out XmlAttributeToRead? attribute ) )
                                     attributeData_Int.Default = int.Parse( attribute.Value );
@@ -148,8 +148,8 @@ namespace ArcenXE.Utilities.MetadataProcessing
                         #endregion
                         #region Float
                         case "float-textbox":
-                            AttributeData_Float attributeData_Float = new AttributeData_Float();
-                            SpiffyBaseAttributesReader( attributeData_Float, attributes, doc );
+                            MetaAttribute_Float attributeData_Float = new MetaAttribute_Float();
+                            CommonAttributeMetaDataReader( attributeData_Float, attributes, doc );
                             {
                                 if ( attributes.TryGetValue( "default", out XmlAttributeToRead? attribute ) )
                                     if ( FloatExtensions.TryParsePrecise( attribute.Value, out float temp ) )
@@ -178,8 +178,8 @@ namespace ArcenXE.Utilities.MetadataProcessing
                         #endregion
                         #region ArbitraryNode
                         case "node-dropdown":
-                            AttributeData_ArbitraryNode attributeData_ArbitraryNode = new AttributeData_ArbitraryNode();
-                            SpiffyBaseAttributesReader( attributeData_ArbitraryNode, attributes, doc );
+                            MetaAttribute_ArbitraryNode attributeData_ArbitraryNode = new MetaAttribute_ArbitraryNode();
+                            CommonAttributeMetaDataReader( attributeData_ArbitraryNode, attributes, doc );
                             {
                                 if ( attributes.TryGetValue( "default", out XmlAttributeToRead? attribute ) )
                                     attributeData_ArbitraryNode.Default.Name = attribute.Value;
@@ -193,35 +193,42 @@ namespace ArcenXE.Utilities.MetadataProcessing
                         #endregion
                         #region NodeList
                         case "node-list":
-                            AttributeData_NodeList attributeData_NodeList = new AttributeData_NodeList();
-                            SpiffyBaseAttributesReader( attributeData_NodeList, attributes, doc );
+                            MetaAttribute_NodeList attributeData_NodeList = new MetaAttribute_NodeList();
+                            CommonAttributeMetaDataReader( attributeData_NodeList, attributes, doc );
                             {
                                 if ( attributes.TryGetValue( "default", out XmlAttributeToRead? attribute ) )
-                                    attributeData_NodeList.Default.Name = attribute.Value;
+                                {
+                                    string[] defaults = attribute.Value.Split( ',' );
+                                    foreach ( string s in defaults )
+                                    {
+                                        ReferenceXmlNode node = new ReferenceXmlNode();
+                                        node.Name = s;
+                                        attributeData_NodeList.Defaults.Add( node );
+                                    }
+                                }
                             }
                             {
                                 if ( attributes.TryGetValue( "node_source", out XmlAttributeToRead? attribute ) )
                                     attributeData_NodeList.NodeSource = attribute.Value;
                             }
-                            //todo
                             result = attributeData_NodeList;
                             break;
                         #endregion
                         #region FolderList
                         case "folder-list":
-                            AttributeData_FolderList attributeData_FolderList = new AttributeData_FolderList();
-                            SpiffyBaseAttributesReader( attributeData_FolderList, attributes, doc );
+                            MetaAttribute_FolderList attributeData_FolderList = new MetaAttribute_FolderList();
+                            CommonAttributeMetaDataReader( attributeData_FolderList, attributes, doc );
                             {
                                 if ( attributes.TryGetValue( "folder_source", out XmlAttributeToRead? attribute ) )
-                                    attributeData_FolderList.FoldeSource = attribute.Value;
+                                    attributeData_FolderList.FolderSource = attribute.Value;
                             }
                             result = attributeData_FolderList;
                             break;
                         #endregion
                         #region Point
-                        case "point-textbox":
-                            AttributeData_Point attributeData_Point = new AttributeData_Point();
-                            SpiffyBaseAttributesReader( attributeData_Point, attributes, doc );
+                        case "point -textbox":
+                            MetaAttribute_Point attributeData_Point = new MetaAttribute_Point();
+                            CommonAttributeMetaDataReader( attributeData_Point, attributes, doc );
                             {
                                 if ( attributes.TryGetValue( "default", out XmlAttributeToRead? attribute ) )
                                 {
@@ -251,8 +258,8 @@ namespace ArcenXE.Utilities.MetadataProcessing
                         #endregion
                         #region Vector2
                         case "vector2-textbox":
-                            AttributeData_Vector2 attributeData_Vector2 = new AttributeData_Vector2();
-                            SpiffyBaseAttributesReader( attributeData_Vector2, attributes, doc );
+                            MetaAttribute_Vector2 attributeData_Vector2 = new MetaAttribute_Vector2();
+                            CommonAttributeMetaDataReader( attributeData_Vector2, attributes, doc );
                             {
                                 if ( attributes.TryGetValue( "default", out XmlAttributeToRead? attribute ) )
                                 {
@@ -291,8 +298,8 @@ namespace ArcenXE.Utilities.MetadataProcessing
                         #endregion
                         #region Vector3
                         case "vector3-textbox":
-                            AttributeData_Vector3 attributeData_Vector3 = new AttributeData_Vector3();
-                            SpiffyBaseAttributesReader( attributeData_Vector3, attributes, doc );
+                            MetaAttribute_Vector3 attributeData_Vector3 = new MetaAttribute_Vector3();
+                            CommonAttributeMetaDataReader( attributeData_Vector3, attributes, doc );
                             {
                                 if ( attributes.TryGetValue( "default", out XmlAttributeToRead? attribute ) )
                                 {
@@ -345,7 +352,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
                 else
                 {
                     result = null;
-                    ArcenDebugging.LogSingleLine( "No Main Attribute Type found at all. File name:" + doc.Name + "\nElement: " + element.OuterXml, Verbosity.DoNotShow );
+                    ArcenDebugging.LogSingleLine( "No Main Attribute Type found at all. File name:" + doc.MetadataName + "\nElement: " + element.OuterXml, Verbosity.DoNotShow );
                 }
                 List<string> missing = new List<string>();
                 foreach ( XmlAttributeToRead attribute in attributes.Values )
@@ -356,53 +363,60 @@ namespace ArcenXE.Utilities.MetadataProcessing
                     string missingToDisplay = string.Empty;
                     foreach ( string attributeName in missing )
                         missingToDisplay += "    " + attributeName + "\n";
-                    ArcenDebugging.LogSingleLine( "Attributes:\n" + missingToDisplay + "haven't been read! File name:" + doc.Name + "\nElement: " + element.OuterXml, Verbosity.DoNotShow );
+                    ArcenDebugging.LogSingleLine( "Attributes:\n" + missingToDisplay + "haven't been read! File name:" + doc.MetadataName + "\nElement: " + element.OuterXml, Verbosity.DoNotShow );
                 }
             }
             else
             {
                 result = null;
-                ArcenDebugging.LogSingleLine( "No attributes found at all. File name:" + doc.Name + "\nElement: " + element.OuterXml, Verbosity.DoNotShow );
+                ArcenDebugging.LogSingleLine( "No attributes found at all. File name:" + doc.MetadataName + "\nElement: " + element.OuterXml, Verbosity.DoNotShow );
             }
         }
 
-        private static void SpiffyBaseAttributesReader( AttributeData_Base attributeData, Dictionary<string, XmlAttributeToRead> attributes, MetadataDocument doc )
+        private static void CommonAttributeMetaDataReader( MetaAttribute_Base attributeData, Dictionary<string, XmlAttributeToRead> attributes, MetadataDocument doc )
         {
             {
                 if ( attributes.TryGetValue( "key", out XmlAttributeToRead? attribute ) )
                     attributeData.Key = attribute.Value;
                 else
-                    ArcenDebugging.LogSingleLine( "WARNING: Required attribute \"key\" in file " + doc.Name + " is missing.", Verbosity.DoNotShow );
+                    ArcenDebugging.LogSingleLine( "WARNING: Required attribute \"key\" in file " + doc.MetadataName + " is missing.", Verbosity.DoNotShow );
             }
             {
-                if ( attributes.TryGetValue( "is_required", out XmlAttributeToRead? attribute ) )
+                if ( attributes.TryGetValue( "is_required", out XmlAttributeToRead? attribute ) ) 
                     attributeData.IsRequired = bool.Parse( attribute.Value );
                 else { }
             }
             {
-                if ( attributes.TryGetValue( "is_central_identifier", out XmlAttributeToRead? attribute ) )
+                if ( attributes.TryGetValue( "is_central_identifier", out XmlAttributeToRead? attribute ) ) // move to doc
                 {
                     if ( attribute.Value.ToLowerInvariant() == "true" )
                     {
                         if ( !doc.IsDataCopyIdentifierAlreadyRead )
                         {
+                            doc.CentralID = attributeData;
                             attributeData.IsCentralIdentifier = bool.Parse( attribute.Value );
                             doc.IsDataCopyIdentifierAlreadyRead = true;
                         }
                         else
-                            ArcenDebugging.LogSingleLine( "There is more than 1 IsCentralIdentifier inside of metadata " + doc.Name, Verbosity.DoNotShow );
+                            ArcenDebugging.LogSingleLine( "There is more than 1 IsCentralIdentifier inside of metadata " + doc.MetadataName, Verbosity.DoNotShow );
                     }
                 }
                 else { } //do nothing, because this field is optional (there has to be 1 per file)
             }
             {
                 if ( attributes.TryGetValue( "is_partial_identifier", out XmlAttributeToRead? attribute ) )
+                {
+                    doc.PartialId = attributeData;
                     attributeData.IsPartialIdentifier = bool.Parse( attribute.Value );
+                }
                 else { } //do nothing, because this field is optional
             }
             {
                 if ( attributes.TryGetValue( "is_data_copy_identifier", out XmlAttributeToRead? attribute ) )
+                {
+                    doc.DataCopyId = attributeData;
                     attributeData.IsDataCopyIdentifier = bool.Parse( attribute.Value );
+                }
                 else { } //do nothing, because this field is optional
             }
             {
@@ -412,7 +426,10 @@ namespace ArcenXE.Utilities.MetadataProcessing
             }
             {
                 if ( attributes.TryGetValue( "is_description", out XmlAttributeToRead? attribute ) )
+                {
+                    doc.Description = attributeData;
                     attributeData.IsDescription = bool.Parse( attribute.Value );
+                }
                 else { } //do nothing, because this field is optional
             }
             {
@@ -441,12 +458,15 @@ namespace ArcenXE.Utilities.MetadataProcessing
                 else { } //do nothing, because this field is optional
             }
             {
-                if ( attributes.TryGetValue( "tooltip", out XmlAttributeToRead? attribute ) )
-                    attributeData.Tooltip = attribute.Value;
+                if ( attributes.TryGetValue( "is_user_facing_name", out XmlAttributeToRead? attribute ) )
+                {
+                    doc.UserFacingName = attributeData;
+                    attributeData.IsUserFacingName = bool.Parse( attribute.Value );
+                }
                 else { } //do nothing, because this field is optional
             }
             {
-                if ( attributes.TryGetValue( "is_user_facing_name", out XmlAttributeToRead? attribute ) )
+                if ( attributes.TryGetValue( "tooltip", out XmlAttributeToRead? attribute ) )
                     attributeData.Tooltip = attribute.Value;
                 else { } //do nothing, because this field is optional
             }

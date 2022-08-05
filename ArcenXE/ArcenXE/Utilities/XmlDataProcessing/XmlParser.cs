@@ -1,10 +1,11 @@
 ﻿using System.Xml;
+using ArcenXE.Utilities.MetadataProcessing;
 
 namespace ArcenXE.Utilities.XmlDataProcessing
 {
     public class XmlParser
     {
-        public IEditedXmlNodeOrComment? ProcessXmlElement( XmlElement element, bool IsTopLevelNode )
+        public IEditedXmlNodeOrComment? ProcessXmlElement( XmlElement element, MetadataDocument metaDoc, bool IsTopLevelNode )
         {
             EditedXmlNode editedNode = new EditedXmlNode();
 
@@ -16,7 +17,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                     switch ( node.NodeType )
                     {
                         case XmlNodeType.Element:
-                            EditedXmlNode? childResult = (EditedXmlNode?)ProcessXmlElement( (XmlElement)node, false ); //task.run on this? risk of losing the correct order of parts, so need a thread-safe structure
+                            EditedXmlNode? childResult = (EditedXmlNode?)ProcessXmlElement( (XmlElement)node, metaDoc, false ); //task.run on this? risk of losing the correct order of parts, so need a thread-safe structure
                             if ( childResult != null )
                                 editedNode.ChildNodes.Add( childResult );
                             else
@@ -45,9 +46,13 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                         Value = attribute.Value
                     };
                     editedNode.Attributes.TryAdd( att.Name, att );
+#pragma warning disable CS8602
+                    if ( att.Name.ToLowerInvariant() == metaDoc.CentralID.Key )
+                        editedNode.Attributes[att.Name].Type = AttributeType.String;
+#pragma warning restore CS8602
 
-                    if ( IsTopLevelNode && editedNode.NodeName == null && string.Equals( att.Name, "name", StringComparison.InvariantCultureIgnoreCase) )
-                        editedNode.NodeName = att;
+                    if ( IsTopLevelNode && editedNode.NodeCentralID == null && string.Equals( att.Name, metaDoc.CentralID.Key, StringComparison.InvariantCultureIgnoreCase) )
+                        editedNode.NodeCentralID = att;
                 }
             else
             {
@@ -60,8 +65,8 @@ namespace ArcenXE.Utilities.XmlDataProcessing
     #region EditedXmlNode
     public class EditedXmlNode : IEditedXmlNodeOrComment, IEditedXmlElement
     {
-        public EditedXmlAttribute? NodeName = null; // if != null, then this is top node
-        public Dictionary<string, EditedXmlAttribute> Attributes = new Dictionary<string, EditedXmlAttribute>();
+        public EditedXmlAttribute? NodeCentralID = null; // if != null, then this is a top node
+        public Dictionary<string, EditedXmlAttribute> Attributes = new Dictionary<string, EditedXmlAttribute>(); // maybe switch to list for performance
         public List<IEditedXmlNodeOrComment> ChildNodes = new List<IEditedXmlNodeOrComment>();
 
         public bool IsComment => false;
@@ -91,7 +96,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
     public class EditedXmlAttribute : IEditedXmlElement
     {
         public string Name = string.Empty;
-        public ArcenXmlAttributeType Type = ArcenXmlAttributeType.Unknown; //to be filled by metadata
+        public AttributeType Type = AttributeType.Unknown; //to be filled by metadata
         public string Value = string.Empty;
 
         /// <summary>
@@ -116,18 +121,4 @@ namespace ArcenXE.Utilities.XmlDataProcessing
 
     }
     #endregion
-
-    public enum ArcenXmlAttributeType // use AttributeType?
-    {
-        Unknown = 0,
-        Bool,
-        String,
-        Int,
-        Int64,
-        FInt,
-        Float,
-        DataTable,
-        ArbitraryStringOptions,
-        Length
-    }
 }

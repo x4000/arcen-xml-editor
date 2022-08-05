@@ -1,3 +1,5 @@
+using ArcenXE.Utilities;
+
 namespace ArcenXE
 {
     internal static class Program
@@ -18,6 +20,7 @@ namespace ArcenXE
             MainThreadID = Thread.CurrentThread.ManagedThreadId;
 
             CurrentLogDirectory = Environment.CurrentDirectory;
+            ProgramPermanentSettings.ApplicationPath.Path = CurrentLogDirectory.Replace( @"bin\Debug\net6.0-windows", "" );
             CurrentLogDirectory = CurrentLogDirectory.Replace( @"bin\Debug\net6.0-windows", @"logs\" );
 
             // To customize application configuration such as set high DPI settings or default font,

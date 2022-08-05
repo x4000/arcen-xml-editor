@@ -13,9 +13,9 @@ namespace ArcenXE.Utilities.MetadataProcessing
             this.ParentDoc = parentDoc;
         }
 
-        private readonly Dictionary<string, BooleanLogicCheckerTree> ConditionalsTree = new Dictionary<string, BooleanLogicCheckerTree>();
-        private readonly Dictionary<string, AttributeData_Base> AttributesData = new Dictionary<string, AttributeData_Base>();
-        private readonly Dictionary<string, MetadataNodeLayer> SubNodes = new Dictionary<string, MetadataNodeLayer>();
+        public readonly Dictionary<string, BooleanLogicCheckerTree> ConditionalsTree = new Dictionary<string, BooleanLogicCheckerTree>();
+        public readonly Dictionary<string, MetaAttribute_Base> AttributesData = new Dictionary<string, MetaAttribute_Base>();
+        public readonly Dictionary<string, MetadataNodeLayer> SubNodes = new Dictionary<string, MetadataNodeLayer>();
         private readonly List<XmlNode> nodesConditional = new List<XmlNode>();
 
         //for debugging
@@ -71,12 +71,12 @@ namespace ArcenXE.Utilities.MetadataProcessing
                 foreach ( XmlNode attNode in nodesAttribute )
                 {
 
-                    MetadataAttributeParser.ProcessMetadataAttributes( (XmlElement)attNode, this.ParentDoc, out AttributeData_Base? result );
+                    MetadataAttributeParser.ProcessMetadataAttributes( (XmlElement)attNode, this.ParentDoc, out MetaAttribute_Base? result );
 
                     if ( result != null )
                         AttributesData.TryAdd( result.Key, result );
                     else
-                        ArcenDebugging.LogSingleLine( "WARNING: AttributeData_Base returned from ProcessMetadataAttributes() is null!", Verbosity.DoNotShow );
+                        ArcenDebugging.LogSingleLine( "WARNING: MetaAttribute_Base returned from ProcessMetadataAttributes() is null!", Verbosity.DoNotShow );
                 }
 
                 //2: process subnodes
@@ -116,9 +116,9 @@ namespace ArcenXE.Utilities.MetadataProcessing
 
         public void DumpLayerData() // for debugging
         {
-            string error = "Parent Doc calling: " + this.ParentDoc.Name + " Layer name: " + this.Name;
+            string error = "Parent Doc calling: " + this.ParentDoc.MetadataName + " Layer name: " + this.Name;
             error += "\nattributesData contents: ";
-            foreach ( KeyValuePair<string, AttributeData_Base> kv in this.AttributesData )
+            foreach ( KeyValuePair<string, MetaAttribute_Base> kv in this.AttributesData )
             {
                 error += "\n" + kv.Key + "  " + (kv.Value != null);
             }

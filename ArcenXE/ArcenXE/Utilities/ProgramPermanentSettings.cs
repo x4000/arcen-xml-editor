@@ -1,10 +1,20 @@
 ﻿namespace ArcenXE.Utilities
 {
-    public static class ProgramPermanentSettings
+    public static class ProgramPermanentSettings //make new settings window
     {
+        public const string MainPath = @"C:\Users\Daniel\ArcenDev\Arcology5\GameData\Configuration";
+
         public readonly static PathStorage FolderPathContainingSharedMetaData = new PathStorage();
         public readonly static PathStorage MainFolderPathForVis = new PathStorage( @"C:\Users\Daniel\ArcenDev\Arcology5\GameData\Configuration",
                                                                                   "Select the folder containing all the files you want to work on" );
+        public readonly static PathStorage ApplicationPath = new PathStorage();
+        public readonly static PathStorage PathToBaseGameData = new PathStorage();
+        //List of important paths BaseGameData, DLCGameData, etc.
+        public static void SetPaths() //temporary for testing
+        {
+            MainFolderPathForVis.Path = @"C:\Users\Daniel\ArcenDev\Arcology5\GameData\Configuration";
+            FolderPathContainingSharedMetaData.Path = @"C:\Users\Daniel\ArcenDev\Arcology5\GameData\Configuration";
+        }
     }
 
     public class PathStorage
@@ -20,7 +30,7 @@
                     return path;
 
             }
-            private set => path = value;
+            /*private*/ set => path = value;
         }
         private string? descriptionFolderDialog = string.Empty; //temporary
 
