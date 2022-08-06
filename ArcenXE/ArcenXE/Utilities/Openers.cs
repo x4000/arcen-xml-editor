@@ -36,7 +36,7 @@ namespace ArcenXE.Utilities
         /// </summary>
         public static string? OpenFolderDialog( string defaultPath = @"c:\",  string description = "" )
         {
-            defaultPath = @"C:\Users\Daniel\ArcenDev\Arcology5\GameData\Configuration";
+            defaultPath = ProgramPermanentSettings.MainPath;
             // todo: first read the project folder from xmlproj, or default to c:\\ (maybe not, it creates a circular dependency)
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog
             {
@@ -52,7 +52,8 @@ namespace ArcenXE.Utilities
 
         public static string? OpenFolderDialogToSelectRootFolder( string defaultPath = @"c:\", string description = "" )
         {
-            defaultPath = @"C:\Users\Daniel\ArcenDev\Arcology5\GameData";
+            defaultPath = ProgramPermanentSettings.MainPath + "/.."; //go one directory up
+
             // todo: first read the project folder from xmlproj, or default to c:\\ (maybe not, it creates a circular dependency)
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog
             {

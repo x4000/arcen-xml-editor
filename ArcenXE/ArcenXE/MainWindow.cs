@@ -88,7 +88,7 @@ namespace ArcenXE
 
         private void LoadMeta_Click( object sender, EventArgs e )
         {
-            //MetadataLoader.LoadDataTables( @"C:\Users\Daniel\ArcenDev\Arcology5\GameData\Configuration" );
+            //MetadataLoader.LoadDataTables( ProgramPermanentSettings.MainPath );
         }
 
         #region Folder
@@ -238,7 +238,7 @@ namespace ArcenXE
         {
             ProcessStartInfo debugLogStartInfo = new ProcessStartInfo
             {
-                FileName = @"C:\Users\Daniel\ArcenDev\arcen-xml-editor\ArcenXE\ArcenXE\logs\XEDebugLog.txt",
+                FileName = Environment.CurrentDirectory.Replace( @"bin\Debug\net6.0-windows", @"logs\" ) + "XEDebugLog.txt",
                 UseShellExecute = true
             };
             Process.Start( debugLogStartInfo );
