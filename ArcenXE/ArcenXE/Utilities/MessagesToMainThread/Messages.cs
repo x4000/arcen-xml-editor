@@ -82,6 +82,7 @@ namespace ArcenXE.Utilities.MessagesToMainThread
                     if ( node.NodeName != null )
                         mainDictTopNodes.TryAdd( node.NodeName.Value, node );
             }*/
+            bool rootOnly = false;
             int commentNumber = 1;
             foreach ( IEditedXmlNodeOrComment? node in Nodes )
             {
@@ -95,9 +96,16 @@ namespace ArcenXE.Utilities.MessagesToMainThread
                     EditedXmlAttribute? att = ((EditedXmlNode)node).NodeCentralID;
                     if ( att != null )
                         mainDictTopNodes.Add( att.Value, node );
+                    if ( ((EditedXmlNode)node).IsRootOnly )
+                        rootOnly = true;
                 }
             }
             MainWindow.Instance.FillTopNodesList();
+            if ( rootOnly )// not good for now
+            {
+                MainWindow.Instance.SelectedTopNodeIndex = 0;
+                MainWindow.Instance.CallXmlVisualizer();
+            }
         }
     }
 }

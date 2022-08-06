@@ -53,7 +53,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                         }
                     else //no children, so root is primary
                     {
-                        IEditedXmlNodeOrComment? result = parser.ProcessXmlElement( root, metaDoc, false );
+                        IEditedXmlNodeOrComment? result = parser.ProcessXmlElement( root, metaDoc, true, true );
                         if ( result != null )
                             messageSendXmlTopNode.Nodes.Add( result );
                     }

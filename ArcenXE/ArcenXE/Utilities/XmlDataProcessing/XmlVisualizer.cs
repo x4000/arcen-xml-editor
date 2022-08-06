@@ -149,28 +149,13 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                         foreach ( KeyValuePair<string, MetaAttribute_Base> pair in metaAttributes ) // read from MetaDoc and lookup in xmldata
                         {
                             // 1 MetaAttribute describes 1 EditedXmlAttribute                            
-                            #region NameLabel
-                            Label label = this.labelPool.GetOrAdd( null );
-                            SizeF size = graphics.MeasureString( pair.Key, MainWindow.Instance.RightSplitContainer.Panel2.Font );
-
-                            label.Height = (int)Math.Ceiling( size.Height );
-                            label.Width = (int)Math.Ceiling( size.Width );
-                            label.Bounds = new Rectangle( Caret.x, Caret.y, label.Width + 5, label.Height );
-                            label.Text = pair.Key;
-
-                            MoveCaretBasedOnLineBreakBefore( pair.Value, label.Height );
-                            
-                            controls.Add( label );
-                            node.CurrentViewControl = label;
-
-                            Caret.MoveHorizontally( label.Width + 3 );
-                            #endregion
+                            int labelHeight = 0;
 
                             if ( node.Attributes.TryGetValue( pair.Value.Key, out EditedXmlAttribute? xmlAttribute ) )
                             {
                                 //GeorgeAttribute value to be printed in VisElementByType
-                                xmlAttribute.CurrentViewControl_Name = label;
-                                VisElementByType( controls, currentMetaDoc, pair.Value, xmlAttribute, graphics, label.Height );
+                                labelHeight = PrintLabelToVis( controls, pair, node, xmlAttribute, graphics );                                
+                                VisElementByType( controls, currentMetaDoc, pair.Value, xmlAttribute, graphics, labelHeight );
                             }
                             else
                             {
@@ -178,14 +163,15 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                                 {
                                     // add the empty field on Vis
                                     // need to run again the switch above
-                                    VisElementByType( controls, currentMetaDoc, pair.Value, null, graphics, label.Height );
+                                    labelHeight = PrintLabelToVis( controls, pair, node, null, graphics );
+                                    VisElementByType( controls, currentMetaDoc, pair.Value, null, graphics, labelHeight );
                                 }
                                 else
                                 {
                                     // add to list of addable fields which will be shown at the bottom with a PLUS button
                                 }
                             }
-                            MoveCaretBasedOnLineBreakAfter( pair.Value, label.Height );
+                            MoveCaretBasedOnLineBreakAfter( pair.Value, labelHeight );
                         }
 
                         foreach ( IEditedXmlNodeOrComment child in node.ChildNodes )
@@ -194,6 +180,28 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                 }
             }
         }
+
+        #region NameLabel
+        private int PrintLabelToVis( Control.ControlCollection controls, KeyValuePair<string, MetaAttribute_Base> pair, EditedXmlNode node, EditedXmlAttribute? xmlAttribute, Graphics graphics )
+        {
+            Label label = this.labelPool.GetOrAdd( null );
+            SizeF size = graphics.MeasureString( pair.Key, MainWindow.Instance.RightSplitContainer.Panel2.Font );
+
+            label.Height = (int)Math.Ceiling( size.Height );
+            label.Width = (int)Math.Ceiling( size.Width );
+            label.Bounds = new Rectangle( Caret.x, Caret.y, label.Width + 5, label.Height );
+            label.Text = pair.Key;
+
+            MoveCaretBasedOnLineBreakBefore( pair.Value, label.Height );
+
+            controls.Add( label );
+            node.CurrentViewControl = label;
+            if ( xmlAttribute != null)
+                xmlAttribute.CurrentViewControl_Name = label;
+            Caret.MoveHorizontally( label.Width + 3 );
+            return label.Height;
+        }
+        #endregion
 
         private void VisElementByType( Control.ControlCollection controls, MetadataDocument currentMetaDoc, MetaAttribute_Base metaAttribute, EditedXmlAttribute? xmlAttribute, Graphics graphics, int controlHeight )
         {

@@ -5,7 +5,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
 {
     public class XmlParser
     {
-        public IEditedXmlNodeOrComment? ProcessXmlElement( XmlElement element, MetadataDocument metaDoc, bool IsTopLevelNode )
+        public IEditedXmlNodeOrComment? ProcessXmlElement( XmlElement element, MetadataDocument metaDoc, bool IsTopLevelNode, bool IsRootOnly = false )
         {
             EditedXmlNode editedNode = new EditedXmlNode();
 
@@ -36,8 +36,12 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                             return null;
                     }
                 }
+            if ( IsRootOnly )
+                editedNode.IsRootOnly = true;
+
             XmlAttributeCollection attributes = element.Attributes;
             if ( attributes.Count > 0 )
+            {
                 foreach ( XmlAttribute attribute in attributes )
                 {
                     EditedXmlAttribute att = new EditedXmlAttribute
@@ -45,15 +49,27 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                         Name = attribute.Name,
                         Value = attribute.Value
                     };
-                    editedNode.Attributes.TryAdd( att.Name, att );
-#pragma warning disable CS8602
-                    if ( att.Name.ToLowerInvariant() == metaDoc.CentralID.Key )
-                        editedNode.Attributes[att.Name].Type = AttributeType.String;
-#pragma warning restore CS8602
+                    editedNode.Attributes.Add( att.Name, att );
 
-                    if ( IsTopLevelNode && editedNode.NodeCentralID == null && string.Equals( att.Name, metaDoc.CentralID.Key, StringComparison.InvariantCultureIgnoreCase) )
-                        editedNode.NodeCentralID = att;
+                    if ( metaDoc.CentralID != null && att.Name.ToLowerInvariant() == metaDoc.CentralID.Key )
+                        editedNode.Attributes[att.Name].Type = AttributeType.String;
+
+                    if ( IsTopLevelNode && editedNode.NodeCentralID == null && (string.Equals( att.Name, metaDoc.CentralID?.Key, StringComparison.InvariantCultureIgnoreCase ) || IsRootOnly) )
+                    {
+                        if ( IsRootOnly )
+                        {
+                            EditedXmlAttribute rootNode = new EditedXmlAttribute
+                            {
+                                Name = "name",
+                                Value = "Root Node"
+                            };
+                            editedNode.NodeCentralID = rootNode;
+                        }
+                        else
+                            editedNode.NodeCentralID = att;
+                    }
                 }
+            }
             else
             {
                 ArcenDebugging.LogSingleLine( "WARNING: attributes from node " + element.Name + " in file " + element.BaseURI + " are missing.", Verbosity.DoNotShow );
@@ -68,7 +84,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
         public EditedXmlAttribute? NodeCentralID = null; // if != null, then this is a top node
         public Dictionary<string, EditedXmlAttribute> Attributes = new Dictionary<string, EditedXmlAttribute>(); // maybe switch to list for performance
         public List<IEditedXmlNodeOrComment> ChildNodes = new List<IEditedXmlNodeOrComment>();
-
+        public bool IsRootOnly = false;
         public bool IsComment => false;
 
         /// <summary>

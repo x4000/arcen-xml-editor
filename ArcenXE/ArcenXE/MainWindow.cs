@@ -38,7 +38,7 @@ namespace ArcenXE
 
         public int SelectedFolderIndex { get; private set; } = -1;
         public XmlDataTableFile? SelectedFile { get; private set; } = null;
-        public int SelectedTopNodeIndex { get; private set; } = -1;
+        public int SelectedTopNodeIndex { get; set; } = -1;
 
         public MainWindow()
         {
@@ -166,23 +166,28 @@ namespace ArcenXE
         #region TopNodes
         private void TopNodesList_SelectedIndexChanged( object sender, EventArgs e )
         {
-            this.SelectedTopNodeIndex = TopNodesList.SelectedIndex;
+            this.SelectedTopNodeIndex = TopNodesList.SelectedIndex; 
             if ( this.SelectedTopNodeIndex != -1 )
             {
-                XmlVisualizer visualizer = new XmlVisualizer();
-                visualizer.ReturnAllToPool();
-                if ( CurrentXmlForVis.Count > 0 && TopNodesList.Items[0].ToString() != "There are no nodes to display in this file!" )
+                CallXmlVisualizer();
+            }
+        }
+
+        public void CallXmlVisualizer()
+        {
+            XmlVisualizer visualizer = new XmlVisualizer();
+            visualizer.ReturnAllToPool();
+            if ( CurrentXmlForVis.Count > 0 && TopNodesList.Items[0].ToString() != "There are no nodes to display in this file!" )
+            {
+                int numberOfMetaDatasStillLoading = MetadataLoader.NumberOfMetaDatasStillLoading;
+                if ( numberOfMetaDatasStillLoading == 0 )
                 {
-                    int numberOfMetaDatasStillLoading = MetadataLoader.NumberOfMetaDatasStillLoading;
-                    if ( numberOfMetaDatasStillLoading == 0 )
-                    {
-                        ApplyAttributeTypeToEditedXml( CurrentXmlForVis.ElementAt( TopNodesList.SelectedIndex ) );
-                        visualizer.VisualizeSelectedNode( CurrentXmlForVis.ElementAt( TopNodesList.SelectedIndex ) );
-                    }
-                    else
-                        //todo: needs new static class
-                        MessageBox.Show( $"There are still {numberOfMetaDatasStillLoading} metadata files being loaded in memory. Try again in moment.", "Metadata still loading", MessageBoxButtons.OK, MessageBoxIcon.Information );
+                    ApplyAttributeTypeToEditedXml( CurrentXmlForVis.ElementAt( this.SelectedTopNodeIndex ) );
+                    visualizer.VisualizeSelectedNode( CurrentXmlForVis.ElementAt( this.SelectedTopNodeIndex ) );
                 }
+                else
+                    //todo: needs new static class
+                    MessageBox.Show( $"There are still {numberOfMetaDatasStillLoading} metadata files being loaded in memory. Try again in moment.", "Metadata still loading", MessageBoxButtons.OK, MessageBoxIcon.Information );
             }
         }
 

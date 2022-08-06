@@ -53,7 +53,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
         {
             //not inside Task.Run to ensure it's actually incremented immediately and avoid subtle bugs
             Interlocked.Increment( ref numberOfMetaDatasStillLoading );            
-            //ArcenDebugging.LogSingleLine( " Starting LoadMetadata", Verbosity.DoNotShow );
+
             Task.Run( () =>
             {
                 try
