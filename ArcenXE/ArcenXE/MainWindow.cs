@@ -66,7 +66,8 @@ namespace ArcenXE
                     message.ProcessMessageOnMainThread();
             }
             int currentLoadingXmlFiles = MetadataLoader.NumberOfMetaDatasStillLoading;
-            if ( currentLoadingXmlFiles == 0 && MetadataLoader.NumberOfMetadataLoadingStarts > lastMetatadaCountHasDoneLoadFor )
+            if ( currentLoadingXmlFiles == 0 && MetadataLoader.NumberOfMetadataLoadingStarts > lastMetatadaCountHasDoneLoadFor &&
+                MetadataLoader.IgnoreMetaDataStartsUntil < DateTime.Now )
             {
                 OnAllMetadataLoaded();
                 lastMetatadaCountHasDoneLoadFor = MetadataLoader.NumberOfMetadataLoadingStarts;

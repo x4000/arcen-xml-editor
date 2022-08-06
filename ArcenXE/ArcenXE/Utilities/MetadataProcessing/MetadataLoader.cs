@@ -10,10 +10,13 @@ namespace ArcenXE.Utilities.MetadataProcessing
         public static int NumberOfMetaDatasStillLoading { get; }
 
         public static int NumberOfMetadataLoadingStarts = 0;
+        public static DateTime IgnoreMetaDataStartsUntil = DateTime.Now;
 
         public static void LoadAllMetadatas( string folderPathContainingAllMetadata ) // load all metadata with the shared
         {
             NumberOfMetadataLoadingStarts++;
+            IgnoreMetaDataStartsUntil = DateTime.Now.AddMilliseconds( 500 ); //this keeps the other thread from jumping ahead while this is happening
+
             string[] sharedFiles = Directory.GetFiles( folderPathContainingAllMetadata, "*.metadata" );
             if ( sharedFiles.Length != 1 )
             {
