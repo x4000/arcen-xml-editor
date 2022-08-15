@@ -4,10 +4,8 @@ namespace ArcenXE.Utilities
 {
     public static class XmlRootFolders
     {
-        //private static readonly string pathToBaseGameData = ProgramPermanentSettings.ApplicationPath.Path + @"\GameData\Configuration";
-
-        private static readonly Dictionary<string, XmlDataTable> xmlDataTables = new Dictionary<string, XmlDataTable>();
-        private static readonly List<string> xmlDataTableNames = new List<string>();
+        private static readonly Dictionary<string, XmlDataTable> xmlDataTables = new Dictionary<string, XmlDataTable>(); // Dictionary<FolderName, XmlDatTable>
+        private static readonly List<string> xmlDataTableNames = new List<string>(); // Basically a list of folders' names containing XML files
 
         public static XmlDataTable? GetXmlDataTableByName( string tableAndFolderName )
         {
@@ -33,6 +31,7 @@ namespace ArcenXE.Utilities
             {
                 kv.Value.Files.Clear();
             }
+            // Get all the subfolders that might contain XML files
             string[] folderPaths = Directory.GetDirectories( pathToRootFolder );
             foreach ( string folderPath in folderPaths )
                 FillDataTable( folderPath );
@@ -44,21 +43,23 @@ namespace ArcenXE.Utilities
 
         private static void FillDataTable( string folderPath )
         {
+            // Get all XML files in a specific subfolder
             string[] xmlFilesPath = Directory.GetFiles( folderPath, "*.xml" );
             string folderAndTableName = Path.GetFileNameWithoutExtension( folderPath );
-
-            if ( !MetadataStorage.AllMetadatas.TryGetValue( folderAndTableName, out MetadataDocument? metaDoc ) )
+            MetadataDocument? metaDoc = MetadataStorage.GetMetadataDocumentByName( folderAndTableName );
+            if ( metaDoc == null )
                 return; // metaDoc may have not loaded yet on bg threads
 
             foreach ( string xmlFilePath in xmlFilesPath )
             {
+                // Add XML file's data and name to the DataTables if it's not present
                 if ( !xmlDataTables.TryGetValue( folderAndTableName, out XmlDataTable? table ) )
                 {
                     table = new XmlDataTable( metaDoc );
                     xmlDataTables[folderAndTableName] = table;
                     xmlDataTableNames.Add( folderAndTableName );
                 }
-
+                // Add XML file's path to the DataTables' files list
                 table.Files.Add( new XmlDataTableFile( xmlFilePath ) );
             }
         }
@@ -77,7 +78,7 @@ namespace ArcenXE.Utilities
 
     public class XmlDataTableFile
     {
-        public readonly string FileNameWithoutExtension = string.Empty;
+        private readonly string FileNameWithoutExtension = string.Empty;
         public readonly string FullFilePath = string.Empty;
 
         public XmlDataTableFile( string fullFilePath )

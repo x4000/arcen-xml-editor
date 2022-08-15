@@ -47,7 +47,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                     EditedXmlAttribute att = new EditedXmlAttribute
                     {
                         Name = attribute.Name,
-                        Value = attribute.Value
+                        ValueOnDisk = attribute.Value
                     };
                     editedNode.Attributes.Add( att.Name, att );
 
@@ -61,7 +61,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                             EditedXmlAttribute rootNode = new EditedXmlAttribute
                             {
                                 Name = "name",
-                                Value = "Root Node"
+                                ValueOnDisk = "Root Node"
                             };
                             editedNode.NodeCentralID = rootNode;
                         }
@@ -77,64 +77,4 @@ namespace ArcenXE.Utilities.XmlDataProcessing
             return editedNode;
         }
     }
-
-    #region EditedXmlNode
-    public class EditedXmlNode : IEditedXmlNodeOrComment, IEditedXmlElement
-    {
-        public EditedXmlAttribute? NodeCentralID = null; // if != null, then this is a top node
-        public Dictionary<string, EditedXmlAttribute> Attributes = new Dictionary<string, EditedXmlAttribute>(); // maybe switch to list for performance
-        public List<IEditedXmlNodeOrComment> ChildNodes = new List<IEditedXmlNodeOrComment>();
-        public bool IsRootOnly = false;
-        public bool IsComment => false;
-
-        /// <summary>
-        /// For use in XmlVisualizer only
-        /// </summary>
-        public Label? CurrentViewControl;
-    }
-    #endregion
-
-    #region EditedXmlComment
-    public class EditedXmlComment : IEditedXmlNodeOrComment, IEditedXmlElement
-    {
-        public string Data = string.Empty;
-
-        public bool IsComment => true;
-
-        /// <summary>
-        /// For use in XmlVisualizer only
-        /// </summary>
-        public Control? CurrentViewControl;
-    }
-    #endregion
-
-    #region EditedXmlAttribute
-    public class EditedXmlAttribute : IEditedXmlElement
-    {
-        public string Name = string.Empty;
-        public AttributeType Type = AttributeType.Unknown; //to be filled by metadata
-        public string Value = string.Empty;
-
-        /// <summary>
-        /// For use in XmlVisualizer only
-        /// </summary>
-        public Label? CurrentViewControl_Name;
-        /// <summary>
-        /// For use in XmlVisualizer only
-        /// </summary>
-        public Control? CurrentViewControl_Value;
-    }
-    #endregion
-
-    #region IEditedXml
-    public interface IEditedXmlNodeOrComment
-    {
-        public bool IsComment { get; }
-    }
-
-    public interface IEditedXmlElement
-    {
-
-    }
-    #endregion
 }

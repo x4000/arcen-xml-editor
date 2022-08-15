@@ -23,7 +23,7 @@ namespace ArcenXE.Utilities.MessagesToMainThread
         {
             this.metadataDocument = metaDoc;
         }
-        public void ProcessMessageOnMainThread() => MetadataStorage.AllMetadatas.Add( this.metadataDocument.MetadataFolder, this.metadataDocument );
+        public void ProcessMessageOnMainThread() => MetadataStorage.AddMetadataDocument( this.metadataDocument.MetadataFolder, this.metadataDocument );
     }
 
     public class ListOfTablesIsReady : IBGMessageToMainThread
@@ -94,14 +94,14 @@ namespace ArcenXE.Utilities.MessagesToMainThread
                 else
                 {
                     EditedXmlAttribute? att = ((EditedXmlNode)node).NodeCentralID;
-                    if ( att != null )
-                        mainDictTopNodes.Add( att.Value, node );
+                    if ( att != null && att.ValueOnDisk != null )
+                        mainDictTopNodes.Add( att.ValueOnDisk, node );
                     if ( ((EditedXmlNode)node).IsRootOnly )
                         rootOnly = true;
                 }
             }
             MainWindow.Instance.FillTopNodesList();
-            if ( rootOnly )// not good for now
+            if ( rootOnly )
             {
                 MainWindow.Instance.SelectedTopNodeIndex = 0;
                 MainWindow.Instance.CallXmlVisualizer();

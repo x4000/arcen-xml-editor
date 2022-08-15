@@ -6,23 +6,23 @@ namespace ArcenXE.Utilities
 {
     public static class TopNodesCaching
     {
-        private readonly static Dictionary<string, CachedTopNodeList> AllCachedTopNodes = new Dictionary<string, CachedTopNodeList>();
+        private readonly static Dictionary<string, CachedTopNodeList> AllCachedTopNodes = new Dictionary<string, CachedTopNodeList>(); // Dictionary<FolderName, CachedTopNodeList>
 
+        /// <summary>
+        /// Returns the Top Nodes given a folder/dataTable name through a MetadataDocument, and if they don't exist, create a cache for that folder.
+        /// </summary>
         public static List<TopNode>? GetAllNodesForDataTable( MetadataDocument metaDoc )
         {
             if ( AllCachedTopNodes.TryGetValue( metaDoc.MetadataFolder, out CachedTopNodeList? cachedTopNodeList ) )
-            {
-                return cachedTopNodeList.GetNodes();
-            }
+                return cachedTopNodeList.GetNodes( metaDoc );
             else
             {
                 CachedTopNodeList cachedNodeList = new CachedTopNodeList();
                 cachedNodeList.FolderName = metaDoc.MetadataFolder;
                 AllCachedTopNodes.Add( cachedNodeList.FolderName, cachedNodeList );
-                return cachedNodeList.GetNodes();
+                return cachedNodeList.GetNodes( metaDoc );
             }
         }
-
 
         private readonly static XmlParser parser = new XmlParser();
 
@@ -60,7 +60,7 @@ namespace ArcenXE.Utilities
                 ArcenDebugging.LogSingleLine( $"WARNING: Skipped root element of XML with path:\n{filePath}\nbecause it has no top nodes", Verbosity.DoNotShow );
                 return;
             }
-          
+
             IEditedXmlNodeOrComment? nodeOrComment = null;
             foreach ( XmlNode element in root.ChildNodes )
             {
@@ -78,7 +78,7 @@ namespace ArcenXE.Utilities
                         break;
                     case XmlNodeType.Comment:
                         break;
-                }                
+                }
                 if ( nodeOrComment == null )
                     return;
 
@@ -86,22 +86,21 @@ namespace ArcenXE.Utilities
                 node = (EditedXmlNode)nodeOrComment;
                 if ( node.NodeCentralID != null )
                 {
-                    TopNode topNode = new TopNode
-                    {
-                        CentralID = node.NodeCentralID.Value,
-                        UserFacingName = string.Empty,
-                        Description = string.Empty
-                    };
+                    TopNode topNode = new TopNode();
+                    if ( node.NodeCentralID.ValueOnDisk != null ) // need to look into temp value
+                        topNode.CentralID = node.NodeCentralID.ValueOnDisk;
+                    topNode.UserFacingName = string.Empty;
+                    topNode.Description = string.Empty;
 
                     if ( metaDoc.UserFacingName != null )
                     {
-                        if ( node.Attributes.TryGetValue( metaDoc.UserFacingName.Key, out EditedXmlAttribute? attribute ) )
-                            topNode.UserFacingName = attribute.Value;
+                        if ( node.Attributes.TryGetValue( metaDoc.UserFacingName.Key, out EditedXmlAttribute? attribute ) && attribute.ValueOnDisk != null )
+                            topNode.UserFacingName = attribute.ValueOnDisk;
                     }
                     if ( metaDoc.Description != null )
                     {
-                        if ( node.Attributes.TryGetValue( metaDoc.Description.Key, out EditedXmlAttribute? attribute ) )
-                            topNode.Description = attribute.Value;
+                        if ( node.Attributes.TryGetValue( metaDoc.Description.Key, out EditedXmlAttribute? attribute ) && attribute.ValueOnDisk != null )
+                            topNode.Description = attribute.ValueOnDisk;
                     }
                     listToAddTo.Add( topNode );
                 }
@@ -115,14 +114,14 @@ namespace ArcenXE.Utilities
             public string FolderName = string.Empty;
             public DateTime LastRefreshed = DateTime.UnixEpoch;
             internal readonly List<TopNode> nodes = new List<TopNode>();
-            public List<TopNode> GetNodes()
+            public List<TopNode> GetNodes( MetadataDocument metaDoc )
             {
                 int RefreshTimeLimitInSeconds = 2;
                 if ( LastRefreshed == DateTime.UnixEpoch || (DateTime.Now - LastRefreshed).TotalSeconds > RefreshTimeLimitInSeconds )
                 {
                     nodes.Clear();
                     if ( MetadataStorage.CurrentVisMetadata != null )
-                        ParseAllTopNodesForNodeDropdown( MetadataStorage.CurrentVisMetadata, this );
+                        ParseAllTopNodesForNodeDropdown( metaDoc, this );
                 }
                 return nodes;
             }

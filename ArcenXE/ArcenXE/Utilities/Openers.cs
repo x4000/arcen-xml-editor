@@ -63,8 +63,7 @@ namespace ArcenXE.Utilities
 
             if ( folderBrowserDialog.ShowDialog() == DialogResult.OK )
             {
-                if ( MetadataStorage.AllMetadatas.Count > 0 )
-                    MetadataStorage.AllMetadatas.Clear();
+                MetadataStorage.ClearAllMetadata();
                 MetadataLoader.LoadAllMetadatas( folderBrowserDialog.SelectedPath );             
                 return folderBrowserDialog.SelectedPath;
             }

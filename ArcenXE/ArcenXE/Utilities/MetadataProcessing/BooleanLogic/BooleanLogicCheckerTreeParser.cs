@@ -134,8 +134,8 @@ namespace ArcenXE.Utilities.MetadataProcessing.BooleanLogic
                                         {
                                             if ( MainWindow.Instance.XmlElementCurrentlyBeingEdited is EditedXmlNode node )
                                             {
-                                                if ( node.Attributes.TryGetValue( attribute.Key, out EditedXmlAttribute? att ) )
-                                                    return bool.Parse( att.Value );
+                                                if ( node.Attributes.TryGetValue( attribute.Key, out EditedXmlAttribute? att ) && att.ValueOnDisk != null )
+                                                    return bool.Parse( att.ValueOnDisk );
                                                 else
                                                 {
                                                     ArcenDebugging.LogSingleLine( "ERROR: Failed to retrieve attribute with Key: " + attribute.Key
@@ -164,8 +164,8 @@ namespace ArcenXE.Utilities.MetadataProcessing.BooleanLogic
                                             EditedXmlNode? node = MainWindow.Instance.XmlElementCurrentlyBeingEdited as EditedXmlNode;
                                             if ( node != null )
                                             {
-                                                if ( node.Attributes.TryGetValue( attribute.Key, out EditedXmlAttribute? att ) )
-                                                    return att.Value;
+                                                if ( node.Attributes.TryGetValue( attribute.Key, out EditedXmlAttribute? att ) && att.ValueOnDisk != null )
+                                                    return att.ValueOnDisk;
                                                 else
                                                 {
                                                     ArcenDebugging.LogSingleLine( "ERROR: Failed to retrieve attribute with Key: " + attribute.Key
@@ -191,9 +191,9 @@ namespace ArcenXE.Utilities.MetadataProcessing.BooleanLogic
                                             EditedXmlNode? node = MainWindow.Instance.XmlElementCurrentlyBeingEdited as EditedXmlNode;
                                             if ( node != null )
                                             {
-                                                if ( node.Attributes.TryGetValue( attribute.Key, out EditedXmlAttribute? att ) )
+                                                if ( node.Attributes.TryGetValue( attribute.Key, out EditedXmlAttribute? att ) && att.ValueOnDisk != null )
                                                 {
-                                                    return int.Parse( att.Value );
+                                                    return int.Parse( att.ValueOnDisk );
                                                 }
                                                 else
                                                 {
@@ -222,9 +222,9 @@ namespace ArcenXE.Utilities.MetadataProcessing.BooleanLogic
                                                 EditedXmlNode? node = MainWindow.Instance.XmlElementCurrentlyBeingEdited as EditedXmlNode;
                                                 if ( node != null )
                                                 {
-                                                    if ( node.Attributes.TryGetValue( attribute.Key, out EditedXmlAttribute? att ) )
+                                                    if ( node.Attributes.TryGetValue( attribute.Key, out EditedXmlAttribute? att ) && att.ValueOnDisk != null )
                                                     {
-                                                        if ( FloatExtensions.TryParsePrecise( att.Value, out float value ) )
+                                                        if ( FloatExtensions.TryParsePrecise( att.ValueOnDisk, out float value ) )
                                                         {
                                                             return value;
                                                         }

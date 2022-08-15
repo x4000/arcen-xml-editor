@@ -417,14 +417,12 @@
         #endregion
         private System.Windows.Forms.Timer MainTimer;
         public ListBox TopNodesList;
-        private ToolStrip toolStrip1;
         private ToolStripDropDownButton toolStripDropDownButton1;
         private ToolStripMenuItem NewToolStripMenuItem;
         private ToolStripMenuItem OpenToolStripMenuItem;
         private ToolStripMenuItem FolderToolStripMenuItem;
         private ToolStripDropDownButton toolStripDropDownButton2;
         private ToolStripMenuItem ExplorerToolStripMenuItem;
-        private ToolStrip toolStrip2;
         private ToolStripButton newToolStripButton;
         private ToolStripButton OpenFolderToolStripButton;
         private ToolStripButton saveToolStripButton;
@@ -445,5 +443,7 @@
         public SplitContainer RightSplitContainer;
         private ToolStripSeparator toolStripSeparator2;
         private ToolStripButton LoadMeta;
+        public ToolStrip toolStrip1;
+        public ToolStrip toolStrip2;
     }
 }

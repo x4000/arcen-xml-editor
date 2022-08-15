@@ -38,7 +38,20 @@ namespace ArcenXE
 
         public int SelectedFolderIndex { get; private set; } = -1;
         public XmlDataTableFile? SelectedFile { get; private set; } = null;
-        public int SelectedTopNodeIndex { get; set; } = -1;
+
+        private int selectedTopNodeIndex = -1;
+        public int SelectedTopNodeIndex
+        {
+            get => selectedTopNodeIndex;
+            set
+            {
+                if ( value < 0 )
+                    throw new ArgumentOutOfRangeException( nameof( value ) );
+                else
+                    selectedTopNodeIndex = value;
+            }
+        }
+
 
         public MainWindow()
         {
@@ -47,6 +60,7 @@ namespace ArcenXE
 
             InitializeComponent();
         }
+
         private void MainTimer_Tick( object sender, EventArgs e )
         {
             ArcenDebugging.DumpAllPriorDelayedSingleLines();
@@ -123,7 +137,7 @@ namespace ArcenXE
 
                 List<string> dataTableNames = XmlRootFolders.GetXmlDataTableNames();
                 string selectedItem = dataTableNames[this.SelectedFolderIndex];
-                MetadataStorage.CurrentVisMetadata = MetadataStorage.AllMetadatas[selectedItem];
+                MetadataStorage.CurrentVisMetadata = MetadataStorage.GetMetadataDocumentByName( selectedItem );
 
                 XmlDataTable? table = XmlRootFolders.GetXmlDataTableByName( selectedItem );
                 if ( table != null )
@@ -166,32 +180,31 @@ namespace ArcenXE
         #region TopNodes
         private void TopNodesList_SelectedIndexChanged( object sender, EventArgs e )
         {
-            this.SelectedTopNodeIndex = TopNodesList.SelectedIndex; 
+            this.SelectedTopNodeIndex = TopNodesList.SelectedIndex;
             if ( this.SelectedTopNodeIndex != -1 )
-            {
                 CallXmlVisualizer();
-            }
         }
 
-        public void CallXmlVisualizer()
+        public void CallXmlVisualizer( IEditedXmlNodeOrComment? element = null )
         {
             XmlVisualizer visualizer = new XmlVisualizer();
-            visualizer.ReturnAllToPool();
-            if ( CurrentXmlForVis.Count > 0 && TopNodesList.Items[0].ToString() != "There are no nodes to display in this file!" )
+            if ( element == null && CurrentXmlForVis.Count > 0 && TopNodesList.Items[0].ToString() != "There are no nodes to display in this file!" )
             {
                 int numberOfMetaDatasStillLoading = MetadataLoader.NumberOfMetaDatasStillLoading;
                 if ( numberOfMetaDatasStillLoading == 0 )
                 {
                     ApplyAttributeTypeToEditedXml( CurrentXmlForVis.ElementAt( this.SelectedTopNodeIndex ) );
-                    visualizer.VisualizeSelectedNode( CurrentXmlForVis.ElementAt( this.SelectedTopNodeIndex ) );
+                    visualizer.VisualizeSelectedNode( CurrentXmlForVis.ElementAt( this.SelectedTopNodeIndex ), true );
                 }
                 else
                     //todo: needs new static class
                     MessageBox.Show( $"There are still {numberOfMetaDatasStillLoading} metadata files being loaded in memory. Try again in moment.", "Metadata still loading", MessageBoxButtons.OK, MessageBoxIcon.Information );
             }
+            if ( element != null )
+                visualizer.VisualizeSelectedNode( element );
         }
 
-        public void ApplyAttributeTypeToEditedXml( IEditedXmlNodeOrComment element )
+        private static void ApplyAttributeTypeToEditedXml( IEditedXmlNodeOrComment element )
         {
             if ( element.IsComment )
                 return;
@@ -226,8 +239,8 @@ namespace ArcenXE
                     else
                     {
                         EditedXmlAttribute? att = ((EditedXmlNode)kv.Value).NodeCentralID;
-                        if ( att != null )
-                            this.TopNodesList.Items.Add( att.Value );
+                        if ( att != null && att.ValueOnDisk != null )
+                            this.TopNodesList.Items.Add( att.ValueOnDisk );
                     }
                 }
                 if ( TopNodesList.Items.Count == 0 )

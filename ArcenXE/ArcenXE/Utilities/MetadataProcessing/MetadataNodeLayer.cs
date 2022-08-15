@@ -19,8 +19,8 @@ namespace ArcenXE.Utilities.MetadataProcessing
         private readonly List<XmlNode> nodesConditional = new List<XmlNode>();
 
         //for debugging
-        private readonly List<string> dump1 = new List<string>();
-        private readonly List<string> dump2 = new List<string>();
+        //private readonly List<string> dump1 = new List<string>();
+        //private readonly List<string> dump2 = new List<string>();
 
 
         public void ParseLayer( XmlElement? layerRoot )
@@ -70,7 +70,6 @@ namespace ArcenXE.Utilities.MetadataProcessing
                 //1: process attributes
                 foreach ( XmlNode attNode in nodesAttribute )
                 {
-
                     MetadataAttributeParser.ProcessMetadataAttributes( (XmlElement)attNode, this.ParentDoc, out MetaAttribute_Base? result );
 
                     if ( result != null )
@@ -114,35 +113,35 @@ namespace ArcenXE.Utilities.MetadataProcessing
             }
         }
 
-        public void DumpLayerData() // for debugging
-        {
-            string error = "Parent Doc calling: " + this.ParentDoc.MetadataName + " Layer name: " + this.Name;
-            error += "\nattributesData contents: ";
-            foreach ( KeyValuePair<string, MetaAttribute_Base> kv in this.AttributesData )
-            {
-                error += "\n" + kv.Key + "  " + (kv.Value != null);
-            }
-            if ( dump1.Count > 0 )
-            {
-                error += "\ndump1 contents: ";
-                foreach ( string s in this.dump1 )
-                {
-                    error += "\n" + s;
-                }
-            }
-            if ( dump2.Count > 0 )
-            {
-                error += "\ndump2 contents: ";
-                foreach ( string s in this.dump2 )
-                {
-                    error += "\n" + s;
-                }
-            }
-            ArcenDebugging.LogSingleLine( error, Verbosity.DoNotShow );
-            foreach ( KeyValuePair<string, MetadataNodeLayer> layer in this.SubNodes )
-            {
-                layer.Value.DumpLayerData();
-            }
-        }
+        //public void DumpLayerData() // for debugging
+        //{
+        //    string error = "Parent Doc calling: " + this.ParentDoc.MetadataName + " Layer name: " + this.Name;
+        //    error += "\nattributesData contents: ";
+        //    foreach ( KeyValuePair<string, MetaAttribute_Base> kv in this.AttributesData )
+        //    {
+        //        error += "\n" + kv.Key + "  " + (kv.Value != null);
+        //    }
+        //    if ( dump1.Count > 0 )
+        //    {
+        //        error += "\ndump1 contents: ";
+        //        foreach ( string s in this.dump1 )
+        //        {
+        //            error += "\n" + s;
+        //        }
+        //    }
+        //    if ( dump2.Count > 0 )
+        //    {
+        //        error += "\ndump2 contents: ";
+        //        foreach ( string s in this.dump2 )
+        //        {
+        //            error += "\n" + s;
+        //        }
+        //    }
+        //    ArcenDebugging.LogSingleLine( error, Verbosity.DoNotShow );
+        //    foreach ( KeyValuePair<string, MetadataNodeLayer> layer in this.SubNodes )
+        //    {
+        //        layer.Value.DumpLayerData();
+        //    }
+        //}
     }
 }
