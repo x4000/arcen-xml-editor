@@ -6,9 +6,9 @@ namespace ArcenXE.Utilities.MetadataProcessing
 {
     public static class MetadataAttributeParser
     {
-        public static void ProcessMetadataAttributes( XmlElement element, MetadataDocument doc, out MetaAttribute_Base? result )
+        public static void ProcessMetadataAttributes( XmlElement node, MetadataDocument doc, out MetaAttribute_Base? result )
         {
-            XmlAttributeCollection originalAttributes = element.Attributes;
+            XmlAttributeCollection originalAttributes = node.Attributes;
 
             if ( originalAttributes.Count > 0 )
             {
@@ -109,7 +109,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
                                 if ( attributes.TryGetValue( "default", out MetaAttributeToBeRead? attribute ) )
                                     metaAttribute_ArbitraryString.Default = attribute.Value;
                             }
-                            XmlNodeList subNodes = element.ChildNodes; //"option" only
+                            XmlNodeList subNodes = node.ChildNodes; //"option" only
                             if ( subNodes.Count > 0 )
                                 foreach ( XmlNode subNode in subNodes )
                                     if ( subNode.NodeType == XmlNodeType.Element )
@@ -185,7 +185,11 @@ namespace ArcenXE.Utilities.MetadataProcessing
                             }
                             {
                                 if ( attributes.TryGetValue( "node_source", out MetaAttributeToBeRead? attribute ) )
+                                {
+                                    if ( attribute.Value.ToLowerInvariant() == "self" )
+                                        metaAttribute_ArbitraryNode.NodeSource = doc.MetadataFolder;
                                     metaAttribute_ArbitraryNode.NodeSource = attribute.Value;
+                                }
                             }
                             result = metaAttribute_ArbitraryNode;
                             break;
@@ -204,7 +208,11 @@ namespace ArcenXE.Utilities.MetadataProcessing
                             }
                             {
                                 if ( attributes.TryGetValue( "node_source", out MetaAttributeToBeRead? attribute ) )
+                                {
+                                    if ( attribute.Value.ToLowerInvariant() == "self" )
+                                        metaAttribute_NodeList.NodeSource = doc.MetadataFolder;
                                     metaAttribute_NodeList.NodeSource = attribute.Value;
+                                }
                             }
                             result = metaAttribute_NodeList;
                             break;
@@ -347,7 +355,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
                 else
                 {
                     result = null;
-                    ArcenDebugging.LogSingleLine( "No Main Attribute Type found at all. File name:" + doc.MetadataName + "\nElement: " + element.OuterXml, Verbosity.DoNotShow );
+                    ArcenDebugging.LogSingleLine( "No Main Attribute Type found at all. File name:" + doc.MetadataName + "\nElement: " + node.OuterXml, Verbosity.DoNotShow );
                 }
                 List<string> missing = new List<string>();
                 foreach ( MetaAttributeToBeRead attribute in attributes.Values )
@@ -358,13 +366,13 @@ namespace ArcenXE.Utilities.MetadataProcessing
                     string missingToDisplay = string.Empty;
                     foreach ( string attributeName in missing )
                         missingToDisplay += "    " + attributeName + "\n";
-                    ArcenDebugging.LogSingleLine( "Attributes:\n" + missingToDisplay + "haven't been read! File name:" + doc.MetadataName + "\nElement: " + element.OuterXml, Verbosity.DoNotShow );
+                    ArcenDebugging.LogSingleLine( "Attributes:\n" + missingToDisplay + "haven't been read! File name:" + doc.MetadataName + "\nElement: " + node.OuterXml, Verbosity.DoNotShow );
                 }
             }
             else
             {
                 result = null;
-                ArcenDebugging.LogSingleLine( "No attributes found at all. File name:" + doc.MetadataName + "\nElement: " + element.OuterXml, Verbosity.DoNotShow );
+                ArcenDebugging.LogSingleLine( "No attributes found at all. File name:" + doc.MetadataName + "\nElement: " + node.OuterXml, Verbosity.DoNotShow );
             }
         }
 
@@ -377,7 +385,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
                     ArcenDebugging.LogSingleLine( "WARNING: Required attribute \"key\" in file " + doc.MetadataName + " is missing.", Verbosity.DoNotShow );
             }
             {
-                if ( attributes.TryGetValue( "is_required", out MetaAttributeToBeRead? attribute ) ) 
+                if ( attributes.TryGetValue( "is_required", out MetaAttributeToBeRead? attribute ) )
                     metaAttribute.IsRequired = bool.Parse( attribute.Value );
                 else { }
             }
