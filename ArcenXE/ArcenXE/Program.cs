@@ -57,7 +57,7 @@ namespace ArcenXE
 
             using ( FileStream stream = new FileStream( Filename, FileMode.Append, FileAccess.Write, FileShare.ReadWrite ) )
             {
-                using ( System.IO.StreamWriter writer = new StreamWriter( stream ) )
+                using ( StreamWriter writer = new StreamWriter( stream ) )
                 {
                     writer.Write( Text );
                     writer.Flush();

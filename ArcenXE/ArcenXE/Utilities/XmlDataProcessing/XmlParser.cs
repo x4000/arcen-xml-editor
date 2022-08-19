@@ -1,10 +1,14 @@
 ﻿using System.Xml;
 using ArcenXE.Utilities.MetadataProcessing;
+using System.Collections.Concurrent;
 
 namespace ArcenXE.Utilities.XmlDataProcessing
 {
     public class XmlParser
     {
+        //public static readonly ConcurrentQueue<string> dump1 = new ConcurrentQueue<string>();
+        //public static readonly ConcurrentQueue<string> dump2 = new ConcurrentQueue<string>();
+
         public IEditedXmlNodeOrComment? ProcessXmlElement( XmlElement element, MetadataDocument metaDoc, bool IsTopLevelNode, bool IsRootOnly = false )
         {
             EditedXmlNode editedNode = new EditedXmlNode();
@@ -17,9 +21,12 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                     switch ( node.NodeType )
                     {
                         case XmlNodeType.Element:
-                            EditedXmlNode? childResult = (EditedXmlNode?)ProcessXmlElement( (XmlElement)node, metaDoc, false ); //task.run on this? risk of losing the correct order of parts, so need a thread-safe structure
+                            EditedXmlNode? childResult = (EditedXmlNode?)ProcessXmlElement( (XmlElement)node, metaDoc, false ); //task.run on this? risk of losing the correct order of parts, so need a thread-safe structure                         
                             if ( childResult != null )
+                            {
                                 editedNode.ChildNodes.Add( childResult );
+                                //dump2.Enqueue( $"Node = {node.Name}\t\tchildResult = {childResult.}" );
+                            }
                             else
                                 ArcenDebugging.LogSingleLine( "ERROR: Processing of " + ((XmlElement)node).GetAttribute( "key" ) + " node failed.", Verbosity.DoNotShow );
                             break;
@@ -50,7 +57,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                         ValueOnDisk = attribute.Value
                     };
                     editedNode.Attributes.Add( att.Name, att );
-
+                    //dump1.Enqueue( attribute.Name + "\t" + attribute.Value );
                     if ( metaDoc.CentralID != null && att.Name.ToLowerInvariant() == metaDoc.CentralID.Key )
                         editedNode.Attributes[att.Name].Type = AttributeType.String;
 
@@ -76,5 +83,27 @@ namespace ArcenXE.Utilities.XmlDataProcessing
             }
             return editedNode;
         }
+
+        //public static void DumpXmlData()
+        //{
+        //    string error = "\nattributesData contents: ";
+        //    if ( !dump1.IsEmpty )
+        //    {
+        //        error += "\ndump1 contents: ";
+        //        foreach ( string s in dump1 )
+        //        {
+        //            error += "\n" + s;
+        //        }
+        //    }
+        //    if ( dump2.Count > 0 )
+        //    {
+        //        error += "\ndump2 contents: ";
+        //        foreach ( string s in dump2 )
+        //        {
+        //            error += "\n" + s;
+        //        }
+        //    }
+        //    ArcenDebugging.LogSingleLine( error, Verbosity.DoNotShow );
+        //}
     }
 }

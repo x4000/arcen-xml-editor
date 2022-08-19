@@ -186,9 +186,10 @@ namespace ArcenXE.Utilities.MetadataProcessing
                             {
                                 if ( attributes.TryGetValue( "node_source", out MetaAttributeToBeRead? attribute ) )
                                 {
-                                    if ( attribute.Value.ToLowerInvariant() == "self" )
-                                        metaAttribute_ArbitraryNode.NodeSource = doc.MetadataFolder;
-                                    metaAttribute_ArbitraryNode.NodeSource = attribute.Value;
+                                    if ( attribute.Value.ToLowerInvariant() == "self" )                                   
+                                        metaAttribute_ArbitraryNode.NodeSource = doc.MetadataFolder;                                    
+                                    else
+                                        metaAttribute_ArbitraryNode.NodeSource = attribute.Value;
                                 }
                             }
                             result = metaAttribute_ArbitraryNode;
@@ -211,7 +212,8 @@ namespace ArcenXE.Utilities.MetadataProcessing
                                 {
                                     if ( attribute.Value.ToLowerInvariant() == "self" )
                                         metaAttribute_NodeList.NodeSource = doc.MetadataFolder;
-                                    metaAttribute_NodeList.NodeSource = attribute.Value;
+                                    else
+                                        metaAttribute_NodeList.NodeSource = attribute.Value;
                                 }
                             }
                             result = metaAttribute_NodeList;

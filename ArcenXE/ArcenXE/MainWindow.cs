@@ -173,9 +173,27 @@ namespace ArcenXE
 #pragma warning disable CS8604
                 XmlLoader.LoadXml( this.SelectedFile.FullFilePath, MetadataStorage.CurrentVisMetadata );
 #pragma warning restore CS8604
+                //foreach ( IEditedXmlNodeOrComment item in this.CurrentXmlForVis )
+                //{
+                //    DumpAllVisXml( item );
+                //}
             }
         }
         #endregion
+
+        //private void DumpAllVisXml( IEditedXmlNodeOrComment item )
+        //{
+        //    if ( item is EditedXmlNode node )
+        //    {
+        //        ArcenDebugging.LogSingleLine( $"Node", Verbosity.DoNotShow );
+        //        foreach ( KeyValuePair<string, EditedXmlAttribute> att in node.Attributes )
+        //        {
+        //            ArcenDebugging.LogSingleLine( $"Att key = {att.Key}\t att.value.name = {att.Value.Name}\t att.value.value = {att.Value.ValueOnDisk}", Verbosity.DoNotShow );
+        //        }
+        //        //foreach ( IEditedXmlNodeOrComment subnode in node.ChildNodes )
+        //           // DumpAllVisXml( subnode );
+        //    }
+        //}
 
         #region TopNodes
         private void TopNodesList_SelectedIndexChanged( object sender, EventArgs e )

@@ -5,7 +5,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
 {
     public class MetadataNodeLayer
     {
-        public MetadataDocument ParentDoc;
+        public readonly MetadataDocument ParentDoc;
         public string Name = string.Empty;
 
         public MetadataNodeLayer( MetadataDocument parentDoc )
@@ -22,7 +22,6 @@ namespace ArcenXE.Utilities.MetadataProcessing
         //private readonly List<string> dump1 = new List<string>();
         //private readonly List<string> dump2 = new List<string>();
 
-
         public void ParseLayer( XmlElement? layerRoot )
         {
             if ( layerRoot != null )
@@ -32,7 +31,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
                 else if ( layerRoot.Name == "root" )
                     this.Name = "root";
                 else
-                    ArcenDebugging.LogSingleLine( "INFO: Metadata file \"" + layerRoot.BaseURI + "\" has no \"name\" attribute. Please provide one.", Verbosity.DoNotShow );
+                    ArcenDebugging.LogSingleLine( "INFO: Metadata file \"" + this.ParentDoc.MetadataName + "\" has no \"name\" attribute. Please provide one.", Verbosity.DoNotShow );
 
                 List<XmlNode> nodesAttribute = new List<XmlNode>();
                 List<XmlNode> nodesSubNode = new List<XmlNode>();
@@ -60,10 +59,10 @@ namespace ArcenXE.Utilities.MetadataProcessing
                                     break;
                             }
                         else
-                            ArcenDebugging.LogSingleLine( "ERROR: Null Node in the " + this.Name + " layer in this file" + layerRoot.BaseURI + " !", Verbosity.DoNotShow );
+                            ArcenDebugging.LogSingleLine( "ERROR: Null Node in the " + this.Name + " layer in this file" + this.ParentDoc.MetadataName + " !", Verbosity.DoNotShow );
                 else
                 {
-                    ArcenDebugging.LogSingleLine( "ERROR: Metadata file \"" + layerRoot.BaseURI + "\" is missing nodes in the " + this.Name + " layer. Please verify the file.", Verbosity.DoNotShow );
+                    ArcenDebugging.LogSingleLine( "ERROR: Metadata file \"" + this.ParentDoc.MetadataName + "\" is missing nodes in the " + this.Name + " layer. Please verify the file.", Verbosity.DoNotShow );
                     return;
                 }
                 //now process these:
@@ -84,8 +83,8 @@ namespace ArcenXE.Utilities.MetadataProcessing
                     MetadataNodeLayer subNode = new MetadataNodeLayer( this.ParentDoc );
                     subNode.ParseLayer( (XmlElement)node );
                     this.SubNodes.Add( subNode.Name, subNode );
+                    }
                 }
-            }
             else
             {
                 ArcenDebugging.LogSingleLine( "ERROR: layerRoot is null! No metadata will be processed for this file! " , Verbosity.DoNotShow );
