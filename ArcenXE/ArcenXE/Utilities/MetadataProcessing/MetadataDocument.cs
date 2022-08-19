@@ -4,7 +4,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
 {
     public class MetadataDocument
     {
-        public bool IsSingleRootTypeDocument { get; set; } = false;
+        public bool IsSingleRootTypeDocument { get; private set; } = false;
         private bool isDataCopyIdentifierAlreadyRead = false;
         public bool IsDataCopyIdentifierAlreadyRead
         {
@@ -25,9 +25,9 @@ namespace ArcenXE.Utilities.MetadataProcessing
         }
         //private string workingStackStrace = string.Empty;
         //private long WorkingThreadID;
-        public string MetadataFolder { get; set; } = string.Empty;
-        public string MetadataName { get; set; } = string.Empty;
-
+        public string MetadataFolder { get; private set; } = string.Empty;
+        public string MetadataName { get; private set; } = string.Empty;
+        public string NodeName { get; private set; } = string.Empty;
 
         public MetadataNodeLayer? TopLevelNode { get; private set; } = null;
 
@@ -53,6 +53,10 @@ namespace ArcenXE.Utilities.MetadataProcessing
                     TopLevelNode = new MetadataNodeLayer( this );
                     if ( mainRoot.HasAttribute( "is_for_single_root" ) )
                         this.IsSingleRootTypeDocument = mainRoot.GetAttribute( "is_for_single_root" ).ToLowerInvariant() == "true";
+                    else if ( mainRoot.HasAttribute( "node_name" ) )
+                        this.NodeName = mainRoot.GetAttribute( "node_name" );
+                    else
+                        ArcenDebugging.LogSingleLine( $"Metadata file \n'{this.MetadataName}'\n is missing attribute 'node_name' in root. Please provide one.", Verbosity.DoNotShow );
 
                     if ( !this.IsSingleRootTypeDocument )
                     {
@@ -72,10 +76,11 @@ namespace ArcenXE.Utilities.MetadataProcessing
                     }
 
                     //then parse our real data.
+                    //ArcenDebugging.LogSingleLine( "Parsing specific MetaDocument ", Verbosity.DoNotShow );
                     TopLevelNode.ParseLayer( mainRoot );
                     TopLevelNode.ProcessConditionals();
                     // for debugging
-                    //topLevelNode.DumpLayerData();
+                    //TopLevelNode.DumpLayerData();
 
                     //check for IsDataCopyIdentifierAlreadyRead still false; it has to be true by the end
                     if ( !this.IsSingleRootTypeDocument )
