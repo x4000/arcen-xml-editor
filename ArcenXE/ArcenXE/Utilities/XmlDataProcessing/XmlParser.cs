@@ -12,7 +12,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
         public IEditedXmlNodeOrComment? ProcessXmlElement( XmlElement element, MetadataDocument metaDoc, bool IsTopLevelNode, bool IsRootOnly = false )
         {
             EditedXmlNode editedNode = new EditedXmlNode();
-
+            editedNode.XmlNodeTagName = element.Name;
             XmlNodeList childNodes = element.ChildNodes;
             if ( childNodes.Count > 0 )
                 foreach ( XmlNode node in childNodes )

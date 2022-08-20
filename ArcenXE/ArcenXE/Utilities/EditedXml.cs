@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ArcenXE.Utilities
+﻿namespace ArcenXE.Utilities
 {
     #region EditedXmlNode
     public class EditedXmlNode : IEditedXmlNodeOrComment, IEditedXmlElement
     {
         public EditedXmlAttribute? NodeCentralID = null; // if != null, then it's a top node
+        public string XmlNodeTagName = string.Empty; // string that defines the tag in xml
         public Dictionary<string, EditedXmlAttribute> Attributes = new Dictionary<string, EditedXmlAttribute>();
         public List<IEditedXmlNodeOrComment> ChildNodes = new List<IEditedXmlNodeOrComment>();
         public bool IsRootOnly = false;
@@ -26,7 +21,6 @@ namespace ArcenXE.Utilities
     public class EditedXmlComment : IEditedXmlNodeOrComment, IEditedXmlElement
     {
         public string Data = string.Empty;
-
         public bool IsComment => true;
 
         /// <summary>
