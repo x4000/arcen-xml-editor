@@ -83,11 +83,11 @@ namespace ArcenXE.Utilities.MetadataProcessing
                     MetadataNodeLayer subNode = new MetadataNodeLayer( this.ParentDoc );
                     subNode.ParseLayer( (XmlElement)node );
                     this.SubNodes.Add( subNode.Name, subNode );
-                    }
                 }
+            }
             else
             {
-                ArcenDebugging.LogSingleLine( "ERROR: layerRoot is null! No metadata will be processed for this file! " , Verbosity.DoNotShow );
+                ArcenDebugging.LogSingleLine( "ERROR: layerRoot is null! No metadata will be processed for this file! ", Verbosity.DoNotShow );
             }
         }
 

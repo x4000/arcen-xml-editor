@@ -55,9 +55,7 @@ namespace ArcenXE
 
         public MainWindow()
         {
-            if ( Instance == null )
-                Instance = this;
-
+            Instance ??= this;
             InitializeComponent();
         }
 
@@ -203,6 +201,10 @@ namespace ArcenXE
                 CallXmlVisualizer();
         }
 
+        /// <summary>
+        /// IEditedXmlNodeOrComment used for Root Only XML files 
+        /// </summary>
+        /// <param name="element"></param>
         public void CallXmlVisualizer( IEditedXmlNodeOrComment? element = null )
         {
             XmlVisualizer visualizer = new XmlVisualizer();
@@ -212,14 +214,14 @@ namespace ArcenXE
                 if ( numberOfMetaDatasStillLoading == 0 )
                 {
                     ApplyAttributeTypeToEditedXml( CurrentXmlForVis.ElementAt( this.SelectedTopNodeIndex ) );
-                    visualizer.VisualizeSelectedNode( CurrentXmlForVis.ElementAt( this.SelectedTopNodeIndex ), true );
+                    visualizer.VisualizeSelectedNode( CurrentXmlForVis.ElementAt( this.SelectedTopNodeIndex ), MetadataStorage.CurrentVisMetadata?.TopLevelNode, true );
                 }
                 else
                     //todo: needs new static class
                     MessageBox.Show( $"There are still {numberOfMetaDatasStillLoading} metadata files being loaded in memory. Try again in moment.", "Metadata still loading", MessageBoxButtons.OK, MessageBoxIcon.Information );
             }
             if ( element != null )
-                visualizer.VisualizeSelectedNode( element );
+                visualizer.VisualizeSelectedNode( element, MetadataStorage.CurrentVisMetadata?.TopLevelNode );
         }
 
         private static void ApplyAttributeTypeToEditedXml( IEditedXmlNodeOrComment element )

@@ -13,6 +13,7 @@ namespace ArcenXE.Utilities
         public readonly ActionList<UnionNode> UnionSubNodes;
         public readonly ActionList<UnionAttribute> UnionAttributes;
         public readonly MetadataDocument MetaDocument;
+        public readonly MetadataNodeLayer MetaLayer;
         public IEditedXmlNodeOrComment? XmlNodeOrComment = null;
         public List<Control> Controls { get; set; } = new List<Control>();
         public bool? IsComment
@@ -29,9 +30,10 @@ namespace ArcenXE.Utilities
         }
         public bool IsDeleted { get; set; } = false;
 
-        public UnionNode( MetadataDocument metaDoc )
+        public UnionNode( MetadataNodeLayer metaLayer )
         {
-            this.MetaDocument = metaDoc;
+            this.MetaLayer = metaLayer;
+            this.MetaDocument = MetaLayer.ParentDoc;
             this.UnionSubNodes = new ActionList<UnionNode>( ( UnionNode newNode ) =>
             {
                 newNode.ParentUnionNode = this;
@@ -47,12 +49,12 @@ namespace ArcenXE.Utilities
     public class UnionAttribute : IUnionElement
     {
         public UnionNode? ParentUnionNode { get; set; } = null;
-        public MetaAttribute_Base MetaAttribute;
+        public KeyValuePair<string, MetaAttribute_Base> MetaAttribute;
         public EditedXmlAttribute? XmlAttribute = null;
         public List<Control> Controls { get; set; } = new List<Control>();
         public bool IsDeleted { get; set; } = false;
 
-        public UnionAttribute( MetaAttribute_Base metaAttribute )
+        public UnionAttribute( KeyValuePair<string, MetaAttribute_Base> metaAttribute )
         {
             this.MetaAttribute = metaAttribute;
         }

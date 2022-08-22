@@ -15,14 +15,14 @@ namespace ArcenXE.Utilities
         public bool CausesAllFieldsToBeOptionalExceptCentralIdentifier { get; set; } = false;
         public bool IsDescription { get; set; } = false;
         public bool IsLocalized { get; set; } = false;
-        public int ContentWidthPx { get; set; } = 20;
+        public int ContentWidthPx { get; set; } = 70;
         public virtual LineBreakType LinebreakBefore { get; set; } = LineBreakType.PreferNot;
         public virtual LineBreakType LinebreakAfter { get; set; } = LineBreakType.PreferNot;
         public string OnlyExistsIfConditionalPasses { get; set; } = string.Empty;
         public bool IsUserFacingName { get; set; } = false;
         public string Tooltip { get; set; } = string.Empty;
 
-        public abstract string DoValidate( EditedXmlAttribute att );
+        public abstract string DoValidate( EditedXmlAttribute att, Coordinate coordinate );
 
     }
 
@@ -31,7 +31,7 @@ namespace ArcenXE.Utilities
         public override AttributeType Type => AttributeType.Bool;
         public bool Default { get; set; } = false;
 
-        public override string DoValidate( EditedXmlAttribute att )
+        public override string DoValidate( EditedXmlAttribute att, Coordinate coordinate )
         {
             string? val = att.GetEffectiveValue();
             if ( val == null )
@@ -45,7 +45,7 @@ namespace ArcenXE.Utilities
         public override AttributeType Type => AttributeType.BoolInt;
         public int Default { get; set; } = 0;
 
-        public override string DoValidate( EditedXmlAttribute att )
+        public override string DoValidate( EditedXmlAttribute att, Coordinate coordinate )
         {
             string? val = att.GetEffectiveValue();
             if ( val == null )
@@ -61,7 +61,7 @@ namespace ArcenXE.Utilities
         public int MinLength { get; set; } = 0;
         public int MaxLength { get; set; } = 1000;
 
-        public override string DoValidate( EditedXmlAttribute att )
+        public override string DoValidate( EditedXmlAttribute att, Coordinate coordinate )
         {
             string? val = att.GetEffectiveValue();
             string errorList = string.Empty;
@@ -84,7 +84,7 @@ namespace ArcenXE.Utilities
         public int MaxLength { get; set; } = 10000;
         public int ShowLines { get; set; } = 3;
 
-        public override string DoValidate( EditedXmlAttribute att )
+        public override string DoValidate( EditedXmlAttribute att, Coordinate coordinate )
         {
             string? val = att.GetEffectiveValue();
             string errorList = string.Empty;
@@ -105,12 +105,12 @@ namespace ArcenXE.Utilities
         public string Default { get; set; } = string.Empty;
         public List<string> Options { get; set; } = new List<string>();
 
-        public override string DoValidate( EditedXmlAttribute att )
+        public override string DoValidate( EditedXmlAttribute att, Coordinate coordinate )
         {
             string? val = att.GetEffectiveValue();
             string errorList = string.Empty;
             if ( val != null && val.Length > 0 && !this.Options.Contains( val ) )
-                errorList += $"Value {val} is not in the list of option.\n";
+                errorList += $"String '{val}' is not in the list of option.\n";
             return errorList;
         }
     }
@@ -123,7 +123,7 @@ namespace ArcenXE.Utilities
         public int Max { get; set; } = int.MaxValue;
         public int MinimumDigits { get; set; } = 1;
 
-        public override string DoValidate( EditedXmlAttribute att )
+        public override string DoValidate( EditedXmlAttribute att, Coordinate coordinate )
         {
             string? val = att.GetEffectiveValue();
             string errorList = string.Empty;
@@ -151,7 +151,7 @@ namespace ArcenXE.Utilities
         public int Precision { get; set; } = 3;
         public int MinimumDigits { get; set; } = 1;
 
-        public override string DoValidate( EditedXmlAttribute att )
+        public override string DoValidate( EditedXmlAttribute att, Coordinate coordinate )
         {
             string? val = att.GetEffectiveValue();
             string errorList = string.Empty;
@@ -176,7 +176,7 @@ namespace ArcenXE.Utilities
         public string Default { get; set; } = string.Empty;
         public string NodeSource { get; set; } = string.Empty;
 
-        public override string DoValidate( EditedXmlAttribute att )
+        public override string DoValidate( EditedXmlAttribute att, Coordinate coordinate )
         {
             string? val = att.GetEffectiveValue();
             string errorList = string.Empty;
@@ -185,16 +185,20 @@ namespace ArcenXE.Utilities
             {
                 MetadataDocument? metaDoc = MetadataStorage.GetMetadataDocumentByName( NodeSource );
                 if ( metaDoc == null )
-                    return string.Empty;
+                    return string.Empty;// complain?
 
                 List<TopNodesCaching.TopNode>? topNodes = TopNodesCaching.GetAllNodesForDataTable( metaDoc );
-                if ( topNodes != null )
+                if ( topNodes != null )// complain on else?
+                {
                     foreach ( TopNodesCaching.TopNode node in topNodes )
-                        if ( node.UserFacingName == val )
+                        if ( node.CentralID == val )
                             found = true;
+                }
+                else
+                    ArcenDebugging.LogSingleLine( "topnodes null in DoVal!", Verbosity.DoNotShow );
             }
             if ( !found )
-                errorList += $"Value {val} is not in a valid node.\n";
+                errorList += $"Value '{val}' is not in valid node.\n";
             return errorList;
         }
     }
@@ -205,7 +209,7 @@ namespace ArcenXE.Utilities
         public List<string> Defaults { get; set; } = new List<string>();
         public string NodeSource { get; set; } = string.Empty;
 
-        public override string DoValidate( EditedXmlAttribute att )
+        public override string DoValidate( EditedXmlAttribute att, Coordinate coordinate )
         {
             string[]? listedNodes = att.GetEffectiveValue()?.Split( ',' );
             string errorList = string.Empty;
@@ -214,22 +218,22 @@ namespace ArcenXE.Utilities
             {
                 MetadataDocument? metaDoc = MetadataStorage.GetMetadataDocumentByName( NodeSource );
                 if ( metaDoc == null )
-                    return string.Empty;
+                    return string.Empty; // complain?
 
                 List<TopNodesCaching.TopNode>? topNodes = TopNodesCaching.GetAllNodesForDataTable( metaDoc );
                 if ( topNodes == null )
-                    return string.Empty;
+                    return string.Empty; // complain?
 
                 foreach ( string listedNode in listedNodes )
                 {
                     found = false;
                     foreach ( TopNodesCaching.TopNode topNode in topNodes )
                     {
-                        if ( topNode.UserFacingName == listedNode )
+                        if ( topNode.CentralID == listedNode )
                             found = true;
                     }
                     if ( !found )
-                        errorList += $"Value {listedNode} is not in a valid node.\n";
+                        errorList += $"Value '{listedNode}' is not a valid node.\n";
                 }
             }
             return errorList;
@@ -253,7 +257,7 @@ namespace ArcenXE.Utilities
             }
         }
 
-        public override string DoValidate( EditedXmlAttribute att )
+        public override string DoValidate( EditedXmlAttribute att, Coordinate coordinate )
         {
             string? val = att.GetEffectiveValue();
             string errorList = string.Empty;
@@ -263,7 +267,7 @@ namespace ArcenXE.Utilities
                     if ( folderPath.Contains( val ) )
                         found = true;
             if ( !found )
-                errorList += $"Value {val} is not in a valid folder.\n";
+                errorList += $"Value {val} is not a valid folder.\n";
             return errorList;
         }
     }
@@ -274,38 +278,41 @@ namespace ArcenXE.Utilities
         public MetaAttribute_Int x = new MetaAttribute_Int();
         public MetaAttribute_Int y = new MetaAttribute_Int();
 
-        public override string DoValidate( EditedXmlAttribute att )
+        public override string DoValidate( EditedXmlAttribute att, Coordinate coordinate )
         {
             string? val = att.GetEffectiveValue();
             string errorList = string.Empty;
             if ( val != null )
             {
-                string[] values = val.Split( ',' );
-                int[] ints = new int[values.Length];
-                foreach ( string value in values )
+                int intVal;
+                switch ( coordinate )
                 {
-                    if ( int.TryParse( values[0], out ints[0] ) )
+                    case Coordinate.x:                       
+                    if ( int.TryParse( val, out intVal ) )
                     {
-                        if ( ints[0] < x.Min )
-                            errorList += $"Int is {ints[0]}. It needs to be at least {this.x.Min}.\n";
-                        if ( ints[0] > x.Max )
-                            errorList += $"Int is {ints[0]}. It needs to be at maximum {this.x.Max}.\n";
-                        if ( MinorUtilities.CalculateNumberOfDigits( ints[0] ) < x.MinimumDigits )
-                            errorList += $"Int is {ints[0]}. It needs to have at least {this.x.MinimumDigits} digits.\n";
+                        if ( intVal < x.Min )
+                            errorList += $"Int is {intVal}. It needs to be at least {this.x.Min}.\n";
+                        if ( intVal > x.Max )
+                            errorList += $"Int is {intVal}. It needs to be at maximum {this.x.Max}.\n";
+                        if ( MinorUtilities.CalculateNumberOfDigits( intVal ) < x.MinimumDigits )
+                            errorList += $"Int is {intVal}. It needs to have at least {this.x.MinimumDigits} digits.\n";
                     }
                     else
                         errorList += "Invalid Int x";
-                    if ( int.TryParse( values[1], out ints[1] ) )
+                        break;
+                    case Coordinate.y:
+                        if ( int.TryParse( val, out intVal ) )
                     {
-                        if ( ints[1] < y.Min )
-                            errorList += $"Int is {ints[1]}. It needs to be at least {this.y.Min}.\n";
-                        if ( ints[1] > y.Max )
-                            errorList += $"Int is {ints[1]}. It needs to be at maximum {this.y.Max}.\n";
-                        if ( MinorUtilities.CalculateNumberOfDigits( ints[1] ) < y.MinimumDigits )
-                            errorList += $"Int is {ints[1]}. It needs to have at least {this.y.MinimumDigits} digits.\n";
+                        if ( intVal < y.Min )
+                            errorList += $"Int is {intVal}. It needs to be at least {this.y.Min}.\n";
+                        if ( intVal > y.Max )
+                            errorList += $"Int is {intVal}. It needs to be at maximum {this.y.Max}.\n";
+                        if ( MinorUtilities.CalculateNumberOfDigits( intVal ) < y.MinimumDigits )
+                            errorList += $"Int is {intVal}. It needs to have at least {this.y.MinimumDigits} digits.\n";
                     }
                     else
                         errorList += "Invalid Int y";
+                        break;
                 }
             }
             else
@@ -320,38 +327,41 @@ namespace ArcenXE.Utilities
         public MetaAttribute_Float x = new MetaAttribute_Float();
         public MetaAttribute_Float y = new MetaAttribute_Float();
 
-        public override string DoValidate( EditedXmlAttribute att )
+        public override string DoValidate( EditedXmlAttribute att, Coordinate coordinate )
         {
             string? val = att.GetEffectiveValue();
             string errorList = string.Empty;
             if ( val != null )
             {
-                string[] values = val.Split( ',' );
-                float[] floats = new float[values.Length];
-                foreach ( string value in values )
+                float floatVal;
+                switch ( coordinate )
                 {
-                    if ( float.TryParse( values[0], out floats[0] ) )
-                    {
-                        if ( floats[0] < x.Min )
-                            errorList += $"Float is {floats[0]}. It needs to be at least {this.x.Min}.\n";
-                        if ( floats[0] > x.Max )
-                            errorList += $"Float is {floats[0]}. It needs to be at maximum {this.x.Max}.\n";
-                        if ( MinorUtilities.CalculateNumberOfDigits( (int)floats[0] ) < x.MinimumDigits )
-                            errorList += $"Float's whole number is {floats[0]}. It needs to have at least {this.x.MinimumDigits} digits.\n";
-                    }
-                    else
-                        errorList += "Invalid Float x";
-                    if ( float.TryParse( values[1], out floats[1] ) )
-                    {
-                        if ( floats[1] < y.Min )
-                            errorList += $"Float is {floats[1]}. It needs to be at least {this.y.Min}.\n";
-                        if ( floats[1] > y.Max )
-                            errorList += $"Float is {floats[1]}. It needs to be at maximum {this.y.Max}.\n";
-                        if ( MinorUtilities.CalculateNumberOfDigits( (int)floats[1] ) < y.MinimumDigits )
-                            errorList += $"Float's whole number is {floats[1]}. It needs to have at least {this.y.MinimumDigits} digits.\n";
-                    }
-                    else
-                        errorList += "Invalid Float y";
+                    case Coordinate.x:
+                        if ( float.TryParse( val, out floatVal ) )
+                        {
+                            if ( floatVal < x.Min )
+                                errorList += $"Float is {floatVal}. It needs to be at least {this.x.Min}.\n";
+                            if ( floatVal > x.Max )
+                                errorList += $"Float is {floatVal}. It needs to be at maximum {this.x.Max}.\n";
+                            if ( MinorUtilities.CalculateNumberOfDigits( (int)floatVal ) < x.MinimumDigits )
+                                errorList += $"Float's whole number is {floatVal}. It needs to have at least {this.x.MinimumDigits} digits.\n";
+                        }
+                        else
+                            errorList += "Invalid Float x";
+                        break;
+                    case Coordinate.y:
+                        if ( float.TryParse( val, out floatVal ) )
+                        {
+                            if ( floatVal < y.Min )
+                                errorList += $"Float is {floatVal}. It needs to be at least {this.y.Min}.\n";
+                            if ( floatVal > y.Max )
+                                errorList += $"Float is {floatVal}. It needs to be at maximum {this.y.Max}.\n";
+                            if ( MinorUtilities.CalculateNumberOfDigits( (int)floatVal ) < y.MinimumDigits )
+                                errorList += $"Float's whole number is {floatVal}. It needs to have at least {this.y.MinimumDigits} digits.\n";
+                        }
+                        else
+                            errorList += "Invalid Float y";
+                        break;
                 }
             }
             else
@@ -367,53 +377,61 @@ namespace ArcenXE.Utilities
         public MetaAttribute_Float y = new MetaAttribute_Float();
         public MetaAttribute_Float z = new MetaAttribute_Float();
 
-        public override string DoValidate( EditedXmlAttribute att )
+        public override string DoValidate( EditedXmlAttribute att, Coordinate coordinate )
         {
             string? val = att.GetEffectiveValue();
             string errorList = string.Empty;
             if ( val != null )
             {
-                string[] values = val.Split( ',' );
-                float[] floats = new float[values.Length];
-                foreach ( string value in values )
+                float floatVal;
+                switch ( coordinate )
                 {
-                    if ( float.TryParse( values[0], out floats[0] ) )
-                    {
-                        if ( floats[0] < x.Min )
-                            errorList += $"Float is {floats[0]}. It needs to be at least {this.x.Min}.\n";
-                        if ( floats[0] > x.Max )
-                            errorList += $"Float is {floats[0]}. It needs to be at maximum {this.x.Max}.\n";
-                        if ( MinorUtilities.CalculateNumberOfDigits( (int)floats[0] ) < x.MinimumDigits )
-                            errorList += $"Float's whole number is {floats[0]}. It needs to have at least {this.x.MinimumDigits} digits.\n";
-                    }
-                    else
-                        errorList += "Invalid Float x";
-                    if ( float.TryParse( values[1], out floats[1] ) )
-                    {
-                        if ( floats[1] < y.Min )
-                            errorList += $"Float is {floats[1]}. It needs to be at least {this.y.Min}.\n";
-                        if ( floats[1] > y.Max )
-                            errorList += $"Float is {floats[1]}. It needs to be at maximum {this.y.Max}.\n";
-                        if ( MinorUtilities.CalculateNumberOfDigits( (int)floats[1] ) < y.MinimumDigits )
-                            errorList += $"Float's whole number is {floats[1]}. It needs to have at least {this.y.MinimumDigits} digits.\n";
-                    }
-                    else
-                        errorList += "Invalid Float y";
-                    if ( float.TryParse( values[2], out floats[2] ) )
-                    {
-                        if ( floats[2] < z.Min )
-                            errorList += $"Float is {floats[2]}. It needs to be at least {this.z.Min}.\n";
-                        if ( floats[2] > z.Max )
-                            errorList += $"Float is {floats[2]}. It needs to be at maximum {this.z.Max}.\n";
-                        if ( MinorUtilities.CalculateNumberOfDigits( (int)floats[2] ) < z.MinimumDigits )
-                            errorList += $"Float's whole number is {floats[2]}. It needs to have at least {this.z.MinimumDigits} digits.\n";
-                    }
-                    else
-                        errorList += "Invalid Float z";
+                    case Coordinate.x:
+                        if ( float.TryParse( val, out floatVal ) )
+                        {
+                            if ( floatVal < x.Min )
+                                errorList += $"Float is {floatVal}. It needs to be at least {this.x.Min}.\n";
+                            if ( floatVal > x.Max )
+                                errorList += $"Float is {floatVal}. It needs to be at maximum {this.x.Max}.\n";
+                            if ( MinorUtilities.CalculateNumberOfDigits( (int)floatVal ) < x.MinimumDigits )
+                                errorList += $"Float's whole number is {floatVal}. It needs to have at least {this.x.MinimumDigits} digits.\n";
+                        }
+                        else
+                            errorList += "Invalid Float x";
+                        break;
+                    case Coordinate.y:
+                        if ( float.TryParse( val, out floatVal ) )
+                        {
+                            if ( floatVal < y.Min )
+                                errorList += $"Float is {floatVal}. It needs to be at least {this.y.Min}.\n";
+                            if ( floatVal > y.Max )
+                                errorList += $"Float is {floatVal}. It needs to be at maximum {this.y.Max}.\n";
+                            if ( MinorUtilities.CalculateNumberOfDigits( (int)floatVal ) < y.MinimumDigits )
+                                errorList += $"Float's whole number is {floatVal}. It needs to have at least {this.y.MinimumDigits} digits.\n";
+                        }
+                        else
+                            errorList += "Invalid Float y";
+                        break;
+                    case Coordinate.z:
+                        if ( float.TryParse( val, out floatVal ) )
+                        {
+                            if ( floatVal < z.Min )
+                                errorList += $"Float is {floatVal}. It needs to be at least {this.z.Min}.\n";
+                            if ( floatVal > z.Max )
+                                errorList += $"Float is {floatVal}. It needs to be at maximum {this.z.Max}.\n";
+                            if ( MinorUtilities.CalculateNumberOfDigits( (int)floatVal ) < z.MinimumDigits )
+                                errorList += $"Float's whole number is {floatVal}. It needs to have at least {this.z.MinimumDigits} digits.\n";
+                        }
+                        else
+                            errorList += "Invalid Float z";
+                        break;
+                    case Coordinate.None:
+                        ArcenDebugging.LogSingleLine( "The coordinate in Vector3 shouldn't be set to None!", Verbosity.DoNotShow );
+                        break;
                 }
             }
             else
-                errorList += "Invalid Vector2";
+                errorList += "Invalid Vector3";
             return errorList;
         }
     }

@@ -6,19 +6,26 @@ namespace ArcenXE.Utilities
     public class ControlTagInfo : IControlTagInfo
     {
         public IUnionElement? RelatedUnionElement { get; set; } = null;
-        private readonly Control relatedControl;
-        public Control RelatedControl { get => relatedControl; protected init => relatedControl = value; }
+        public Control RelatedControl { get; protected init; }
+        public ErrorProvider RelatedErrorProvider { get; private init; } = new ErrorProvider();
 
         public ControlTagInfo( Control relatedControl )
         {
-            this.relatedControl = relatedControl;
+            this.RelatedControl = relatedControl;
+        }
+
+        public void ClearErrorProvider( Control control )
+        {
+            this.RelatedErrorProvider.SetError( control, string.Empty );
+            this.RelatedErrorProvider.Clear();
         }
     }
 
-    public class PooledControlTagInfo : ControlTagInfo
+    public class PooledControlTagInfo : ControlTagInfo, IControlTagInfo
     {
-        private readonly ReturnControlToPool ferrymanToPool;
-
+        public Coordinate ControlsCoordinate = Coordinate.None; // only used by numerical updown controls
+        private readonly ReturnControlToPool ferrymanToPool;        
+        
         public PooledControlTagInfo( Control relatedControl, ReturnControlToPool ferrymanToPool ) : base( relatedControl )
         {
             base.RelatedControl = relatedControl;
@@ -42,6 +49,15 @@ namespace ArcenXE.Utilities
     public interface IControlTagInfo
     {
         Control RelatedControl { get; }
-        IUnionElement? RelatedUnionElement { get; set; }
+        IUnionElement? RelatedUnionElement { get; }
+        ErrorProvider RelatedErrorProvider { get; }
+    }
+
+    public enum Coordinate
+    {
+        None = -1,
+        x = 0,
+        y = 1,
+        z = 2,
     }
 }
