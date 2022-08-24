@@ -11,8 +11,11 @@ namespace ArcenXE.Utilities.XmlDataProcessing
 
         public IEditedXmlNodeOrComment? ProcessXmlElement( XmlElement element, MetadataDocument metaDoc, bool IsTopLevelNode, bool IsRootOnly = false )
         {
-            EditedXmlNode editedNode = new EditedXmlNode();
-            editedNode.XmlNodeTagName = element.Name;
+            EditedXmlNode editedNode = new EditedXmlNode
+            {
+                UID = UIDSource.GetNext(),
+                XmlNodeTagName = element.Name
+            };
             XmlNodeList childNodes = element.ChildNodes;
             if ( childNodes.Count > 0 )
                 foreach ( XmlNode node in childNodes )
@@ -45,7 +48,6 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                 }
             if ( IsRootOnly )
                 editedNode.IsRootOnly = true;
-
             XmlAttributeCollection attributes = element.Attributes;
             if ( attributes.Count > 0 )
             {

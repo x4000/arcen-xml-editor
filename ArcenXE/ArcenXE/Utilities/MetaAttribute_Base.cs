@@ -1,5 +1,6 @@
 ﻿using ArcenXE.Universal;
 using ArcenXE.Utilities.MetadataProcessing;
+using ArcenXE.Visualization.Utilities;
 using System;
 
 namespace ArcenXE.Utilities

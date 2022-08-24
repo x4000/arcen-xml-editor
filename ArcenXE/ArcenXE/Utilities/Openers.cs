@@ -52,9 +52,15 @@ namespace ArcenXE.Utilities
 
         public static string? OpenFolderDialogToSelectRootFolder( string defaultPath = @"c:\", string description = "" )
         {
-            defaultPath = ProgramPermanentSettings.MainPath + "/.."; //go one directory up
+            //defaultPath = ProgramPermanentSettings.MainPath + "/.."; //go one directory up
 
             // todo: first read the project folder from xmlproj, or default to c:\\ (maybe not, it creates a circular dependency)
+            if ( defaultPath != @"c:\" )
+            {
+                MetadataStorage.ClearAllMetadata();
+                MetadataLoader.LoadAllMetadatas( defaultPath );
+                return defaultPath;
+            }
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog
             {
                 Description = description,

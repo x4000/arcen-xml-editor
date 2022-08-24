@@ -1,8 +1,10 @@
 ﻿using ArcenXE.Universal;
+using ArcenXE.Utilities;
 using ArcenXE.Utilities.MetadataProcessing;
+using ArcenXE.Visualization.Utilities;
 using CheckBox = System.Windows.Forms.CheckBox;
 
-namespace ArcenXE.Utilities.XmlDataProcessing
+namespace ArcenXE.Visualization
 {
     public class XmlVisualizer
     {
@@ -148,7 +150,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                 if ( item is EditedXmlComment comment )
                 {
                     #region Comment
-                    TextBox textBox = textBoxPool.GetOrAdd( ( TextBox newTextBox ) =>
+                    TextBox textBox = textBoxPool.GetOrAdd( ( newTextBox ) =>
                     {
                         newTextBox.LostFocus += new EventHandler( CallValidatorAfterFocusLostOrIndexChanged );
                     } );
@@ -206,38 +208,30 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                         // 1 MetaAttribute describes 1 EditedXmlAttribute
                         //ArcenDebugging.LogSingleLine( $"pair.value.Key = {pair.Value.Key}", Verbosity.DoNotShow );
                         UnionAttribute unionAttribute = new UnionAttribute( pair );
-                        if ( node.Attributes.TryGetValue( pair.Value.Key, out EditedXmlAttribute? xmlAttribute ) )
+                        if ( node.Attributes.TryGetValue( pair.Value.Key, out EditedXmlAttribute? xmlAttribute ) && !xmlAttribute.IsDeleted )
                         {
                             //ArcenDebugging.LogSingleLine( $"xmlAttribute.Name = {xmlAttribute.Name}\t\txmlAttribute.EffectiveValue = {xmlAttribute.GetEffectiveValue()}", Verbosity.DoNotShow );
                             //XML Attribute value to be printed in VisElementByType
                             labelHeight = PrintLabelToVis( controls, pair, node, xmlAttribute, unionAttribute, graphics, caret );
                             VisElementByType( controls, currentMetaDoc, pair.Value, xmlAttribute, currentUnionNode, unionAttribute, graphics, caret, labelHeight );
-                            // if type == nodelist or folderlist -- new method //todo
-                            //CheckedListBoxTagData tagData;
-                            //tagData.metaAttributes = metaAttribute;
-                            //tagData.vis = this;
-                            //tagData.node = node;
-                            //checkedListBoxDropdown.Tag = tagData;
+                            currentUnionNode.UnionAttributes.Add( unionAttribute );
+                            insertedToVis = true;
+                        }
+                        else
+                            if ( pair.Value.IsRequired )
+                        {
+                            // add the empty field on Vis
+                            labelHeight = PrintLabelToVis( controls, pair, node, null, unionAttribute, graphics, caret );
+                            VisElementByType( controls, currentMetaDoc, pair.Value, null, currentUnionNode, unionAttribute, graphics, caret, labelHeight );
                             currentUnionNode.UnionAttributes.Add( unionAttribute );
                             insertedToVis = true;
                         }
                         else
                         {
-                            if ( pair.Value.IsRequired )
-                            {
-                                // add the empty field on Vis
-                                labelHeight = PrintLabelToVis( controls, pair, node, null, unionAttribute, graphics, caret );
-                                VisElementByType( controls, currentMetaDoc, pair.Value, null, currentUnionNode, unionAttribute, graphics, caret, labelHeight );
-                                currentUnionNode.UnionAttributes.Add( unionAttribute );
-                                insertedToVis = true;
-                            }
-                            else
-                            {
-                                // will be listed at the bottom when pressing the PLUS button
-                                unionAttribute.MetaAttribute = pair;
-                                currentUnionNode.UnionAttributes.Add( unionAttribute );
-                                insertedToVis = false;
-                            }
+                            // will be listed at the bottom when pressing the PLUS button
+                            unionAttribute.MetaAttribute = pair;
+                            currentUnionNode.UnionAttributes.Add( unionAttribute );
+                            insertedToVis = false;
                         }
                         if ( insertedToVis )
                             MoveCaretBasedOnLineBreakAfter( pair.Value, caret, maxHeightInCurrentRow );
@@ -249,7 +243,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                     #region PlusButton
                     caret.MoveHorizontally( 5 );
 
-                    Button plusButton = openCheckedListBoxPlusButtonEvent_Pool.GetOrAdd( ( Button newButton ) =>
+                    Button plusButton = openCheckedListBoxPlusButtonEvent_Pool.GetOrAdd( ( newButton ) =>
                     {
                         newButton.Click += new EventHandler( OpenCheckedListBoxPlusButton_ButtonClickEvent );
                     } );
@@ -301,9 +295,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                                 ArcenDebugging.LogSingleLine( "Sub Node's XmlNodeTagName wasn't found.", Verbosity.DoNotShow );
                         }
                         if ( subNodeLayer == null )
-                        {
                             ArcenDebugging.LogSingleLine( "SUB NODE LAYER NULL", Verbosity.DoNotShow );
-                        }
                         this.VisualizeSelectedNode( child, subNodeLayer, parentUnionNode: currentUnionNode, caret: caret );
                     }
                     #endregion
@@ -317,7 +309,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
         private static int PrintLabelToVis( Control.ControlCollection controls, KeyValuePair<string, MetaAttribute_Base> pair, EditedXmlNode node,
                                             EditedXmlAttribute? xmlAttribute, UnionAttribute uAttribute, Graphics graphics, Caret caret )
         {
-            Label label = labelPool.GetOrAdd( ( Label newLabel ) =>
+            Label label = labelPool.GetOrAdd( ( newLabel ) =>
             {
                 newLabel.Click += new EventHandler( OpenSmallMenuOnLabelRightClick );
                 newLabel.DoubleClick += new EventHandler( OpenSmallMenuOnLabelDoubleClick );
@@ -338,7 +330,9 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                 xmlAttribute.CurrentViewControl_Name = label;
                 uAttribute.XmlAttribute = xmlAttribute;
             }
+            uAttribute.MetaAttribute = pair;
             uAttribute.Controls.Add( label );
+            ((PooledControlTagInfo)label.Tag).RelatedUnionElement = uAttribute;
 
             caret.MoveHorizontally( label.Width + 3 );
             return label.Height;
@@ -354,7 +348,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                 case AttributeType.Bool:
                 case AttributeType.BoolInt:
                     {
-                        CheckBox boxBool = checkBoxPool.GetOrAdd( ( CheckBox newCheckBox ) =>
+                        CheckBox boxBool = checkBoxPool.GetOrAdd( ( newCheckBox ) =>
                         {
                             newCheckBox.LostFocus += new EventHandler( CallValidatorAfterFocusLostOrIndexChanged );
                         } );
@@ -397,7 +391,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                 #region String
                 case AttributeType.String:
                     {
-                        TextBox textBox = textBoxPool.GetOrAdd( ( TextBox newTextBox ) =>
+                        TextBox textBox = textBoxPool.GetOrAdd( ( newTextBox ) =>
                         {
                             newTextBox.LostFocus += new EventHandler( CallValidatorAfterFocusLostOrIndexChanged );
                         } );
@@ -423,7 +417,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                 #region StringMultiLine
                 case AttributeType.StringMultiLine:
                     {
-                        TextBox textBox = textBoxPool.GetOrAdd( ( TextBox newTextBox ) =>
+                        TextBox textBox = textBoxPool.GetOrAdd( ( newTextBox ) =>
                         {
                             newTextBox.LostFocus += new EventHandler( CallValidatorAfterFocusLostOrIndexChanged );
                         } );
@@ -454,7 +448,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                 #region ArbitraryString
                 case AttributeType.ArbitraryString:
                     {
-                        ComboBox comboBox = comboBoxPool.GetOrAdd( ( ComboBox newComboBox ) =>
+                        ComboBox comboBox = comboBoxPool.GetOrAdd( ( newComboBox ) =>
                         {
                             newComboBox.LostFocus += new EventHandler( CallValidatorAfterFocusLostOrIndexChanged );
                             newComboBox.SelectedIndexChanged += new EventHandler( CallValidatorAfterFocusLostOrIndexChanged );
@@ -485,7 +479,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                 #region Int
                 case AttributeType.Int:
                     {
-                        NumericUpDown numeric = numericUpDownPool.GetOrAdd( ( NumericUpDown newNumeric ) =>
+                        NumericUpDown numeric = numericUpDownPool.GetOrAdd( ( newNumeric ) =>
                         {
                             newNumeric.LostFocus += new EventHandler( CallValidatorAfterFocusLostOrIndexChanged );
                         } );
@@ -513,7 +507,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                 #region Float
                 case AttributeType.Float:
                     {
-                        NumericUpDown numeric = numericUpDownPool.GetOrAdd( ( NumericUpDown newNumeric ) =>
+                        NumericUpDown numeric = numericUpDownPool.GetOrAdd( ( newNumeric ) =>
                         {
                             newNumeric.LostFocus += new EventHandler( CallValidatorAfterFocusLostOrIndexChanged );
                         } );
@@ -544,7 +538,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                 #region ArbitraryNode
                 case AttributeType.ArbitraryNode:
                     {
-                        ComboBox comboBox = comboBoxPool.GetOrAdd( ( ComboBox newComboBox ) =>
+                        ComboBox comboBox = comboBoxPool.GetOrAdd( ( newComboBox ) =>
                         {
                             newComboBox.LostFocus += new EventHandler( CallValidatorAfterFocusLostOrIndexChanged );
                             newComboBox.SelectedIndexChanged += new EventHandler( CallValidatorAfterFocusLostOrIndexChanged );
@@ -586,11 +580,11 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                 #region NodeList
                 case AttributeType.NodeList:
                     {
-                        Button openListButton = openCheckedListBoxDropdownButtonEvent_Pool.GetOrAdd( (Action<Button>?)(( Button newButton ) =>
+                        Button openListButton = openCheckedListBoxDropdownButtonEvent_Pool.GetOrAdd( ( newButton ) =>
                         {
                             newButton.Click += new EventHandler( OpenCheckedListBoxDropdown_ButtonClickEvent );
                             newButton.LostFocus += new EventHandler( CallValidatorAfterFocusLostOrIndexChanged );
-                        }) );
+                        } );
                         openListButton.Bounds = new Rectangle( caret.x, caret.y, controlHeight, controlHeight );
                         Bitmap icon = new Bitmap( ProgramPermanentSettings.AssetsPath + @"Icons\iconoir\arrowDown\arrowDown18.png" );
                         openListButton.Image = icon;
@@ -648,11 +642,11 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                 #region FolderList
                 case AttributeType.FolderList:
                     {
-                        Button openListButton = openCheckedListBoxDropdownButtonEvent_Pool.GetOrAdd( (Action<Button>?)(( Button newButton ) =>
+                        Button openListButton = openCheckedListBoxDropdownButtonEvent_Pool.GetOrAdd( ( newButton ) =>
                         {
                             newButton.Click += new EventHandler( OpenCheckedListBoxDropdown_ButtonClickEvent );
                             newButton.LostFocus += new EventHandler( CallValidatorAfterFocusLostOrIndexChanged );
-                        }) );
+                        } );
                         openListButton.Bounds = new Rectangle( caret.x, caret.y, controlHeight, controlHeight );
                         Bitmap icon = new Bitmap( ProgramPermanentSettings.AssetsPath + @"Icons\iconoir\arrowDown\arrowDown18.png" );
                         openListButton.Image = icon;
@@ -704,12 +698,12 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                 #region Point
                 case AttributeType.Point:
                     {
-                        NumericUpDown numeric1 = numericUpDownPool.GetOrAdd( ( NumericUpDown newNumeric ) =>
+                        NumericUpDown numeric1 = numericUpDownPool.GetOrAdd( ( newNumeric ) =>
                         {
                             newNumeric.LostFocus += new EventHandler( CallValidatorAfterFocusLostOrIndexChanged );
                             ((PooledControlTagInfo)newNumeric.Tag).ControlsCoordinate = Coordinate.x;
                         } );
-                        NumericUpDown numeric2 = numericUpDownPool.GetOrAdd( ( NumericUpDown newNumeric ) =>
+                        NumericUpDown numeric2 = numericUpDownPool.GetOrAdd( ( newNumeric ) =>
                         {
                             newNumeric.LostFocus += new EventHandler( CallValidatorAfterFocusLostOrIndexChanged );
                             ((PooledControlTagInfo)newNumeric.Tag).ControlsCoordinate = Coordinate.y;
@@ -758,12 +752,12 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                 #region Vector2
                 case AttributeType.Vector2:
                     {
-                        NumericUpDown numeric1 = numericUpDownPool.GetOrAdd( ( NumericUpDown newNumeric ) =>
+                        NumericUpDown numeric1 = numericUpDownPool.GetOrAdd( ( newNumeric ) =>
                         {
                             newNumeric.LostFocus += new EventHandler( CallValidatorAfterFocusLostOrIndexChanged );
                             ((PooledControlTagInfo)newNumeric.Tag).ControlsCoordinate = Coordinate.x;
                         } );
-                        NumericUpDown numeric2 = numericUpDownPool.GetOrAdd( ( NumericUpDown newNumeric ) =>
+                        NumericUpDown numeric2 = numericUpDownPool.GetOrAdd( ( newNumeric ) =>
                         {
                             newNumeric.LostFocus += new EventHandler( CallValidatorAfterFocusLostOrIndexChanged );
                             ((PooledControlTagInfo)newNumeric.Tag).ControlsCoordinate = Coordinate.y;
@@ -812,17 +806,17 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                 #region Vector3
                 case AttributeType.Vector3:
                     {
-                        NumericUpDown numeric1 = numericUpDownPool.GetOrAdd( ( NumericUpDown newNumeric ) =>
+                        NumericUpDown numeric1 = numericUpDownPool.GetOrAdd( ( newNumeric ) =>
                         {
                             newNumeric.LostFocus += new EventHandler( CallValidatorAfterFocusLostOrIndexChanged );
                             ((PooledControlTagInfo)newNumeric.Tag).ControlsCoordinate = Coordinate.x;
                         } );
-                        NumericUpDown numeric2 = numericUpDownPool.GetOrAdd( ( NumericUpDown newNumeric ) =>
+                        NumericUpDown numeric2 = numericUpDownPool.GetOrAdd( ( newNumeric ) =>
                         {
                             newNumeric.LostFocus += new EventHandler( CallValidatorAfterFocusLostOrIndexChanged );
                             ((PooledControlTagInfo)newNumeric.Tag).ControlsCoordinate = Coordinate.y;
                         } );
-                        NumericUpDown numeric3 = numericUpDownPool.GetOrAdd( ( NumericUpDown newNumeric ) =>
+                        NumericUpDown numeric3 = numericUpDownPool.GetOrAdd( ( newNumeric ) =>
                         {
                             newNumeric.LostFocus += new EventHandler( CallValidatorAfterFocusLostOrIndexChanged );
                             ((PooledControlTagInfo)newNumeric.Tag).ControlsCoordinate = Coordinate.z;
@@ -900,35 +894,30 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                                                       EditedXmlAttribute? xmlAttribute, MetaAttribute_Base metaAttribute )
         {
             for ( int i = 0; i < controlsToAdd.Length; i++ )
-            {
                 if ( i + 1 == controlsToAdd.Length )
                     LinkDataAndExecuteCommonActions( controls, controlsToAdd[i], currentUNode, uAttribute, xmlAttribute, metaAttribute, false );
                 else
                     LinkDataAndExecuteCommonActions( controls, controlsToAdd[i], currentUNode, uAttribute, xmlAttribute, metaAttribute );
-            }
         }
 
         private static void LinkDataAndExecuteCommonActions( Control.ControlCollection controls, Control control, UnionNode currentUNode, UnionAttribute uAttribute,
                                                              EditedXmlAttribute? xmlAttribute, MetaAttribute_Base metaAttribute, bool addToUNodeListOfAttributes = true )
         {
             ControlTagInfo tagData = (ControlTagInfo)control.Tag;
-            tagData.RelatedUnionElement = uAttribute;
 
             uAttribute.Controls.Add( control );
-
             if ( addToUNodeListOfAttributes )
             {
                 uAttribute.MetaAttribute = KeyValuePair.Create( metaAttribute.Key, metaAttribute );
                 uAttribute.XmlAttribute = xmlAttribute; // duplicate assignment - done in PrintLabelToVis()
                 currentUNode.UnionAttributes.Add( uAttribute );
             }
+            tagData.RelatedUnionElement = uAttribute;
 
             controls.Add( control );
 
             if ( xmlAttribute != null )
-            {
                 xmlAttribute.CurrentViewControl_Value = control;
-            }
             tagData.ClearErrorProvider( control );
             XmlValidator.Validate( control );
         }
@@ -1073,7 +1062,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
 
             tagData.UNode = uNode;
             tagData.MetaAttributes = uNode.MetaLayer.AttributesData;
-            tagData.Vis = new XmlVisualizer();
+            tagData.Vis = new XmlVisualizer(); // might cause memory islands => mem leak
             checkedListBoxPlusButton.Tag = tagData;
 
             checkedListBoxPlusButton.Bounds = new Rectangle( button.Bounds.X + button.Bounds.Width, button.Bounds.Y + button.Bounds.Height,
@@ -1090,6 +1079,11 @@ namespace ArcenXE.Utilities.XmlDataProcessing
             if ( checkedListBox == null )
             {
                 ArcenDebugging.LogSingleLine( "checkedListBox in CloseCheckedListBoxPlusButton_CBLLeaveEvent is null!", Verbosity.DoNotShow );
+                return;
+            }
+            if ( checkedListBoxPlusButton.CheckedItems.Count == 0 )
+            {
+                checkedListBoxPlusButton.Visible = false;
                 return;
             }
             CheckedListBoxTagData tagData = (CheckedListBoxTagData)checkedListBox.Tag;
@@ -1145,47 +1139,55 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                         att.TempValue = ((MetaAttribute_Vector3)tagData.MetaAttributes[attName]).x.Default.ToString();
                         break;
                 }
-                tagData.Node.Attributes.Add( attName, att );
+                if ( tagData.Node.Attributes.ContainsKey( attName ) ) //means that it was previously deleted
+                    tagData.Node.Attributes[attName].IsDeleted = false;
+                else
+                    tagData.Node.Attributes.Add( attName, att );
             }
             checkedListBoxPlusButton.Visible = false;
             UnionNode? uNode = tagData.UNode;
             while ( uNode.ParentUnionNode != null )
                 uNode = uNode.ParentUnionNode;
             if ( uNode.XmlNodeOrComment != null )
-                tagData.Vis.VisualizeSelectedNode( uNode.XmlNodeOrComment, uNode.MetaDocument.TopLevelNode, true ); //topLevelNode correct?
+                tagData.Vis.VisualizeSelectedNode( uNode.XmlNodeOrComment, uNode.MetaDocument.TopLevelNode, true );
             else
                 ArcenDebugging.LogSingleLine( "uNode.XmlNodeOrComment null in CloseCheckedListBoxPlusButton_CBLLeaveEvent", Verbosity.DoNotShow );
         }
         #endregion
 
         #region SmallLabelToolBar
-        private static void OpenSmallMenuOnLabelRightClick( object? sender, EventArgs e )
+        private static void OpenSmallMenuOnLabelRightClick( object sender, EventArgs e )
         {
             MouseEventArgs me = (MouseEventArgs)e;
-            if ( sender != null && me.Button == MouseButtons.Right )
-            {
-                LabelMenu labelMenu = new LabelMenu( (Control)sender );
-                labelMenu.Show();
-            }
+            if ( me.Button == MouseButtons.Right )
+                CreateLabelMenu( (Control)sender );
         }
 
-        private static void OpenSmallMenuOnLabelDoubleClick( object? sender, EventArgs e )
+        private static void OpenSmallMenuOnLabelDoubleClick( object sender, EventArgs e )
         {
             MouseEventArgs me = (MouseEventArgs)e;
-            SplitContainer container = MainWindow.Instance.RightSplitContainer;
-            if ( sender != null && me.Button == MouseButtons.Left )
-            {
-                /*Point temp = new Point();
-                temp.X += MainWindow.Instance.Location.X + MainWindow.Instance.BigSplitContainer.Panel1.Width + container.Panel1.Width + container.SplitterWidth + ((Label)sender).Location.X;
-                Rectangle screenRectangle = MainWindow.Instance.RectangleToScreen( MainWindow.Instance.ClientRectangle );
-                int titleHeight = screenRectangle.Top - MainWindow.Instance.Top;
-                temp.Y += MainWindow.Instance.Location.Y + MainWindow.Instance.toolStrip1.Height + MainWindow.Instance.toolStrip2.Height + ((Label)sender).Location.Y + titleHeight;
-                LabelMenu labelMenu = new LabelMenu( temp.X, temp.Y );*/
+            if ( me.Button == MouseButtons.Left )
+                CreateLabelMenu( (Control)sender );
+        }
 
-                LabelMenu labelMenu = new LabelMenu( (Control)sender );
-                labelMenu.Show();
-                ArcenDebugging.LogSingleLine( $"container.Location = {container.Location}\nMainWindow.Instance.Location = {MainWindow.Instance.Location}\nMainWindow.Instance.PointToScreen( MainWindow.Instance.Location ) = {MainWindow.Instance.PointToScreen( MainWindow.Instance.Location )}", Verbosity.DoNotShow );
+        private static void CreateLabelMenu( Control control )
+        {
+            int targetX = control.Bounds.X;
+            int targetY = control.Bounds.Y + control.Height;
+            /*Control parent = control.Parent;
+            while ( parent != null )
+            {
+                targetX += parent.Bounds.X;
+                targetY += parent.Bounds.Y;
+                parent = parent.Parent;
             }
+            //targetX += MainWindow.Instance.Bounds.X; // increases the X by too much
+            targetY += MainWindow.Instance.Bounds.Y;
+            targetX += 10; // manually adjusting the coordinates
+            //targetY -= MainWindow.Instance.RectangleToScreen( MainWindow.Instance.ClientRectangle ).Top - MainWindow.Instance.Top; // removing the tile height;*/
+
+            LabelMenu labelMenu = new LabelMenu( control, targetX, targetY );
+            labelMenu.Show();
         }
         #endregion
 
@@ -1251,9 +1253,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                         {
                             string error = ((MetaAttribute_Bool)uAtt.MetaAttribute.Value).DoValidate( uAtt.XmlAttribute, tagData.ControlsCoordinate );
                             if ( error != string.Empty )
-                            {
                                 errorProvider.SetError( control, error );
-                            }
                             else
                                 errorProvider.SetError( control, string.Empty );
                         }
@@ -1262,9 +1262,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                         {
                             string error = ((MetaAttribute_BoolInt)uAtt.MetaAttribute.Value).DoValidate( uAtt.XmlAttribute, tagData.ControlsCoordinate );
                             if ( error != string.Empty )
-                            {
                                 errorProvider.SetError( control, error );
-                            }
                             else
                                 errorProvider.SetError( control, string.Empty );
                         }
@@ -1273,9 +1271,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                         {
                             string error = ((MetaAttribute_String)uAtt.MetaAttribute.Value).DoValidate( uAtt.XmlAttribute, tagData.ControlsCoordinate );
                             if ( error != string.Empty )
-                            {
                                 errorProvider.SetError( control, error );
-                            }
                             else
                                 errorProvider.SetError( control, string.Empty );
                         }
@@ -1284,9 +1280,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                         {
                             string error = ((MetaAttribute_StringMultiline)uAtt.MetaAttribute.Value).DoValidate( uAtt.XmlAttribute, tagData.ControlsCoordinate );
                             if ( error != string.Empty )
-                            {
                                 errorProvider.SetError( control, error );
-                            }
                             else
                                 errorProvider.SetError( control, string.Empty );
                         }
@@ -1295,9 +1289,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                         {
                             string error = ((MetaAttribute_ArbitraryString)uAtt.MetaAttribute.Value).DoValidate( uAtt.XmlAttribute, tagData.ControlsCoordinate );
                             if ( error != string.Empty )
-                            {
                                 errorProvider.SetError( control, error );
-                            }
                             else
                                 errorProvider.SetError( control, string.Empty );
                         }
@@ -1306,9 +1298,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                         {
                             string error = ((MetaAttribute_Int)uAtt.MetaAttribute.Value).DoValidate( uAtt.XmlAttribute, tagData.ControlsCoordinate );
                             if ( error != string.Empty )
-                            {
                                 errorProvider.SetError( control, error );
-                            }
                             else
                                 errorProvider.SetError( control, string.Empty );
                         }
@@ -1317,9 +1307,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                         {
                             string error = ((MetaAttribute_Float)uAtt.MetaAttribute.Value).DoValidate( uAtt.XmlAttribute, tagData.ControlsCoordinate );
                             if ( error != string.Empty )
-                            {
                                 errorProvider.SetError( control, error );
-                            }
                             else
                                 errorProvider.SetError( control, string.Empty );
                         }
@@ -1328,9 +1316,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                         {
                             string error = ((MetaAttribute_ArbitraryNode)uAtt.MetaAttribute.Value).DoValidate( uAtt.XmlAttribute, tagData.ControlsCoordinate );
                             if ( error != string.Empty )
-                            {
                                 errorProvider.SetError( control, error );
-                            }
                             else
                                 errorProvider.SetError( control, string.Empty );
                         }
@@ -1339,9 +1325,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                         {
                             string error = ((MetaAttribute_NodeList)uAtt.MetaAttribute.Value).DoValidate( uAtt.XmlAttribute, tagData.ControlsCoordinate );
                             if ( error != string.Empty )
-                            {
                                 errorProvider.SetError( control, error );
-                            }
                             else
                                 errorProvider.SetError( control, string.Empty );
                         }
@@ -1350,9 +1334,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                         {
                             string error = ((MetaAttribute_FolderList)uAtt.MetaAttribute.Value).DoValidate( uAtt.XmlAttribute, tagData.ControlsCoordinate );
                             if ( error != string.Empty )
-                            {
                                 errorProvider.SetError( control, error );
-                            }
                             else
                                 errorProvider.SetError( control, string.Empty );
                         }
@@ -1361,9 +1343,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                         {
                             string error = ((MetaAttribute_Point)uAtt.MetaAttribute.Value).DoValidate( uAtt.XmlAttribute, tagData.ControlsCoordinate );
                             if ( error != string.Empty )
-                            {
                                 errorProvider.SetError( control, error );
-                            }
                             else
                                 errorProvider.SetError( control, string.Empty );
                         }
@@ -1372,9 +1352,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                         {
                             string error = ((MetaAttribute_Vector2)uAtt.MetaAttribute.Value).DoValidate( uAtt.XmlAttribute, tagData.ControlsCoordinate );
                             if ( error != string.Empty )
-                            {
                                 errorProvider.SetError( control, error );
-                            }
                             else
                                 errorProvider.SetError( control, string.Empty );
                         }
@@ -1383,9 +1361,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                         {
                             string error = ((MetaAttribute_Vector3)uAtt.MetaAttribute.Value).DoValidate( uAtt.XmlAttribute, tagData.ControlsCoordinate );
                             if ( error != string.Empty )
-                            {
                                 errorProvider.SetError( control, error );
-                            }
                             else
                                 errorProvider.SetError( control, string.Empty );
                         }
@@ -1431,13 +1407,5 @@ namespace ArcenXE.Utilities.XmlDataProcessing
             }
         }
         #endregion
-    }
-
-    public struct CheckedListBoxTagData
-    {
-        public UnionNode UNode;
-        public Dictionary<string, MetaAttribute_Base> MetaAttributes;
-        public EditedXmlNode Node; // Updated each time the plus button is pressed to match the node from which the CLB was called
-        public XmlVisualizer Vis;
     }
 }

@@ -3,13 +3,14 @@
     #region EditedXmlNode
     public class EditedXmlNode : IEditedXmlNodeOrComment, IEditedXmlElement
     {
-        public EditedXmlAttribute? NodeCentralID = null; // if != null, then it's a top node
+        public uint UID { get; set; } = 0;
         public string XmlNodeTagName = string.Empty; // string that defines the tag in xml
+        public EditedXmlAttribute? NodeCentralID = null; // if != null, then it's a top node
         public Dictionary<string, EditedXmlAttribute> Attributes = new Dictionary<string, EditedXmlAttribute>();
         public List<IEditedXmlNodeOrComment> ChildNodes = new List<IEditedXmlNodeOrComment>();
         public bool IsRootOnly = false;
         public bool IsComment => false;
-
+        public bool IsDeleted { get; set; } = false;
         /// <summary>
         /// For use in XmlVisualizer only
         /// </summary>
@@ -20,8 +21,10 @@
     #region EditedXmlComment
     public class EditedXmlComment : IEditedXmlNodeOrComment, IEditedXmlElement
     {
+        public uint UID { get; set; } = 0;
         public string Data = string.Empty;
         public bool IsComment => true;
+        public bool IsDeleted { get; set; } = false;
 
         /// <summary>
         /// For use in XmlVisualizer only
@@ -34,10 +37,10 @@
     public class EditedXmlAttribute : IEditedXmlElement
     {
         public string Name = string.Empty;
-        public AttributeType Type = AttributeType.Unknown; //to be filled by metadata
+        public AttributeType Type = AttributeType.Unknown; //will be filled by metadata
         public string? ValueOnDisk = null;
         public string? TempValue = null;
-
+        public bool IsDeleted { get; set; } = false;
         /// <summary>
         /// For use in XmlVisualizer only
         /// </summary>
@@ -67,12 +70,48 @@
     #region IEditedXml
     public interface IEditedXmlNodeOrComment
     {
+        public uint UID { get; set; }
         public bool IsComment { get; }
     }
 
     public interface IEditedXmlElement
     {
+        public bool IsDeleted { get; set; }
+    }
+    #endregion
 
+    #region UIDSource
+    public static class UIDSource
+    {
+        private static uint NextID = 0;
+
+        public static uint GetNext()
+        {
+            return Interlocked.Increment( ref NextID );
+        }
+
+        public static void Reset()
+        {
+            Interlocked.Exchange( ref NextID, 0 );
+        }
+    }
+    #endregion
+
+    #region TopNodeForVis
+    public struct TopNodeForVis
+    {
+        public string VisName { get; set; }
+        public uint UID { set; get; }
+        public bool IsComment;
+
+        public TopNodeForVis( string name, uint uid, bool isComment )
+        {
+            this.VisName = name;
+            this.UID = uid;
+            this.IsComment = isComment;
+        }
+
+        public override string ToString() => this.VisName;
     }
     #endregion
 }

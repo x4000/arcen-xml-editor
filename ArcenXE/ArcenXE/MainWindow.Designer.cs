@@ -156,6 +156,7 @@
             // 
             // RightSplitContainer.Panel2
             // 
+            this.RightSplitContainer.Panel2.AutoScroll = true;
             this.RightSplitContainer.Panel2.BackColor = System.Drawing.SystemColors.ControlLight;
             this.RightSplitContainer.Size = new System.Drawing.Size(1320, 659);
             this.RightSplitContainer.SplitterDistance = 243;

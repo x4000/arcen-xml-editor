@@ -11,11 +11,11 @@ namespace ArcenXE.Utilities.XmlDataProcessing
         public static void LoadXml( string fileName, MetadataDocument metaDoc )
         {
             Interlocked.Increment( ref numberOfDatasStillLoading );
+            UIDSource.Reset();
             //parse xml document into complex data structure (with other bg threads)
             Task.Run( () =>
             {
-                CopyEditedXmlMessage messageSaveXml = new CopyEditedXmlMessage();
-                CopyEditedXmlTopNodesAndFillVisMessage messageSendXmlTopNode = new CopyEditedXmlTopNodesAndFillVisMessage();
+                CopyEditedXmlAndFillVis_Message messageSaveXml = new CopyEditedXmlAndFillVis_Message();
                 XmlParser parser = new XmlParser();
                 XmlDocument? doc = Openers.GenericXmlFileLoader( fileName );
                 XmlElement? root = doc?.DocumentElement;
@@ -23,6 +23,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                 {
                     XmlNodeList childNodes = root.ChildNodes;
                     if ( childNodes.Count > 0 )
+                        //risk of losing the correct order of parts with this, so it'd need a thread-safe structure
                         //Parallel.For( int = 0; i < childNodes.Count; i++;
                         //delegate ( int index )
                         //{
@@ -33,18 +34,17 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                             //ArcenDebugging.LogSingleLine( "Top Node: " + node.Name + " name=" + ((XmlElement)node).GetAttribute( "name" ), Verbosity.DoNotShow );
                             switch ( node.NodeType )
                             {
-                                case XmlNodeType.Element:
-                                    //task.run on this? risk of losing the correct order of parts, so need a thread-safe structure
+                                case XmlNodeType.Element:                                    
                                     IEditedXmlNodeOrComment? result = parser.ProcessXmlElement( (XmlElement)node, metaDoc, true );
                                     if ( result != null )
-                                        messageSendXmlTopNode.Nodes.Add( result );
+                                        messageSaveXml.Nodes.Add( result );
                                     break;
                                 case XmlNodeType.Comment:
                                     EditedXmlComment comment = new EditedXmlComment
                                     {
                                         Data = node.InnerText
                                     };
-                                    messageSendXmlTopNode.Nodes.Add( comment );
+                                    messageSaveXml.Nodes.Add( comment );
                                     break;
                                 default:
                                     ArcenDebugging.LogSingleLine( "Why do we have a " + node.NodeType + " directly under the element node?", Verbosity.DoNotShow );
@@ -55,11 +55,9 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                     {
                         IEditedXmlNodeOrComment? result = parser.ProcessXmlElement( root, metaDoc, true, true );
                         if ( result != null )
-                            messageSendXmlTopNode.Nodes.Add( result );
+                            messageSaveXml.Nodes.Add( result );
                     }
-                    messageSaveXml.Nodes.AddRange( messageSendXmlTopNode.Nodes );
                     MainWindow.Instance.MessagesToFrontEnd.Enqueue( messageSaveXml );
-                    MainWindow.Instance.MessagesToFrontEnd.Enqueue( messageSendXmlTopNode );
                 }
                 else
                     ArcenDebugging.LogSingleLine( "Error: root in OpenFileWindow() is null", Verbosity.DoNotShow );

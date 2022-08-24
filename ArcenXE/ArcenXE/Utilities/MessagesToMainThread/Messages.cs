@@ -1,18 +1,31 @@
 ﻿using ArcenXE.Utilities.MetadataProcessing;
-using ArcenXE.Utilities.XmlDataProcessing;
 
 namespace ArcenXE.Utilities.MessagesToMainThread
-{ //needs refactoring and reordering
-    public class CopyEditedXmlMessage : IBGMessageToMainThread
+{
+    public class CopyEditedXmlAndFillVis_Message : IBGMessageToMainThread
     {
         public readonly List<IEditedXmlNodeOrComment> Nodes = new List<IEditedXmlNodeOrComment>();
-        private readonly List<IEditedXmlNodeOrComment> mainXmlVis = MainWindow.Instance.CurrentXmlForVis;
+        private readonly Dictionary<uint, IEditedXmlNodeOrComment> mainXmlVis = MainWindow.Instance.CurrentXmlTopNodesForVis;
         public void ProcessMessageOnMainThread()
         {
+            bool rootOnly = false;
             if ( mainXmlVis.Count > 0 )
                 mainXmlVis.Clear();
-            foreach ( IEditedXmlNodeOrComment node in Nodes )
-                mainXmlVis.Add( node );
+            foreach ( IEditedXmlNodeOrComment nodeOrComment in Nodes )
+                if ( nodeOrComment.UID != 0 )
+                {
+                    mainXmlVis.Add( nodeOrComment.UID, nodeOrComment );
+                    if ( !nodeOrComment.IsComment )
+                        if ( ((EditedXmlNode)nodeOrComment).IsRootOnly )
+                            rootOnly = true;
+                }
+
+            MainWindow.Instance.FillTopNodesList();
+            if ( rootOnly )
+            {
+                MainWindow.Instance.SelectedTopNodeIndex = 0;
+                MainWindow.Instance.CallXmlVisualizer();
+            }
         }
     }
 
@@ -26,87 +39,46 @@ namespace ArcenXE.Utilities.MessagesToMainThread
         public void ProcessMessageOnMainThread() => MetadataStorage.AddMetadataDocument( this.metadataDocument.MetadataFolder, this.metadataDocument );
     }
 
-    public class ListOfTablesIsReady : IBGMessageToMainThread
-    {
-        public readonly List<string> DataTableNames = new List<string>();
-        public void ProcessMessageOnMainThread()
-        {
-            //foreach ( string tableName in DataTableNames )
-            //    MainWindow.Instance.DataTableNames.Add( tableName );
-        }
-    }
-
-    /*public class CopyFolderPathsAndFillVisMessage : IBGMessageToMainThread //currently unused, might be useful, after refactoring, if OpenFolderDialogToSelectRootFolder() has to be made threadsafe
-    {
-        public readonly List<string> FoldersPaths = new List<string>();
-        private readonly List<string> mainList = XmlRootFolders.XmlFolders;
-        public void ProcessMessageOnMainThread()
-        {
-            if ( mainList.Count > 0 )
-                mainList.Clear();
-
-            foreach ( string folder in FoldersPaths )
-            {
-                mainList.Add( folder );
-                MainWindow.Instance.FillFolderList();
-            }
-        }
-    }*/
-
-    /*public class CopyXmlPathsAndFillVisMessage : IBGMessageToMainThread
-    {
-        public readonly List<string> XmlPathsList = new List<string>();
-        private readonly List<string> mainList = MainWindow.Instance.XmlPathsVis;
-        public void ProcessMessageOnMainThread()
-        {
-            if ( mainList.Count > 0 )
-                mainList.Clear();
-            foreach ( string path in XmlPathsList )
-                mainList.Add( path );
-            //MainWindow.Instance.FillFileList(); // to be moveed elsewhere
-        }
-    }*/
-
-    public class CopyEditedXmlTopNodesAndFillVisMessage : IBGMessageToMainThread
+    /*public class CopyEditedXmlTopNodesAndFillVisMessage : IBGMessageToMainThread
     {
         public readonly List<IEditedXmlNodeOrComment> Nodes = new List<IEditedXmlNodeOrComment>();
-        private readonly Dictionary<string, IEditedXmlNodeOrComment> mainDictTopNodes = MainWindow.Instance.TopNodesVis;
+        //private readonly Dictionary<string, IEditedXmlNodeOrComment> mainDictTopNodes = MainWindow.Instance.CurrentXmlTopNodesForVis;
 
         public void ProcessMessageOnMainThread()
         {
-            if ( mainDictTopNodes.Count > 0 )
-                mainDictTopNodes.Clear();
-            /*for ( int i = 0; i < Nodes.Count; i++ )
-            {
-                if ( Nodes[i] is EditedXmlNode node )
-                    if ( node.NodeName != null )
-                        mainDictTopNodes.TryAdd( node.NodeName.Value, node );
-            }*/
             bool rootOnly = false;
-            int commentNumber = 1;
+            //if ( mainDictTopNodes.Count > 0 )
+            //    mainDictTopNodes.Clear();
+            //int commentNumber = 1;
+            //foreach ( IEditedXmlNodeOrComment? node in Nodes )
+            //{
+            //    if ( node.IsComment )
+            //    {
+            //        //mainDictTopNodes.Add( "Comment " + commentNumber, node ); //remove this
+            //        mainDictTopNodes.Add( node.UID, node );
+            //        commentNumber++;
+            //    }
+            //    else
+            //    {
+            //        EditedXmlAttribute? att = ((EditedXmlNode)node).NodeCentralID;
+            //        if ( att != null && att.ValueOnDisk != null )
+            //            mainDictTopNodes.Add( att.ValueOnDisk, node );
+            //        if ( ((EditedXmlNode)node).IsRootOnly )
+            //            rootOnly = true;
+            //    }
+            //}
             foreach ( IEditedXmlNodeOrComment? node in Nodes )
-            {
-                if ( node.IsComment )
-                {
-                    mainDictTopNodes.Add( "Comment " + commentNumber, node );
-                    commentNumber++;
-                }
-                else
-                {
-                    EditedXmlAttribute? att = ((EditedXmlNode)node).NodeCentralID;
-                    if ( att != null && att.ValueOnDisk != null )
-                        mainDictTopNodes.Add( att.ValueOnDisk, node );
+                if ( !node.IsComment )
                     if ( ((EditedXmlNode)node).IsRootOnly )
                         rootOnly = true;
-                }
-            }
-            MainWindow.Instance.FillTopNodesList();
-            if ( rootOnly )
-            {
-                MainWindow.Instance.SelectedTopNodeIndex = 0;
-                MainWindow.Instance.CallXmlVisualizer();
-            }
+
+            //MainWindow.Instance.FillTopNodesList();
+            //if ( rootOnly )
+            //{
+            //    MainWindow.Instance.SelectedTopNodeIndex = 0;
+            //    MainWindow.Instance.CallXmlVisualizer();
+            //}
         }
-    }
+    }*/
 }
 

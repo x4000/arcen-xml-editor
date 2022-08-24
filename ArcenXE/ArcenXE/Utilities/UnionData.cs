@@ -16,6 +16,7 @@ namespace ArcenXE.Utilities
         public readonly MetadataNodeLayer MetaLayer;
         public IEditedXmlNodeOrComment? XmlNodeOrComment = null;
         public List<Control> Controls { get; set; } = new List<Control>();
+        //public bool IsDeleted { get; set; } = false;
         public bool? IsComment
         {
             get
@@ -28,7 +29,6 @@ namespace ArcenXE.Utilities
                     return false;
             }
         }
-        public bool IsDeleted { get; set; } = false;
 
         public UnionNode( MetadataNodeLayer metaLayer )
         {
@@ -52,7 +52,7 @@ namespace ArcenXE.Utilities
         public KeyValuePair<string, MetaAttribute_Base> MetaAttribute;
         public EditedXmlAttribute? XmlAttribute = null;
         public List<Control> Controls { get; set; } = new List<Control>();
-        public bool IsDeleted { get; set; } = false;
+        //public bool IsDeleted { get; set; } = false;
 
         public UnionAttribute( KeyValuePair<string, MetaAttribute_Base> metaAttribute )
         {
@@ -76,6 +76,6 @@ namespace ArcenXE.Utilities
     {
         public UnionNode? ParentUnionNode { get; }
         public List<Control> Controls { get; set; }
-        public bool IsDeleted { get; set; }
+        //public bool IsDeleted { get; set; }
     }
 }

@@ -5,6 +5,7 @@ using ArcenXE.Utilities;
 using ArcenXE.Utilities.MessagesToMainThread;
 using ArcenXE.Utilities.MetadataProcessing;
 using ArcenXE.Utilities.XmlDataProcessing;
+using ArcenXE.Visualization;
 
 namespace ArcenXE
 {
@@ -18,13 +19,11 @@ namespace ArcenXE
 
         public readonly ConcurrentQueue<IBGMessageToMainThread> MessagesToFrontEnd = new ConcurrentQueue<IBGMessageToMainThread>();
 
-        public readonly List<IEditedXmlNodeOrComment> CurrentXmlForVis = new List<IEditedXmlNodeOrComment>(); // merge with XmlPathsVis and make a Dictionary<string, IEditedXmlNodeOrComment> ?
+        public readonly Dictionary<uint, IEditedXmlNodeOrComment> CurrentXmlTopNodesForVis = new Dictionary<uint, IEditedXmlNodeOrComment>(); // merge with MetadataStorage and make it Storage
 
-        //useless? public readonly List<string> DataTableNames = new List<string>(); //todo: full path of data table and its name
-        public readonly Dictionary<string, IEditedXmlNodeOrComment> TopNodesVis = new Dictionary<string, IEditedXmlNodeOrComment>();
+        public IEditedXmlNodeOrComment? XmlElementCurrentlyBeingEdited; //updated with the current node being selected/edited
 
-        public IEditedXmlElement? XmlElementCurrentlyBeingEdited { get; } //todo: should be updated with the current node being selected/edited
-
+        #region ErrorLogValues
         private int errorsWrittenToLog = 0;
         public int ErrorsWrittenToLog
         {
@@ -35,23 +34,13 @@ namespace ArcenXE
                 ErrorLogToolStripButtonCounterUpdate();
             }
         }
+        #endregion
 
+        #region SelectedIndexes
         public int SelectedFolderIndex { get; private set; } = -1;
         public XmlDataTableFile? SelectedFile { get; private set; } = null;
-
-        private int selectedTopNodeIndex = -1;
-        public int SelectedTopNodeIndex
-        {
-            get => selectedTopNodeIndex;
-            set
-            {
-                if ( value < 0 )
-                    throw new ArgumentOutOfRangeException( nameof( value ) );
-                else
-                    selectedTopNodeIndex = value;
-            }
-        }
-
+        public int SelectedTopNodeIndex { get; set; } = -1;
+        #endregion
 
         public MainWindow()
         {
@@ -72,7 +61,7 @@ namespace ArcenXE
 
         private void MainThreadLoop()
         {
-            while ( MessagesToFrontEnd.TryDequeue( out IBGMessageToMainThread? message ) )
+            while ( this.MessagesToFrontEnd.TryDequeue( out IBGMessageToMainThread? message ) )
             {
                 if ( message != null )
                     message.ProcessMessageOnMainThread();
@@ -95,13 +84,13 @@ namespace ArcenXE
 
         private void MainWindow_Load( object sender, EventArgs e )
         {
-            ErrorLogToolStripButton.Text = "Error List: " + ErrorsWrittenToLog;
+            this.ErrorLogToolStripButton.Text = "Error List: " + ErrorsWrittenToLog;
             ProgramPermanentSettings.SetPaths();
         }
 
         private void LoadMeta_Click( object sender, EventArgs e )
         {
-            //MetadataLoader.LoadDataTables( ProgramPermanentSettings.MainPath );
+            _ = Openers.OpenFolderDialogToSelectRootFolder( ProgramPermanentSettings.MainPath );
         }
 
         #region Folder
@@ -127,11 +116,16 @@ namespace ArcenXE
         private void FolderList_SelectedIndexChanged( object sender, EventArgs e )
         {
             int previouslySelectedIndex = this.SelectedFolderIndex;
-            this.SelectedFolderIndex = FolderList.SelectedIndex;
-            if ( this.SelectedFolderIndex != -1 && previouslySelectedIndex != this.SelectedFolderIndex ) //todo: introduce lazy loading of all xml files
+            this.SelectedFolderIndex = this.FolderList.SelectedIndex;
+            if ( this.SelectedFolderIndex != -1 && previouslySelectedIndex != this.SelectedFolderIndex )
             {
-                if ( TopNodesList.Items.Count > 0 )
-                    TopNodesList.Items.Clear();
+                // reset to initial state
+                if ( this.TopNodesList.Items.Count > 0 )
+                {
+                    TopNodesList.DataSource = null;
+                    TopNodesList.ValueMember = null;
+                    this.TopNodesList.Items.Clear();
+                }
 
                 List<string> dataTableNames = XmlRootFolders.GetXmlDataTableNames();
                 string selectedItem = dataTableNames[this.SelectedFolderIndex];
@@ -179,24 +173,45 @@ namespace ArcenXE
         }
         #endregion
 
-        //private void DumpAllVisXml( IEditedXmlNodeOrComment item )
-        //{
-        //    if ( item is EditedXmlNode node )
-        //    {
-        //        ArcenDebugging.LogSingleLine( $"Node", Verbosity.DoNotShow );
-        //        foreach ( KeyValuePair<string, EditedXmlAttribute> att in node.Attributes )
-        //        {
-        //            ArcenDebugging.LogSingleLine( $"Att key = {att.Key}\t att.value.name = {att.Value.Name}\t att.value.value = {att.Value.ValueOnDisk}", Verbosity.DoNotShow );
-        //        }
-        //        //foreach ( IEditedXmlNodeOrComment subnode in node.ChildNodes )
-        //           // DumpAllVisXml( subnode );
-        //    }
-        //}
-
         #region TopNodes
+        public void FillTopNodesList()
+        {
+            if ( XmlLoader.NumberOfDatasStillLoading == 0 ) // extra safety control - not strictly necessary
+            {
+                // reset to initial state
+                if ( this.TopNodesList.Items.Count > 0 )
+                {
+                    TopNodesList.DataSource = null;
+                    TopNodesList.ValueMember = null;
+                    this.TopNodesList.Items.Clear();
+                }
+
+                List<TopNodeForVis> topNodesForVis = new List<TopNodeForVis>();
+                foreach ( KeyValuePair<uint, IEditedXmlNodeOrComment> kv in this.CurrentXmlTopNodesForVis )
+                {
+                    if ( kv.Value.IsComment ) // colour comments in green
+                        topNodesForVis.Add( new TopNodeForVis( ((EditedXmlComment)kv.Value).Data, kv.Value.UID, true ) );
+                    else
+                    {
+                        EditedXmlAttribute? att = ((EditedXmlNode)kv.Value).NodeCentralID;
+                        if ( att != null && att.ValueOnDisk != null )
+                            topNodesForVis.Add( new TopNodeForVis( att.ValueOnDisk, kv.Value.UID, false ) ); //change to GetEffectiveValue() ?
+                    }
+                }
+                if ( topNodesForVis.Count == 0 )
+                {
+                    string noNodes = "There are no nodes to display in this file!";
+                    this.TopNodesList.Items.Add( noNodes );
+                    return;
+                }
+                TopNodesList.DataSource = topNodesForVis; // possibility for data islands?
+                TopNodesList.DisplayMember = "VisName";
+                TopNodesList.ValueMember = "UID";
+            }
+        }
         private void TopNodesList_SelectedIndexChanged( object sender, EventArgs e )
         {
-            this.SelectedTopNodeIndex = TopNodesList.SelectedIndex;
+            this.SelectedTopNodeIndex = this.TopNodesList.SelectedIndex;
             if ( this.SelectedTopNodeIndex != -1 )
                 CallXmlVisualizer();
         }
@@ -208,20 +223,27 @@ namespace ArcenXE
         public void CallXmlVisualizer( IEditedXmlNodeOrComment? element = null )
         {
             XmlVisualizer visualizer = new XmlVisualizer();
-            if ( element == null && CurrentXmlForVis.Count > 0 && TopNodesList.Items[0].ToString() != "There are no nodes to display in this file!" )
+            if ( element == null && this.CurrentXmlTopNodesForVis.Count > 0 && this.TopNodesList.Items[0].ToString() != "There are no nodes to display in this file!" )
             {
                 int numberOfMetaDatasStillLoading = MetadataLoader.NumberOfMetaDatasStillLoading;
                 if ( numberOfMetaDatasStillLoading == 0 )
                 {
-                    ApplyAttributeTypeToEditedXml( CurrentXmlForVis.ElementAt( this.SelectedTopNodeIndex ) );
-                    visualizer.VisualizeSelectedNode( CurrentXmlForVis.ElementAt( this.SelectedTopNodeIndex ), MetadataStorage.CurrentVisMetadata?.TopLevelNode, true );
+                    uint key = ((TopNodeForVis)this.TopNodesList.SelectedItem).UID;
+                    if ( this.CurrentXmlTopNodesForVis.TryGetValue( key, out this.XmlElementCurrentlyBeingEdited ) )
+                    {
+                        ApplyAttributeTypeToEditedXml( this.XmlElementCurrentlyBeingEdited );
+                        visualizer.VisualizeSelectedNode( this.XmlElementCurrentlyBeingEdited, MetadataStorage.CurrentVisMetadata?.TopLevelNode, true );
+                    }
                 }
                 else
                     //todo: needs new static class
                     MessageBox.Show( $"There are still {numberOfMetaDatasStillLoading} metadata files being loaded in memory. Try again in moment.", "Metadata still loading", MessageBoxButtons.OK, MessageBoxIcon.Information );
             }
             if ( element != null )
+            {
+                XmlElementCurrentlyBeingEdited = element;
                 visualizer.VisualizeSelectedNode( element, MetadataStorage.CurrentVisMetadata?.TopLevelNode );
+            }
         }
 
         private static void ApplyAttributeTypeToEditedXml( IEditedXmlNodeOrComment element )
@@ -242,31 +264,6 @@ namespace ArcenXE
                             }
                         }
                     }
-                }
-            }
-        }
-
-        public void FillTopNodesList()
-        {
-            if ( XmlLoader.NumberOfDatasStillLoading == 0 ) // extra safety control - not strictly necessary
-            {
-                if ( this.TopNodesList.Items.Count > 0 )
-                    this.TopNodesList.Items.Clear();
-                foreach ( KeyValuePair<string, IEditedXmlNodeOrComment> kv in this.TopNodesVis )
-                {
-                    if ( kv.Value.IsComment )
-                        this.TopNodesList.Items.Add( "Comment: " + ((EditedXmlComment)kv.Value).Data ); // colour comments in green
-                    else
-                    {
-                        EditedXmlAttribute? att = ((EditedXmlNode)kv.Value).NodeCentralID;
-                        if ( att != null && att.ValueOnDisk != null )
-                            this.TopNodesList.Items.Add( att.ValueOnDisk );
-                    }
-                }
-                if ( TopNodesList.Items.Count == 0 )
-                {
-                    string noNodes = "There are no nodes to display in this file!";
-                    this.TopNodesList.Items.Add( noNodes );
                 }
             }
         }
@@ -301,5 +298,21 @@ namespace ArcenXE
         {
             Openers.OpenFileDialog();
         }
+
+        #region Debugging
+        //private void DumpAllVisXml( IEditedXmlNodeOrComment item )
+        //{
+        //    if ( item is EditedXmlNode node )
+        //    {
+        //        ArcenDebugging.LogSingleLine( $"Node", Verbosity.DoNotShow );
+        //        foreach ( KeyValuePair<string, EditedXmlAttribute> att in node.Attributes )
+        //        {
+        //            ArcenDebugging.LogSingleLine( $"Att key = {att.Key}\t att.value.name = {att.Value.Name}\t att.value.value = {att.Value.ValueOnDisk}", Verbosity.DoNotShow );
+        //        }
+        //        //foreach ( IEditedXmlNodeOrComment subnode in node.ChildNodes )
+        //           // DumpAllVisXml( subnode );
+        //    }
+        //}
+        #endregion
     }
 }

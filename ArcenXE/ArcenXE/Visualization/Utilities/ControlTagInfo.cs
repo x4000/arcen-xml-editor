@@ -1,7 +1,8 @@
-﻿using ArcenXE.Utilities.XmlDataProcessing;
-using ArcenXE.Universal;
+﻿using ArcenXE.Universal;
+using ArcenXE.Utilities;
+using ArcenXE.Visualization;
 
-namespace ArcenXE.Utilities
+namespace ArcenXE.Visualization.Utilities
 {
     public class ControlTagInfo : IControlTagInfo
     {
@@ -24,11 +25,11 @@ namespace ArcenXE.Utilities
     public class PooledControlTagInfo : ControlTagInfo, IControlTagInfo
     {
         public Coordinate ControlsCoordinate = Coordinate.None; // only used by numerical updown controls
-        private readonly ReturnControlToPool ferrymanToPool;        
-        
+        private readonly ReturnControlToPool ferrymanToPool;
+
         public PooledControlTagInfo( Control relatedControl, ReturnControlToPool ferrymanToPool ) : base( relatedControl )
         {
-            base.RelatedControl = relatedControl;
+            RelatedControl = relatedControl;
             this.ferrymanToPool = ferrymanToPool;
         }
 
@@ -51,6 +52,14 @@ namespace ArcenXE.Utilities
         Control RelatedControl { get; }
         IUnionElement? RelatedUnionElement { get; }
         ErrorProvider RelatedErrorProvider { get; }
+    }
+
+    public struct CheckedListBoxTagData
+    {
+        public UnionNode UNode;
+        public Dictionary<string, MetaAttribute_Base> MetaAttributes;
+        public EditedXmlNode Node; // Updated each time the plus button is pressed to match the node from which the CLB was called
+        public XmlVisualizer Vis;
     }
 
     public enum Coordinate

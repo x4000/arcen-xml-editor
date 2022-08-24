@@ -1,4 +1,4 @@
-﻿using ArcenXE.Utilities;
+﻿using ArcenXE.Visualization.Utilities;
 using System.ComponentModel;
 
 namespace ArcenXE.Universal
