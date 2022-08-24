@@ -2,7 +2,7 @@
 
 namespace ArcenXE.Visualization.Utilities
 {
-    public class LabelMenu : Panel
+    public class LabelMenu : ToolStripPanel
     {
         private bool mouseDown;
         private Point lastLocation;
@@ -11,7 +11,9 @@ namespace ArcenXE.Visualization.Utilities
         public LabelMenu( Control callerControl, int x, int y )
         {
             this.callerControl = callerControl;
-            this.Bounds = new Rectangle( x, y, 200, 34 );
+            this.Bounds = new Rectangle( x, y, 160, 30 );
+            this.Cursor = Cursors.Default;
+            this.BackColor = Color.WhiteSmoke;
             this.LabelMenu_Load();
             MainWindow.Instance.RightSplitContainer.Panel2.Controls.Add( this );
             this.BringToFront();
@@ -19,34 +21,17 @@ namespace ArcenXE.Visualization.Utilities
 
         private void LabelMenu_Load()
         {
-            ToolStripPanel stripPanel = new ToolStripPanel();
-            ToolStrip toolStrip = new ToolStrip();
-            stripPanel.Anchor = AnchorStyles.Left | AnchorStyles.Right;
-            stripPanel.Dock = DockStyle.Fill;
-            stripPanel.Margin = new Padding( 0 );
-            stripPanel.Size = new Size( this.Width - 2, this.Height - 2 );
-            stripPanel.Cursor = Cursors.Default;
-            stripPanel.Controls.Add( toolStrip );
-            this.Controls.Add( stripPanel );
-
-            toolStrip.Dock = DockStyle.Fill;
-            toolStrip.Size = new Size( this.Width - 3, this.Height - 2 );
-            toolStrip.ImageScalingSize = new Size( 24, 24 );
-            toolStrip.Stretch = true;
-            toolStrip.Cursor = Cursors.SizeAll;
-            toolStrip.GripStyle = ToolStripGripStyle.Hidden;
+            ToolStrip toolStrip = new ToolStrip // toolstrips inside of ToolStripPanel ignore many properties like Dock, Margin, etc.
+            {
+                BackColor = Color.WhiteSmoke,
+                ImageScalingSize = new Size( 24, 24 ),
+                Stretch = true,
+                Cursor = Cursors.SizeAll,
+                GripStyle = ToolStripGripStyle.Hidden
+            };
             toolStrip.MouseDown += new MouseEventHandler( ToolStrip_MouseDown );
             toolStrip.MouseMove += new MouseEventHandler( ToolStrip_MouseMove );
             toolStrip.MouseUp += new MouseEventHandler( ToolStrip_MouseUp );
-
-            ToolStripButton closeLabelMenu = new ToolStripButton
-            {
-                Alignment = ToolStripItemAlignment.Right,
-                Image = Image.FromFile( ProgramPermanentSettings.AssetsPath + @"Icons\tabler-icons\X24.png" )
-            };
-            closeLabelMenu.Click += new EventHandler( this.CloseMenu_Click );
-            closeLabelMenu.MouseHover += new EventHandler( ChangeCursor_MouseEnter );
-            toolStrip.Items.Add( closeLabelMenu );
 
             ToolStripButton deleteAttribute = new ToolStripButton
             {
@@ -54,9 +39,18 @@ namespace ArcenXE.Visualization.Utilities
                 Image = Image.FromFile( ProgramPermanentSettings.AssetsPath + @"Icons\tabler-icons\Trash\trashX24.png" )
             };
             deleteAttribute.Click += new EventHandler( this.DeleteAttribute_Click );
-            deleteAttribute.MouseHover += new EventHandler( ChangeCursor_MouseEnter );
+            deleteAttribute.MouseHover += new EventHandler( this.ChangeCursor_MouseEnter );
             toolStrip.Items.Add( deleteAttribute );
 
+            ToolStripButton closeLabelMenu = new ToolStripButton
+            {
+                Alignment = ToolStripItemAlignment.Right,
+                Image = Image.FromFile( ProgramPermanentSettings.AssetsPath + @"Icons\tabler-icons\X24.png" )
+            };
+            closeLabelMenu.Click += new EventHandler( this.CloseMenu_Click );
+            closeLabelMenu.MouseHover += new EventHandler( this.ChangeCursor_MouseEnter );
+            toolStrip.Items.Add( closeLabelMenu );
+            this.Controls.Add( toolStrip );
         }
 
         private void DeleteAttribute_Click( object? sender, EventArgs e )
