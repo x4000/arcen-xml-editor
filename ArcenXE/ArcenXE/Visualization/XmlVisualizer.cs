@@ -138,8 +138,13 @@ namespace ArcenXE.Visualization
             Graphics graphics = MainWindow.Instance.RightSplitContainer.Panel2.CreateGraphics();
             Control.ControlCollection controls = MainWindow.Instance.RightSplitContainer.Panel2.Controls;
             UnionNode currentUnionNode = new UnionNode( metaNodeLayer );
+
             if ( parentUnionNode != null )
                 currentUnionNode.ParentUnionNode = parentUnionNode;
+            else 
+                currentMetaDoc.RelatedTopUnionNode ??= currentUnionNode;
+
+            metaNodeLayer.RelatedUnionNode = currentUnionNode;
 
             using ( graphics )
             {
@@ -164,6 +169,7 @@ namespace ArcenXE.Visualization
                     comment.CurrentViewControl = textBox;
 
                     currentUnionNode.XmlNodeOrComment = comment;
+                    comment.RelatedUnionNode = currentUnionNode;
                     currentUnionNode.Controls.Add( textBox );
                     ((PooledControlTagInfo)textBox.Tag).RelatedUnionElement = currentUnionNode;
 
@@ -191,6 +197,7 @@ namespace ArcenXE.Visualization
                         node.CurrentViewControl = label;
 
                         currentUnionNode.XmlNodeOrComment = node;
+                        node.RelatedUnionNode = currentUnionNode;
                         currentUnionNode.Controls.Add( label );
                         currentUnionNode.NodeData = new UnionTopNodeAttribute( node.NodeCentralID.GetEffectiveValue(), node.NodeCentralID );
                         ((PooledControlTagInfo)label.Tag).RelatedUnionElement = currentUnionNode;
@@ -909,7 +916,12 @@ namespace ArcenXE.Visualization
             if ( addToUNodeListOfAttributes )
             {
                 uAttribute.MetaAttribute = KeyValuePair.Create( metaAttribute.Key, metaAttribute );
+                metaAttribute.RelatedUnionAttribute = uAttribute;
+
                 uAttribute.XmlAttribute = xmlAttribute; // duplicate assignment - done in PrintLabelToVis()
+                if ( xmlAttribute != null )
+                    xmlAttribute.RelatedUnionAttribute = uAttribute;
+
                 currentUNode.UnionAttributes.Add( uAttribute );
             }
             tagData.RelatedUnionElement = uAttribute;

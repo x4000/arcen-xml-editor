@@ -22,6 +22,7 @@ namespace ArcenXE.Utilities
         public string OnlyExistsIfConditionalPasses { get; set; } = string.Empty;
         public bool IsUserFacingName { get; set; } = false;
         public string Tooltip { get; set; } = string.Empty;
+        public UnionAttribute? RelatedUnionAttribute { get; set; } = null;
 
         public abstract string DoValidate( EditedXmlAttribute att, Coordinate coordinate );
 

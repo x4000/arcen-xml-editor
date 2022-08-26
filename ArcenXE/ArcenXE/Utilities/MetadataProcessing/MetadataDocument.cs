@@ -29,6 +29,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
         public string MetadataName { get; private set; } = string.Empty;
         public string NodeName { get; private set; } = string.Empty;
 
+        public UnionNode? RelatedTopUnionNode { get; set; } = null;
         public MetadataNodeLayer? TopLevelNode { get; private set; } = null;
 
         public MetaAttribute_Base? CentralID { get; set; } = null;
@@ -36,6 +37,7 @@ namespace ArcenXE.Utilities.MetadataProcessing
         public MetaAttribute_Base? DataCopyId { get; set; } = null;
         public MetaAttribute_Base? Description { get; set; } = null;
         public MetaAttribute_Base? UserFacingName { get; set; } = null;
+
 
         public void ParseDocument( string filename, string sharedMetaDataFile )
         {

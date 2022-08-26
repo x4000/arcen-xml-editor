@@ -4,13 +4,14 @@
     public class EditedXmlNode : IEditedXmlNodeOrComment, IEditedXmlElement
     {
         public uint UID { get; set; } = 0;
-        public string XmlNodeTagName = string.Empty; // string that defines the tag in xml
+        public string XmlNodeTagName = string.Empty; // string that defines the tag in xml -- used for subnodes
         public EditedXmlAttribute? NodeCentralID = null; // if != null, then it's a top node
         public Dictionary<string, EditedXmlAttribute> Attributes = new Dictionary<string, EditedXmlAttribute>();
         public List<IEditedXmlNodeOrComment> ChildNodes = new List<IEditedXmlNodeOrComment>();
         public bool IsRootOnly = false;
         public bool IsComment => false;
         public bool IsDeleted { get; set; } = false;
+        public UnionNode? RelatedUnionNode { get; set; } = null;
         /// <summary>
         /// For use in XmlVisualizer only
         /// </summary>
@@ -25,7 +26,7 @@
         public string Data = string.Empty;
         public bool IsComment => true;
         public bool IsDeleted { get; set; } = false;
-
+        public UnionNode? RelatedUnionNode { get; set; } = null;
         /// <summary>
         /// For use in XmlVisualizer only
         /// </summary>
@@ -41,6 +42,7 @@
         public string? ValueOnDisk = null;
         public string? TempValue = null;
         public bool IsDeleted { get; set; } = false;
+        public UnionAttribute? RelatedUnionAttribute { get; set; } = null;
         /// <summary>
         /// For use in XmlVisualizer only
         /// </summary>
@@ -72,6 +74,7 @@
     {
         public uint UID { get; set; }
         public bool IsComment { get; }
+        public UnionNode? RelatedUnionNode { get; set; }
     }
 
     public interface IEditedXmlElement

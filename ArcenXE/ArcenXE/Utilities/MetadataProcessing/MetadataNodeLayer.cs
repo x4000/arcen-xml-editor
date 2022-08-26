@@ -13,6 +13,8 @@ namespace ArcenXE.Utilities.MetadataProcessing
             this.ParentDoc = parentDoc;
         }
 
+        public UnionNode? RelatedUnionNode { get; set; } = null;
+
         public readonly Dictionary<string, BooleanLogicCheckerTree> ConditionalsTree = new Dictionary<string, BooleanLogicCheckerTree>();
         public readonly Dictionary<string, MetaAttribute_Base> AttributesData = new Dictionary<string, MetaAttribute_Base>();
         public readonly Dictionary<string, MetadataNodeLayer> SubNodes = new Dictionary<string, MetadataNodeLayer>();

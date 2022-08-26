@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Numerics;
+using System.Xml.Linq;
 using ArcenXE.Universal;
 using ArcenXE.Utilities;
 using ArcenXE.Utilities.MessagesToMainThread;
@@ -297,6 +299,162 @@ namespace ArcenXE
         private void Button1_Click( object sender, EventArgs e )
         {
             Openers.OpenFileDialog();
+        }
+
+        private void SaveToolStripButton_Click( object sender, EventArgs e )
+        {
+            //ArcenDebugging.LogSingleLine( $"Step 1", Verbosity.DoNotShow );
+            XmlWriter xmlOutput = new XmlWriter();
+            if ( XmlElementCurrentlyBeingEdited != null && !XmlElementCurrentlyBeingEdited.IsComment )
+            {
+                //ArcenDebugging.LogSingleLine( $"Step 2", Verbosity.DoNotShow );
+
+                EditedXmlNode node = (EditedXmlNode)XmlElementCurrentlyBeingEdited;
+                if ( node.IsRootOnly )
+                {
+                    //ArcenDebugging.LogSingleLine( $"Step 3.a", Verbosity.DoNotShow );
+
+                    xmlOutput.StartOpenNode( "root", false ).NewLine( XmlLeadingWhitespace.None );
+                    bool justInsertedLineBreak = false;
+
+                    foreach ( KeyValuePair<string, EditedXmlAttribute> att in node.Attributes )
+                    {
+                        //ArcenDebugging.LogSingleLine( $"Step 3.b.1", Verbosity.DoNotShow );
+                        MetaAttribute_Base? metaAttribute = att.Value.RelatedUnionAttribute?.MetaAttribute.Value;
+                        if ( metaAttribute == null )
+                        {
+                            ArcenDebugging.LogSingleLine( $"RelatedUnionAttribute inside Edited Attribute {att.Key} is null. Can't save this attribute to file!", Verbosity.DoNotShow );
+                            continue;
+                        }
+                        XmlAttLeadInOut leadIn = CalculateLineBreakBefore( metaAttribute, ref justInsertedLineBreak, xmlOutput );
+                        string? effectiveValue = att.Value.GetEffectiveValue();
+                        if ( effectiveValue == null )
+                        {
+                            ArcenDebugging.LogSingleLine( $"GetEffectiveValue() inside Edited Attribute {att.Key} returned null. Can't save this attribute to file!", Verbosity.DoNotShow );
+                            continue;
+                        }
+                        //ArcenDebugging.LogSingleLine( $"Step 3.b.2", Verbosity.DoNotShow );
+
+                        switch ( att.Value.Type )
+                        {
+                            case AttributeType.Bool:
+                                xmlOutput.BoolAttribute( leadIn, att.Key, bool.Parse( effectiveValue ) );
+                                break;
+                            case AttributeType.BoolInt:
+                            case AttributeType.Int:
+                                xmlOutput.IntAttribute( leadIn, att.Key, int.Parse( effectiveValue ) );
+                                break;
+                            case AttributeType.String:
+                            case AttributeType.StringMultiLine:
+                            case AttributeType.ArbitraryString:
+                            case AttributeType.ArbitraryNode:
+                            case AttributeType.NodeList:
+                            case AttributeType.FolderList:
+                                xmlOutput.StringAttribute( leadIn, att.Key, effectiveValue );
+                                break;
+                            case AttributeType.Float:
+                                xmlOutput.FloatAttribute( leadIn, att.Key, float.Parse( effectiveValue ), ((MetaAttribute_Float)metaAttribute).MinimumDigits );
+                                break;
+                            case AttributeType.Point:
+                                {
+                                    string? coordinates = effectiveValue;
+                                    if ( coordinates != null )
+                                    {
+                                        string[] splitCoord = coordinates.Split( "," );
+                                        xmlOutput.PointAttribute( leadIn, att.Key, ArcenPoint.Create( int.Parse( splitCoord[0] ), int.Parse( splitCoord[1] ) ) );
+                                    }
+                                }
+                                break;
+                            case AttributeType.Vector2:
+                                {
+                                    string? coordinates = effectiveValue;
+                                    if ( coordinates != null )
+                                    {
+                                        string[] splitCoord = coordinates.Split( "," );
+                                        xmlOutput.Vector2Attribute( leadIn, att.Key, new Vector2( float.Parse( splitCoord[0] ), float.Parse( splitCoord[1] ) ),
+                                                                ((MetaAttribute_Vector2)metaAttribute).x.MinimumDigits );
+                                    }
+                                }
+                                break;
+                            case AttributeType.Vector3:
+                                {
+                                    string? coordinates = effectiveValue;
+                                    if ( coordinates != null )
+                                    {
+                                        string[] splitCoord = coordinates.Split( "," );
+                                        xmlOutput.Vector3Attribute( leadIn, att.Key, new Vector3( float.Parse( splitCoord[0] ), float.Parse( splitCoord[1] ), float.Parse( splitCoord[2] ) ),
+                                                                ((MetaAttribute_Vector3)metaAttribute).x.MinimumDigits );
+                                    }
+                                }
+                                break;
+                        }
+                        //ArcenDebugging.LogSingleLine( $"Step 4", Verbosity.DoNotShow );
+
+                        xmlOutput.HandleAttributeLeadInOut( CalculateLineBreakAfter( metaAttribute, ref justInsertedLineBreak ) );
+                    }
+                    xmlOutput.FinishOpenNode( true );
+                    xmlOutput.CloseNode( "root", false );
+                }
+                else
+                {
+                    // loop attributes (like above), then do the same for all the subnodes
+                    //ArcenDebugging.LogSingleLine( $"Step 3.b", Verbosity.DoNotShow );
+                    xmlOutput.StartOpenNode( "root", true ).NewLine( XmlLeadingWhitespace.None );
+                }
+
+                //write to file
+                if ( node.RelatedUnionNode == null )
+                {
+                    ArcenDebugging.LogSingleLine( $"RelatedUnionNode inside Edited Node {node} is null. Can't save this node to file!", Verbosity.DoNotShow );
+                    return;
+                }
+                //ArcenDebugging.LogSingleLine( $"Step 5", Verbosity.DoNotShow );
+                //ArcenDebugging.LogSingleLine( $"{node.RelatedUnionNode.MetaDocument.MetadataFolder}", Verbosity.DoNotShow );
+                File.WriteAllText( ProgramPermanentSettings.MainPath + @"\" + node.RelatedUnionNode.MetaDocument.MetadataFolder + @"\" + node.RelatedUnionNode.MetaDocument.MetadataFolder + ".xml", xmlOutput.GetFinishedXmlDocument() ); //add file name field in vis?
+            }
+        }
+
+        private static XmlAttLeadInOut CalculateLineBreakBefore( MetaAttribute_Base metaAttribute, ref bool justInsertedLineBreak, XmlWriter xmlWriter )
+        {
+            bool requireLineBreak = xmlWriter.CalculateIfNewLineIsRequired( (ushort)metaAttribute.ContentWidthPx );
+
+            switch ( metaAttribute.LinebreakBefore )
+            {
+                case LineBreakType.Always:
+                    if ( !justInsertedLineBreak && !requireLineBreak )
+                    {
+                        justInsertedLineBreak = true;
+                        return XmlAttLeadInOut.Linebreak;
+                    }
+                    else
+                    {
+                        justInsertedLineBreak = false;
+                        return XmlAttLeadInOut.Space;
+                    }
+                case LineBreakType.PreferNot:
+                    if ( requireLineBreak )
+                    {
+                        justInsertedLineBreak = true;
+                        return XmlAttLeadInOut.Linebreak;
+                    }
+                    justInsertedLineBreak = false;
+                    return XmlAttLeadInOut.Space;
+            }
+            return XmlAttLeadInOut.Space;
+        }
+
+        private static XmlAttLeadInOut CalculateLineBreakAfter( MetaAttribute_Base metaAttribute, ref bool justInsertedLineBreak )
+        {
+            switch ( metaAttribute.LinebreakAfter )
+            {
+                case LineBreakType.Always:
+                    justInsertedLineBreak = true;
+                    return XmlAttLeadInOut.Linebreak;
+                case LineBreakType.PreferNot:
+                    justInsertedLineBreak = false;
+                    return XmlAttLeadInOut.Space;
+            }
+            return XmlAttLeadInOut.Space;
         }
 
         #region Debugging
