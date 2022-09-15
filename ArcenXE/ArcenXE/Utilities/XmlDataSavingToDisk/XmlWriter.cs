@@ -2,13 +2,13 @@
 using System.Text;
 using ArcenXE.Universal;
 
-namespace ArcenXE.Utilities.XmlDataProcessing
+namespace ArcenXE.Utilities.XmlDataSavingToDisk
 {
     public class XmlWriter
     {
         private readonly StringBuilder output = new StringBuilder();
 
-        private readonly System.Collections.Generic.Stack<string> whiteSpaceOffset = new System.Collections.Generic.Stack<string>();
+        private readonly Stack<string> whiteSpaceOffset = new Stack<string>();
         private string currentLeadingWhitespace = string.Empty;
         public const ushort MaxPixelsPerLineBeforeLineBreak = 600;
         private ushort pixelsOnCurrentLine = 0;
@@ -33,9 +33,9 @@ namespace ArcenXE.Utilities.XmlDataProcessing
         #region CalculateIfNewLineIsRequired
         public bool CalculateIfNewLineIsRequired( ushort pixelsToBeAdded )
         {
-            ArcenDebugging.LogSingleLine( $"pixelsOnCurrentLine = {pixelsOnCurrentLine}\t\tpixelsToBeAdded = {pixelsToBeAdded}", Verbosity.DoNotShow );
+            //ArcenDebugging.LogSingleLine( $"pixelsOnCurrentLine = {pixelsOnCurrentLine}\t\tpixelsToBeAdded = {pixelsToBeAdded}", Verbosity.DoNotShow );
             if ( pixelsOnCurrentLine + pixelsToBeAdded > MaxPixelsPerLineBeforeLineBreak ) //check
-            {                
+            {
                 pixelsOnCurrentLine = pixelsToBeAdded;
                 return true;
             }
@@ -156,7 +156,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                     output.Append( " " );
                     break;
                 case XmlAttLeadInOut.Linebreak:
-                    output.Append( GetNewLineAndResetCharsOnCurrentLine());
+                    output.Append( GetNewLineAndResetCharsOnCurrentLine() );
                     output.Append( currentLeadingWhitespace );
                     break;
             }
@@ -218,7 +218,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
             return this;
         }
 
-        public XmlWriter FloatAttributeList( XmlAttLeadInOut LeadIn, string AttributeTag, System.Collections.Generic.List<float> List, int Digits )
+        public XmlWriter FloatAttributeList( XmlAttLeadInOut LeadIn, string AttributeTag, List<float> List, int Digits )
         {
             if ( List == null || List.Count == 0 )
                 return this;
@@ -282,7 +282,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
             return this;
         }
 
-        public XmlWriter Vector2AttributeList( XmlAttLeadInOut LeadIn, string AttributeTag, System.Collections.Generic.List<Vector2> List, int Digits )
+        public XmlWriter Vector2AttributeList( XmlAttLeadInOut LeadIn, string AttributeTag, List<Vector2> List, int Digits )
         {
             if ( List == null || List.Count == 0 )
                 return this;
@@ -354,7 +354,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
             return this;
         }
 
-        public XmlWriter Vector3AttributeList( XmlAttLeadInOut LeadIn, string AttributeTag, System.Collections.Generic.List<Vector3> List, int Digits )
+        public XmlWriter Vector3AttributeList( XmlAttLeadInOut LeadIn, string AttributeTag, List<Vector3> List, int Digits )
         {
             if ( List == null || List.Count == 0 )
                 return this;
@@ -422,7 +422,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
             return this;
         }
 
-        public XmlWriter PointAttributeList( XmlAttLeadInOut LeadIn, string AttributeTag, System.Collections.Generic.List<ArcenPoint> List )
+        public XmlWriter PointAttributeList( XmlAttLeadInOut LeadIn, string AttributeTag, List<ArcenPoint> List )
         {
             if ( List == null || List.Count == 0 )
                 return this;
@@ -479,7 +479,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
             return this;
         }
 
-        public XmlWriter IntAttributeList( XmlAttLeadInOut LeadIn, string AttributeTag, System.Collections.Generic.List<int> List )
+        public XmlWriter IntAttributeList( XmlAttLeadInOut LeadIn, string AttributeTag, List<int> List )
         {
             if ( List == null || List.Count == 0 )
                 return this;
@@ -533,7 +533,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
             return this;
         }
 
-        public XmlWriter BoolAttributeList( XmlAttLeadInOut LeadIn, string AttributeTag, System.Collections.Generic.List<bool> List )
+        public XmlWriter BoolAttributeList( XmlAttLeadInOut LeadIn, string AttributeTag, List<bool> List )
         {
             if ( List == null || List.Count == 0 )
                 return this;
