@@ -2,6 +2,8 @@
 using ArcenXE.Utilities;
 using ArcenXE.Utilities.MetadataProcessing;
 using ArcenXE.Visualization.Utilities;
+using System.Windows.Forms;
+using System.Xml;
 using CheckBox = System.Windows.Forms.CheckBox;
 
 namespace ArcenXE.Visualization
@@ -19,7 +21,7 @@ namespace ArcenXE.Visualization
         private readonly static CheckedListBox checkedListBoxDropdown; //todo: defaults method - use static constructor 
         private readonly static CheckedListBox checkedListBoxPlusButton;
 
-        private readonly static ToolTip toolTip = new ToolTip(); //todo
+        private readonly static ToolTip toolTip = new ToolTip();
 
         static XmlVisualizer()
         {
@@ -36,11 +38,12 @@ namespace ArcenXE.Visualization
             checkedListBoxPlusButton.Tag = new ControlTagInfo( checkedListBoxDropdown ); //merge with struct tag
         }
 
-        private static DateTime timeOfVisStart = DateTime.UnixEpoch;
-        private const int extraPixels = 18; // should use the genericHeight calculated for the used font
-        private static int genericHeightBasedOnFontUsed;
+        private const int EXTRA_PIXELS = 18; // should use the genericHeight calculated for the used font
+        private const int AMOUNT_OF_LINES_TO_DISPLAY_IN_CLB = 7;
+
         private static int maxHeightInCurrentRow = 0;
-        private const int amountOfValuesToDisplayInCLB = 7;
+        private static int genericHeightBasedOnFontUsed;
+        private static DateTime timeOfVisStart = DateTime.UnixEpoch;
 
         #region Caret
         public class Caret
@@ -141,7 +144,7 @@ namespace ArcenXE.Visualization
 
             if ( parentUnionNode != null )
                 currentUnionNode.ParentUnionNode = parentUnionNode;
-            else 
+            else
                 currentMetaDoc.RelatedTopUnionNode ??= currentUnionNode;
 
             metaNodeLayer.RelatedUnionNode = currentUnionNode;
@@ -199,7 +202,9 @@ namespace ArcenXE.Visualization
                         currentUnionNode.XmlNodeOrComment = node;
                         node.RelatedUnionNode = currentUnionNode;
                         currentUnionNode.Controls.Add( label );
-                        currentUnionNode.NodeData = new UnionTopNodeAttribute( node.NodeCentralID.GetEffectiveValue(), node.NodeCentralID );
+                        string? s = node.NodeCentralID.GetEffectiveValue();
+                        if ( s != null )
+                            currentUnionNode.NodeData = new UnionTopNodeAttribute( s, node.NodeCentralID );
                         ((PooledControlTagInfo)label.Tag).RelatedUnionElement = currentUnionNode;
 
                         controls.Add( label );
@@ -318,8 +323,11 @@ namespace ArcenXE.Visualization
         {
             Label label = labelPool.GetOrAdd( ( newLabel ) =>
             {
+#pragma warning disable CS8622 //The label will never be null
                 newLabel.Click += new EventHandler( OpenSmallMenuOnLabelRightClick );
                 newLabel.DoubleClick += new EventHandler( OpenSmallMenuOnLabelDoubleClick );
+                newLabel.MouseHover += new EventHandler( ShowTooltipOnLabelHover );
+#pragma warning restore CS8622
             } );
             SizeF size = graphics.MeasureString( pair.Key, MainWindow.Instance.RightSplitContainer.Panel2.Font );
             label.Height = (int)Math.Ceiling( size.Height );
@@ -373,10 +381,14 @@ namespace ArcenXE.Visualization
                             }
                             if ( metaAttribute.Type == AttributeType.BoolInt )
                             {
-                                if ( int.Parse( xmlAttribute.GetEffectiveValue() ) == 1 )
-                                    boxBool.Checked = true;
-                                if ( int.Parse( xmlAttribute.GetEffectiveValue() ) == 0 )
-                                    boxBool.Checked = true;
+                                string? s = xmlAttribute.GetEffectiveValue();
+                                if ( s != null )
+                                {
+                                    if ( int.Parse( s ) == 1 )
+                                        boxBool.Checked = true;
+                                    if ( int.Parse( s ) == 0 )
+                                        boxBool.Checked = true;
+                                }
                             }
                             LinkDataAndExecuteCommonActions( controls, boxBool, currentUnionNode, uAttribute, xmlAttribute, metaAttribute );
                         }
@@ -493,13 +505,17 @@ namespace ArcenXE.Visualization
                         numeric.Bounds = new Rectangle( caret.x, caret.y, ((MetaAttribute_Int)metaAttribute).ContentWidthPx, controlHeight );
                         numeric.ThousandsSeparator = true;
                         numeric.DecimalPlaces = 0;
-                        numeric.Maximum = Convert.ToDecimal( ((MetaAttribute_Int)metaAttribute).Max );
-                        numeric.Minimum = Convert.ToDecimal( ((MetaAttribute_Int)metaAttribute).Min );
+                        numeric.Maximum = ((MetaAttribute_Int)metaAttribute).Max;
+                        numeric.Minimum = ((MetaAttribute_Int)metaAttribute).Min;
 
                         if ( xmlAttribute != null )
                         {
-                            numeric.Value = int.Parse( xmlAttribute.GetEffectiveValue() );
-                            LinkDataAndExecuteCommonActions( controls, numeric, currentUnionNode, uAttribute, xmlAttribute, metaAttribute );
+                            string? s = xmlAttribute.GetEffectiveValue();
+                            if ( s != null )
+                            {
+                                numeric.Value = int.Parse( s );
+                                LinkDataAndExecuteCommonActions( controls, numeric, currentUnionNode, uAttribute, xmlAttribute, metaAttribute );
+                            }
                         }
                         else
                         {
@@ -522,19 +538,28 @@ namespace ArcenXE.Visualization
 
                         numeric.ThousandsSeparator = true;
                         numeric.DecimalPlaces = ((MetaAttribute_Float)metaAttribute).Precision;
-                        if ( ((MetaAttribute_Float)metaAttribute).Min < (float)decimal.MinValue )
+                        if ( ((MetaAttribute_Float)metaAttribute).Min < decimal.MinValue )
                             numeric.Minimum = decimal.MinValue;
-                        if ( ((MetaAttribute_Float)metaAttribute).Max < (float)decimal.MaxValue )
+                        else
+                            numeric.Minimum = ((MetaAttribute_Float)metaAttribute).Min;
+
+                        if ( ((MetaAttribute_Float)metaAttribute).Max < decimal.MaxValue )
                             numeric.Maximum = decimal.MaxValue;
+                        else
+                            numeric.Maximum = ((MetaAttribute_Float)metaAttribute).Max;
 
                         if ( xmlAttribute != null )
                         {
-                            numeric.Value = decimal.Parse( xmlAttribute.GetEffectiveValue() );
-                            LinkDataAndExecuteCommonActions( controls, numeric, currentUnionNode, uAttribute, xmlAttribute, metaAttribute );
+                            string? s = xmlAttribute.GetEffectiveValue();
+                            if ( s != null )
+                            {
+                                numeric.Value = decimal.Parse( s );
+                                LinkDataAndExecuteCommonActions( controls, numeric, currentUnionNode, uAttribute, xmlAttribute, metaAttribute );
+                            }
                         }
                         else
                         {
-                            numeric.Value = Convert.ToDecimal( ((MetaAttribute_Float)metaAttribute).Default );
+                            numeric.Value = ((MetaAttribute_Float)metaAttribute).Default;
                             LinkDataAndExecuteCommonActions( controls, numeric, currentUnionNode, uAttribute, null, metaAttribute );
                         }
                         GetHeightAndMoveCaretRight( numeric, caret, metaAttribute.ContentWidthPx );
@@ -717,7 +742,7 @@ namespace ArcenXE.Visualization
                         } );
 
                         numeric1.Bounds = new Rectangle( caret.x, caret.y, ((MetaAttribute_Point)metaAttribute).ContentWidthPx, controlHeight );
-                        caret.MoveHorizontally( ((MetaAttribute_Point)metaAttribute).ContentWidthPx + extraPixels );
+                        caret.MoveHorizontally( ((MetaAttribute_Point)metaAttribute).ContentWidthPx + EXTRA_PIXELS );
                         numeric2.Bounds = new Rectangle( caret.x, caret.y, 80, controlHeight );
 
                         numeric1.ThousandsSeparator = true;
@@ -738,11 +763,14 @@ namespace ArcenXE.Visualization
 
                         if ( xmlAttribute != null )
                         {
-                            string[] values = xmlAttribute.GetEffectiveValue().Split( ',' );
-                            numeric1.Value = int.Parse( values[0] );
-                            numeric2.Value = int.Parse( values[1] );
-
-                            LinkDataMultipleControls( controls, tempControls, currentUnionNode, uAttribute, xmlAttribute, metaAttribute );
+                            string? s = xmlAttribute.GetEffectiveValue();
+                            if ( s != null )
+                            {
+                                string[] values = s.Split( ',' );
+                                numeric1.Value = int.Parse( values[0] );
+                                numeric2.Value = int.Parse( values[1] );
+                                LinkDataMultipleControls( controls, tempControls, currentUnionNode, uAttribute, xmlAttribute, metaAttribute );
+                            }
                         }
                         else
                         {
@@ -770,22 +798,30 @@ namespace ArcenXE.Visualization
                             ((PooledControlTagInfo)newNumeric.Tag).ControlsCoordinate = Coordinate.y;
                         } );
                         numeric1.Bounds = new Rectangle( caret.x, caret.y, ((MetaAttribute_Vector2)metaAttribute).ContentWidthPx, controlHeight );
-                        caret.MoveHorizontally( ((MetaAttribute_Vector2)metaAttribute).ContentWidthPx + extraPixels );
+                        caret.MoveHorizontally( ((MetaAttribute_Vector2)metaAttribute).ContentWidthPx + EXTRA_PIXELS );
                         numeric2.Bounds = new Rectangle( caret.x, caret.y, ((MetaAttribute_Vector2)metaAttribute).ContentWidthPx, controlHeight );
 
                         numeric1.ThousandsSeparator = true;
                         numeric1.DecimalPlaces = ((MetaAttribute_Vector2)metaAttribute).x.Precision;
-                        if ( ((MetaAttribute_Vector2)metaAttribute).x.Min < (float)decimal.MinValue )
+                        if ( ((MetaAttribute_Vector2)metaAttribute).x.Min < decimal.MinValue )
                             numeric1.Minimum = decimal.MinValue;
-                        if ( ((MetaAttribute_Vector2)metaAttribute).x.Max > (float)decimal.MaxValue )
+                        else
+                            numeric1.Minimum = ((MetaAttribute_Vector2)metaAttribute).x.Min;
+                        if ( ((MetaAttribute_Vector2)metaAttribute).x.Max > decimal.MaxValue )
                             numeric1.Maximum = decimal.MaxValue;
+                        else
+                            numeric1.Maximum = ((MetaAttribute_Vector2)metaAttribute).x.Max;
 
                         numeric2.ThousandsSeparator = true;
                         numeric2.DecimalPlaces = ((MetaAttribute_Vector2)metaAttribute).y.Precision;
-                        if ( ((MetaAttribute_Vector2)metaAttribute).y.Min < (float)decimal.MinValue )
+                        if ( ((MetaAttribute_Vector2)metaAttribute).y.Min < decimal.MinValue )
                             numeric2.Minimum = decimal.MinValue;
-                        if ( ((MetaAttribute_Vector2)metaAttribute).y.Max > (float)decimal.MaxValue )
+                        else
+                            numeric2.Minimum = ((MetaAttribute_Vector2)metaAttribute).y.Min;
+                        if ( ((MetaAttribute_Vector2)metaAttribute).y.Max > decimal.MaxValue )
                             numeric2.Maximum = decimal.MaxValue;
+                        else
+                            numeric2.Maximum = ((MetaAttribute_Vector2)metaAttribute).y.Max;
 
                         Control[] tempControls = new Control[2];
                         tempControls[0] = numeric1;
@@ -793,15 +829,19 @@ namespace ArcenXE.Visualization
 
                         if ( xmlAttribute != null )
                         {
-                            string[] values = xmlAttribute.GetEffectiveValue().Split( ',' );
-                            numeric1.Value = decimal.Parse( values[0] );
-                            numeric2.Value = decimal.Parse( values[1] );
-                            LinkDataMultipleControls( controls, tempControls, currentUnionNode, uAttribute, xmlAttribute, metaAttribute );
+                            string? s = xmlAttribute.GetEffectiveValue();
+                            if ( s != null )
+                            {
+                                string[] values = s.Split( ',' );
+                                numeric1.Value = decimal.Parse( values[0] );
+                                numeric2.Value = decimal.Parse( values[1] );
+                                LinkDataMultipleControls( controls, tempControls, currentUnionNode, uAttribute, xmlAttribute, metaAttribute );
+                            }
                         }
                         else
                         {
-                            numeric1.Value = Convert.ToDecimal( ((MetaAttribute_Vector2)metaAttribute).x.Default );
-                            numeric2.Value = Convert.ToDecimal( ((MetaAttribute_Vector2)metaAttribute).y.Default );
+                            numeric1.Value = ((MetaAttribute_Vector2)metaAttribute).x.Default;
+                            numeric2.Value = ((MetaAttribute_Vector2)metaAttribute).y.Default;
                             LinkDataMultipleControls( controls, tempControls, currentUnionNode, uAttribute, null, metaAttribute );
                         }
                         GetHeightAndMoveCaretRight( numeric1, caret, 0 );
@@ -830,31 +870,43 @@ namespace ArcenXE.Visualization
                         } );
 
                         numeric1.Bounds = new Rectangle( caret.x, caret.y, ((MetaAttribute_Vector3)metaAttribute).ContentWidthPx, controlHeight );
-                        caret.MoveHorizontally( ((MetaAttribute_Vector3)metaAttribute).ContentWidthPx + extraPixels );
+                        caret.MoveHorizontally( ((MetaAttribute_Vector3)metaAttribute).ContentWidthPx + EXTRA_PIXELS );
                         numeric2.Bounds = new Rectangle( caret.x, caret.y, ((MetaAttribute_Vector3)metaAttribute).ContentWidthPx, controlHeight );
-                        caret.MoveHorizontally( ((MetaAttribute_Vector3)metaAttribute).ContentWidthPx + extraPixels );
+                        caret.MoveHorizontally( ((MetaAttribute_Vector3)metaAttribute).ContentWidthPx + EXTRA_PIXELS );
                         numeric3.Bounds = new Rectangle( caret.x, caret.y, ((MetaAttribute_Vector3)metaAttribute).ContentWidthPx, controlHeight );
 
                         numeric1.ThousandsSeparator = true;
                         numeric1.DecimalPlaces = ((MetaAttribute_Vector3)metaAttribute).x.Precision;
-                        if ( ((MetaAttribute_Vector3)metaAttribute).x.Min < (float)decimal.MinValue )
+                        if ( ((MetaAttribute_Vector3)metaAttribute).x.Min < decimal.MinValue )
                             numeric1.Minimum = decimal.MinValue;
-                        if ( ((MetaAttribute_Vector3)metaAttribute).x.Max > (float)decimal.MaxValue )
+                        else
+                            numeric1.Minimum = ((MetaAttribute_Vector3)metaAttribute).x.Min;
+                        if ( ((MetaAttribute_Vector3)metaAttribute).x.Max > decimal.MaxValue )
                             numeric1.Maximum = decimal.MaxValue;
+                        else
+                            numeric1.Maximum = ((MetaAttribute_Vector3)metaAttribute).x.Max;
 
                         numeric2.ThousandsSeparator = true;
                         numeric2.DecimalPlaces = ((MetaAttribute_Vector3)metaAttribute).y.Precision;
-                        if ( ((MetaAttribute_Vector3)metaAttribute).y.Min < (float)decimal.MinValue )
+                        if ( ((MetaAttribute_Vector3)metaAttribute).y.Min < decimal.MinValue )
                             numeric2.Minimum = decimal.MinValue;
-                        if ( ((MetaAttribute_Vector3)metaAttribute).y.Max > (float)decimal.MaxValue )
+                        else
+                            numeric2.Minimum = ((MetaAttribute_Vector3)metaAttribute).y.Min;
+                        if ( ((MetaAttribute_Vector3)metaAttribute).y.Max > decimal.MaxValue )
                             numeric2.Maximum = decimal.MaxValue;
+                        else
+                            numeric2.Maximum = ((MetaAttribute_Vector3)metaAttribute).y.Max;
 
                         numeric3.ThousandsSeparator = true;
                         numeric3.DecimalPlaces = ((MetaAttribute_Vector3)metaAttribute).z.Precision;
-                        if ( ((MetaAttribute_Vector3)metaAttribute).z.Min < (float)decimal.MinValue )
+                        if ( ((MetaAttribute_Vector3)metaAttribute).z.Min < decimal.MinValue )
                             numeric3.Minimum = decimal.MinValue;
-                        if ( ((MetaAttribute_Vector3)metaAttribute).z.Max > (float)decimal.MaxValue )
+                        else
+                            numeric3.Minimum = ((MetaAttribute_Vector3)metaAttribute).z.Min;
+                        if ( ((MetaAttribute_Vector3)metaAttribute).z.Max > decimal.MaxValue )
                             numeric3.Maximum = decimal.MaxValue;
+                        else
+                            numeric3.Maximum = ((MetaAttribute_Vector3)metaAttribute).z.Max;
 
                         Control[] tempControls = new Control[3];
                         tempControls[0] = numeric1;
@@ -863,17 +915,22 @@ namespace ArcenXE.Visualization
 
                         if ( xmlAttribute != null )
                         {
-                            string[] values = xmlAttribute.GetEffectiveValue().Split( ',' );
-                            numeric1.Value = decimal.Parse( values[0] );
-                            numeric2.Value = decimal.Parse( values[1] );
-                            numeric3.Value = decimal.Parse( values[2] );
-                            LinkDataMultipleControls( controls, tempControls, currentUnionNode, uAttribute, xmlAttribute, metaAttribute );
+                            string? s = xmlAttribute.GetEffectiveValue();
+                            if ( s != null )
+                            {
+                                string[] values = s.Split( ',' );
+                                numeric1.Value = decimal.Parse( values[0] );
+                                numeric2.Value = decimal.Parse( values[1] );
+                                numeric3.Value = decimal.Parse( values[2] );
+                                LinkDataMultipleControls( controls, tempControls, currentUnionNode, uAttribute, xmlAttribute, metaAttribute );
+                            }
+
                         }
                         else
                         {
-                            numeric1.Value = Convert.ToDecimal( ((MetaAttribute_Vector3)metaAttribute).x.Default );
-                            numeric2.Value = Convert.ToDecimal( ((MetaAttribute_Vector3)metaAttribute).y.Default );
-                            numeric3.Value = Convert.ToDecimal( ((MetaAttribute_Vector3)metaAttribute).z.Default );
+                            numeric1.Value = ((MetaAttribute_Vector3)metaAttribute).x.Default;
+                            numeric2.Value = ((MetaAttribute_Vector3)metaAttribute).y.Default;
+                            numeric3.Value = ((MetaAttribute_Vector3)metaAttribute).z.Default;
                             LinkDataMultipleControls( controls, tempControls, currentUnionNode, uAttribute, null, metaAttribute );
                         }
                         GetHeightAndMoveCaretRight( numeric1, caret, 0 );
@@ -893,7 +950,7 @@ namespace ArcenXE.Visualization
         {
             if ( control.Height > maxHeightInCurrentRow )
                 maxHeightInCurrentRow = control.Height;
-            caret.MoveHorizontally( width + extraPixels );
+            caret.MoveHorizontally( width + EXTRA_PIXELS );
         }
 
         #region Linking Data in UnionNode
@@ -961,7 +1018,7 @@ namespace ArcenXE.Visualization
                 case LineBreakType.Always:
                     if ( !justInsertedLineBreak )
                     {
-                        caret.NextLine( height + extraPixels );
+                        caret.NextLine( height + EXTRA_PIXELS );
                         justInsertedLineBreak = true;
                     }
                     else
@@ -970,7 +1027,7 @@ namespace ArcenXE.Visualization
                 case LineBreakType.PreferNot:
                     if ( MainWindow.Instance.RightSplitContainer.Panel2.ClientSize.Width - (caret.x + (upcomingCaretHorizonatalMove * widthMultiplier) + (metaAttribute.ContentWidthPx * widthMultiplier)) < 5 )
                     {
-                        caret.NextLine( height + extraPixels );
+                        caret.NextLine( height + EXTRA_PIXELS );
                         justInsertedLineBreak = true;
                     }
                     else
@@ -984,13 +1041,13 @@ namespace ArcenXE.Visualization
             switch ( metaAttribute.LinebreakAfter )
             {
                 case LineBreakType.Always:
-                    caret.NextLine( height + extraPixels );
+                    caret.NextLine( height + EXTRA_PIXELS );
                     justInsertedLineBreak = true;
                     break;
                 case LineBreakType.PreferNot:
                     if ( MainWindow.Instance.RightSplitContainer.Panel2.ClientSize.Width - caret.x < 20 ) // might remove this check?
                     {
-                        caret.NextLine( height + extraPixels );
+                        caret.NextLine( height + EXTRA_PIXELS );
                         justInsertedLineBreak = true;
                     }
                     else
@@ -1078,8 +1135,8 @@ namespace ArcenXE.Visualization
             checkedListBoxPlusButton.Tag = tagData;
 
             checkedListBoxPlusButton.Bounds = new Rectangle( button.Bounds.X + button.Bounds.Width, button.Bounds.Y + button.Bounds.Height,
-                                                 300, genericHeightBasedOnFontUsed * amountOfValuesToDisplayInCLB );
-            checkedListBoxPlusButton.Height = genericHeightBasedOnFontUsed * amountOfValuesToDisplayInCLB;
+                                                 300, genericHeightBasedOnFontUsed * AMOUNT_OF_LINES_TO_DISPLAY_IN_CLB );
+            checkedListBoxPlusButton.Height = genericHeightBasedOnFontUsed * AMOUNT_OF_LINES_TO_DISPLAY_IN_CLB;
             checkedListBoxPlusButton.Visible = true;
             checkedListBoxPlusButton.BringToFront();
             checkedListBoxPlusButton.Focus();
@@ -1203,6 +1260,14 @@ namespace ArcenXE.Visualization
         }
         #endregion
 
+        private static void ShowTooltipOnLabelHover( object sender, EventArgs e )
+        {
+            Control control = (Control)sender;
+            UnionAttribute? uAttribute = ((ControlTagInfo)control.Tag).RelatedUnionElement as UnionAttribute;
+            if ( uAttribute != null )
+                toolTip.SetToolTip( control, uAttribute.MetaAttribute.Value.Tooltip);
+        }
+
         private void CallValidatorAfterFocusLostOrIndexChanged( object? sender, EventArgs e )
         {
             Control? control = sender as Control;
@@ -1221,21 +1286,11 @@ namespace ArcenXE.Visualization
         #region XmlValidator
         private static class XmlValidator
         {
-            //private static readonly PoolWithReference<ErrorProvider> errorProviderPool = new PoolWithReference<ErrorProvider>();
-            //private static void ClearAndReturnToPool()
-            //{
-            //    //todo: clear?
-
-            //    errorProviderPool.ReturnAllToPool();
-            //}
-
             public static void Validate( Control control )
             {
                 double timeToWaitBeforeValidating = 0.4f;
                 if ( timeOfVisStart == DateTime.UnixEpoch || (DateTime.Now - timeOfVisStart).TotalSeconds < timeToWaitBeforeValidating )
                     return;
-
-                //ClearAndReturnToPool();
 
                 ErrorProvider errorProvider = ((ControlTagInfo)control.Tag).RelatedErrorProvider;
                 errorProvider.BlinkStyle = ErrorBlinkStyle.NeverBlink;
@@ -1386,7 +1441,7 @@ namespace ArcenXE.Visualization
             {
                 uAtt.XmlAttribute ??= new EditedXmlAttribute();
                 uAtt.XmlAttribute.Name = uAtt.MetaAttribute.Key;
-                uAtt.XmlAttribute.Type = uAtt.MetaAttribute.Value.Type;
+                //uAtt.XmlAttribute.Type = uAtt.MetaAttribute.Value.Type;
 
                 string? textOrValueFromControl = null;
                 switch ( control )
@@ -1413,7 +1468,7 @@ namespace ArcenXE.Visualization
                 if ( uAtt.XmlAttribute != null )
                 {
                     uAtt.XmlAttribute.Name = string.Empty;
-                    uAtt.XmlAttribute.Type = AttributeType.Unknown;
+                    //uAtt.XmlAttribute.Type = AttributeType.Unknown;
                     uAtt.XmlAttribute.TempValue = null;
                 }
             }

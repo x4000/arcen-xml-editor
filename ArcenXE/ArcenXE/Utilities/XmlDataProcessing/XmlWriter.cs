@@ -10,23 +10,19 @@ namespace ArcenXE.Utilities.XmlDataProcessing
 
         private readonly System.Collections.Generic.Stack<string> whiteSpaceOffset = new System.Collections.Generic.Stack<string>();
         private string currentLeadingWhitespace = string.Empty;
-        public const ushort MaxPixelsPerLineBeforeLineBreak = 500;
+        public const ushort MaxPixelsPerLineBeforeLineBreak = 600;
         private ushort pixelsOnCurrentLine = 0;
-        private ushort PixelsOnCurrentLine
-        {
-            get => this.pixelsOnCurrentLine;
-            set => this.pixelsOnCurrentLine = value;
-        }
 
-        private const string _NEWLINE = "\r\n";
         /// <summary>
         /// This is the windows style of newline, aka CR LF (carriage return = \r, line feed = \n)
         /// </summary>
+        private const string _NEWLINE = "\r\n";
         private string GetNewLineAndResetCharsOnCurrentLine()
         {
             pixelsOnCurrentLine = 0;
             return _NEWLINE;
         }
+        public ushort GetPixelsOnCurrentLine() => pixelsOnCurrentLine;
 
         public XmlWriter()
         {
@@ -34,7 +30,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
             output.Append( GetNewLineAndResetCharsOnCurrentLine() );
         }
 
-        #region 
+        #region CalculateIfNewLineIsRequired
         public bool CalculateIfNewLineIsRequired( ushort pixelsToBeAdded )
         {
             ArcenDebugging.LogSingleLine( $"pixelsOnCurrentLine = {pixelsOnCurrentLine}\t\tpixelsToBeAdded = {pixelsToBeAdded}", Verbosity.DoNotShow );
@@ -48,6 +44,11 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                 pixelsOnCurrentLine += pixelsToBeAdded;
                 return false;
             }
+        }
+
+        public void IncrementPixelsOnCurrentLine( ushort pixelsToBeAdded )
+        {
+            pixelsOnCurrentLine += pixelsToBeAdded;
         }
         #endregion
 
@@ -146,7 +147,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
         }
         #endregion
 
-        #region HandleAttributeLeadIn
+        #region HandleAttributeLeadInOut
         public XmlWriter HandleAttributeLeadInOut( XmlAttLeadInOut Lead )
         {
             switch ( Lead )
@@ -155,7 +156,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                     output.Append( " " );
                     break;
                 case XmlAttLeadInOut.Linebreak:
-                    output.Append( GetNewLineAndResetCharsOnCurrentLine() );
+                    output.Append( GetNewLineAndResetCharsOnCurrentLine());
                     output.Append( currentLeadingWhitespace );
                     break;
             }
@@ -575,6 +576,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
 
     public enum XmlAttLeadInOut
     {
+        None,
         Space,
         Linebreak,
     }

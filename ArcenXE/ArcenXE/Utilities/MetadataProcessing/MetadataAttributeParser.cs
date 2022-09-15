@@ -151,17 +151,17 @@ namespace ArcenXE.Utilities.MetadataProcessing
                             CommonAttributeMetaDataReader( metaAttribute_Float, attributes, doc );
                             {
                                 if ( attributes.TryGetValue( "default", out MetaAttributeToBeRead? attribute ) )
-                                    if ( FloatExtensions.TryParsePrecise( attribute.Value, out float temp ) )
+                                    if ( decimal.TryParse( attribute.Value, out decimal temp ) )
                                         metaAttribute_Float.Default = temp;
                             }
                             {
                                 if ( attributes.TryGetValue( "min", out MetaAttributeToBeRead? attribute ) )
-                                    if ( FloatExtensions.TryParsePrecise( attribute.Value, out float temp ) )
+                                    if ( decimal.TryParse( attribute.Value, out decimal temp ) )
                                         metaAttribute_Float.Min = temp;
                             }
                             {
                                 if ( attributes.TryGetValue( "max", out MetaAttributeToBeRead? attribute ) )
-                                    if ( FloatExtensions.TryParsePrecise( attribute.Value, out float temp ) )
+                                    if ( decimal.TryParse( attribute.Value, out decimal temp ) )
                                         metaAttribute_Float.Max = temp;
                             }
                             {
@@ -269,10 +269,10 @@ namespace ArcenXE.Utilities.MetadataProcessing
                                 if ( attributes.TryGetValue( "default", out MetaAttributeToBeRead? attribute ) )
                                 {
                                     string[] defaults = attribute.Value.Split( ',' );
-                                    float[] values = new float[2];
-                                    if ( FloatExtensions.TryParsePrecise( defaults[0], out values[0] ) )
+                                    decimal[] values = new decimal[2];
+                                    if ( decimal.TryParse( defaults[0], out values[0] ) )
                                         metaAttribute_Vector2.x.Default = values[0];
-                                    if ( FloatExtensions.TryParsePrecise( defaults[1], out values[1] ) )
+                                    if ( decimal.TryParse( defaults[1], out values[1] ) )
                                         metaAttribute_Vector2.y.Default = values[1];
                                 }
                             }
@@ -280,10 +280,10 @@ namespace ArcenXE.Utilities.MetadataProcessing
                                 if ( attributes.TryGetValue( "min", out MetaAttributeToBeRead? attribute ) )
                                 {
                                     string[] minimums = attribute.Value.Split( ',' );
-                                    float[] values = new float[2];
-                                    if ( FloatExtensions.TryParsePrecise( minimums[0], out values[0] ) )
+                                    decimal[] values = new decimal[2];
+                                    if ( decimal.TryParse( minimums[0], out values[0] ) )
                                         metaAttribute_Vector2.x.Min = values[0];
-                                    if ( FloatExtensions.TryParsePrecise( minimums[1], out values[1] ) )
+                                    if ( decimal.TryParse( minimums[1], out values[1] ) )
                                         metaAttribute_Vector2.y.Min = values[1];
                                 }
                             }
@@ -291,10 +291,10 @@ namespace ArcenXE.Utilities.MetadataProcessing
                                 if ( attributes.TryGetValue( "max", out MetaAttributeToBeRead? attribute ) )
                                 {
                                     string[] maximums = attribute.Value.Split( ',' );
-                                    float[] values = new float[2];
-                                    if ( FloatExtensions.TryParsePrecise( maximums[0], out values[0] ) )
+                                    decimal[] values = new decimal[2];
+                                    if ( decimal.TryParse( maximums[0], out values[0] ) )
                                         metaAttribute_Vector2.x.Max = values[0];
-                                    if ( FloatExtensions.TryParsePrecise( maximums[1], out values[1] ) )
+                                    if ( decimal.TryParse( maximums[1], out values[1] ) )
                                         metaAttribute_Vector2.y.Max = values[1];
                                 }
                             }
@@ -309,12 +309,12 @@ namespace ArcenXE.Utilities.MetadataProcessing
                                 if ( attributes.TryGetValue( "default", out MetaAttributeToBeRead? attribute ) )
                                 {
                                     string[] defaults = attribute.Value.Split( ',' );
-                                    float[] values = new float[3];
-                                    if ( FloatExtensions.TryParsePrecise( defaults[0], out values[0] ) )
+                                    decimal[] values = new decimal[3];
+                                    if ( decimal.TryParse( defaults[0], out values[0] ) )
                                         metaAttribute_Vector3.x.Default = values[0];
-                                    if ( FloatExtensions.TryParsePrecise( defaults[1], out values[1] ) )
+                                    if ( decimal.TryParse( defaults[1], out values[1] ) )
                                         metaAttribute_Vector3.y.Default = values[1];
-                                    if ( FloatExtensions.TryParsePrecise( defaults[2], out values[2] ) )
+                                    if ( decimal.TryParse( defaults[2], out values[2] ) )
                                         metaAttribute_Vector3.z.Default = values[2];
                                 }
                             }
@@ -322,12 +322,12 @@ namespace ArcenXE.Utilities.MetadataProcessing
                                 if ( attributes.TryGetValue( "min", out MetaAttributeToBeRead? attribute ) )
                                 {
                                     string[] minimums = attribute.Value.Split( ',' );
-                                    float[] values = new float[3];
-                                    if ( FloatExtensions.TryParsePrecise( minimums[0], out values[0] ) )
+                                    decimal[] values = new decimal[3];
+                                    if ( decimal.TryParse( minimums[0], out values[0] ) )
                                         metaAttribute_Vector3.x.Min = values[0];
-                                    if ( FloatExtensions.TryParsePrecise( minimums[1], out values[1] ) )
+                                    if ( decimal.TryParse( minimums[1], out values[1] ) )
                                         metaAttribute_Vector3.y.Min = values[1];
-                                    if ( FloatExtensions.TryParsePrecise( minimums[2], out values[2] ) )
+                                    if ( decimal.TryParse( minimums[2], out values[2] ) )
                                         metaAttribute_Vector3.z.Min = values[2];
                                 }
                             }
@@ -336,12 +336,12 @@ namespace ArcenXE.Utilities.MetadataProcessing
                                 if ( attributes.TryGetValue( "max", out MetaAttributeToBeRead? attribute ) )
                                 {
                                     string[] maximums = attribute.Value.Split( ',' );
-                                    float[] values = new float[3];
-                                    if ( FloatExtensions.TryParsePrecise( maximums[0], out values[0] ) )
+                                    decimal[] values = new decimal[3];
+                                    if ( decimal.TryParse( maximums[0], out values[0] ) )
                                         metaAttribute_Vector3.x.Max = values[0];
-                                    if ( FloatExtensions.TryParsePrecise( maximums[1], out values[1] ) )
+                                    if ( decimal.TryParse( maximums[1], out values[1] ) )
                                         metaAttribute_Vector3.y.Max = values[1];
-                                    if ( FloatExtensions.TryParsePrecise( maximums[2], out values[2] ) )
+                                    if ( decimal.TryParse( maximums[2], out values[2] ) )
                                         metaAttribute_Vector3.z.Max = values[2];
                                 }
                             }

@@ -33,7 +33,7 @@ namespace ArcenXE.Utilities
         public override AttributeType Type => AttributeType.Bool;
         public bool Default { get; set; } = false;
 
-        public override string DoValidate( EditedXmlAttribute att, Coordinate coordinate )
+        public override string DoValidate( EditedXmlAttribute att, Coordinate coordinate ) // coordinate is used only in Vectors and Points
         {
             string? val = att.GetEffectiveValue();
             if ( val == null )
@@ -147,9 +147,9 @@ namespace ArcenXE.Utilities
     public class MetaAttribute_Float : MetaAttribute_Base
     {
         public override AttributeType Type => AttributeType.Float;
-        public float Default { get; set; } = 0f;
-        public float Min { get; set; } = float.MinValue;
-        public float Max { get; set; } = float.MaxValue;
+        public decimal Default { get; set; } = 0;
+        public decimal Min { get; set; } = decimal.MinValue;
+        public decimal Max { get; set; } = decimal.MaxValue;
         public int Precision { get; set; } = 3;
         public int MinimumDigits { get; set; } = 1;
 
@@ -157,7 +157,7 @@ namespace ArcenXE.Utilities
         {
             string? val = att.GetEffectiveValue();
             string errorList = string.Empty;
-            if ( val != null && float.TryParse( val, out float result ) )
+            if ( val != null && decimal.TryParse( val, out decimal result ) )
             {
                 if ( result < this.Min )
                     errorList += $"Float is {result}. It needs to be at least {this.Min}.\n";
@@ -335,11 +335,11 @@ namespace ArcenXE.Utilities
             string errorList = string.Empty;
             if ( val != null )
             {
-                float floatVal;
+                decimal floatVal;
                 switch ( coordinate )
                 {
                     case Coordinate.x:
-                        if ( float.TryParse( val, out floatVal ) )
+                        if ( decimal.TryParse( val, out floatVal ) )
                         {
                             if ( floatVal < x.Min )
                                 errorList += $"Float is {floatVal}. It needs to be at least {this.x.Min}.\n";
@@ -352,7 +352,7 @@ namespace ArcenXE.Utilities
                             errorList += "Invalid Float x";
                         break;
                     case Coordinate.y:
-                        if ( float.TryParse( val, out floatVal ) )
+                        if ( decimal.TryParse( val, out floatVal ) )
                         {
                             if ( floatVal < y.Min )
                                 errorList += $"Float is {floatVal}. It needs to be at least {this.y.Min}.\n";
@@ -385,11 +385,11 @@ namespace ArcenXE.Utilities
             string errorList = string.Empty;
             if ( val != null )
             {
-                float floatVal;
+                decimal floatVal;
                 switch ( coordinate )
                 {
                     case Coordinate.x:
-                        if ( float.TryParse( val, out floatVal ) )
+                        if ( decimal.TryParse( val, out floatVal ) )
                         {
                             if ( floatVal < x.Min )
                                 errorList += $"Float is {floatVal}. It needs to be at least {this.x.Min}.\n";
@@ -402,7 +402,7 @@ namespace ArcenXE.Utilities
                             errorList += "Invalid Float x";
                         break;
                     case Coordinate.y:
-                        if ( float.TryParse( val, out floatVal ) )
+                        if ( decimal.TryParse( val, out floatVal ) )
                         {
                             if ( floatVal < y.Min )
                                 errorList += $"Float is {floatVal}. It needs to be at least {this.y.Min}.\n";
@@ -415,7 +415,7 @@ namespace ArcenXE.Utilities
                             errorList += "Invalid Float y";
                         break;
                     case Coordinate.z:
-                        if ( float.TryParse( val, out floatVal ) )
+                        if ( decimal.TryParse( val, out floatVal ) )
                         {
                             if ( floatVal < z.Min )
                                 errorList += $"Float is {floatVal}. It needs to be at least {this.z.Min}.\n";

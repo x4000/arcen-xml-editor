@@ -1,40 +1,53 @@
 ﻿using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 namespace ArcenXE.Utilities.CreateDialogs
 {
-    public partial class CreateFileDialog : CreateDialogBase
+    public partial class CreateFileDialog : Form
     {
-        private const string textBoxError = "Special characters (excluding _) are not allowed.";
+        private const string textBoxError = "Empty strings or Special characters (excluding _) are not allowed";
+        private NewFileData? newFileData;
 
-        public CreateFileDialog( out NewFileData? newFileData ) : base( out _ )
+        public CreateFileDialog( NewFileData newFileData )
         {
             InitializeComponent();
-            newFileData = this.newFileData;
+            this.newFileData = newFileData;
+        }
+
+        private void CreateFileDialog_Load( object sender, EventArgs e )
+        {
+            this.FileNameErrorProvider.SetIconAlignment( this, ErrorIconAlignment.TopLeft );
+            CreateButton.DialogResult = DialogResult.OK;
+            CancelButton.DialogResult = DialogResult.Cancel;
         }
 
         private void FileNameTextBox_Leave( object sender, EventArgs e )
         {
             Regex allowedChars = new Regex( @"^\w+$", RegexOptions.Compiled );
-            if ( allowedChars.IsMatch( FileNameTextBox.Text ) )
-                this.TextBoxNameErrorProvider.SetError( this, string.Empty );
+            if ( allowedChars.IsMatch( this.FileNameTextBox.Text ) )
+                this.FileNameErrorProvider.SetError( this.FileNameTextBox, string.Empty );
             else
-                this.TextBoxNameErrorProvider.SetError( this, textBoxError );
+                this.FileNameErrorProvider.SetError( this.FileNameTextBox, textBoxError );
         }
 
-        protected override void CancelButton_Click( object sender, EventArgs e )
+        private void CancelButton_Click( object sender, EventArgs e )
         {
-            newFileData = null;
-            this.Close();
+            ArcenDebugging.LogSingleLine( $"Cancel event", Verbosity.DoNotShow );
+            this.newFileData = null;
+            this.Dispose();
+            //this.Close();
         }
 
-        protected override void CreateButton_Click( object sender, EventArgs e )
+        private void CreateButton_Click( object sender, EventArgs e )
         {
-            if ( this.TextBoxNameErrorProvider.GetError( this.FileNameTextBox ) != string.Empty )
+            ArcenDebugging.LogSingleLine( $"Create event", Verbosity.DoNotShow );
+
+            if ( this.newFileData == null )
             {
-                MessageBox.Show( "The file name is invalid!", "File name invalid", MessageBoxButtons.OK, MessageBoxIcon.Stop );
+                ArcenDebugging.LogSingleLine( $"this.newFileData is null", Verbosity.DoNotShow );
                 return;
             }
-            newFileData = new NewFileData( this.FileNameTextBox.Text );
+            this.newFileData.FileName = this.FileNameTextBox.Text;
             this.Close();
         }
     }

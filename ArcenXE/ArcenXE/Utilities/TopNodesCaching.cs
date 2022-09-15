@@ -33,13 +33,13 @@ namespace ArcenXE.Utilities
                 return; // complain
 
             foreach ( XmlDataTableFile file in dataTable.Files )
-                FillCachedNode( metaDoc, cachedTopNodeList.nodes, file.FullFilePath );
+                FillCachedNode( metaDoc, cachedTopNodeList.nodes, cachedTopNodeList.fullNodesByName, file.FullFilePath );
 
             cachedTopNodeList.LastRefreshed = DateTime.Now;
         }
 
         #region FillCachedNode
-        private static void FillCachedNode( MetadataDocument metaDoc, List<TopNode> listToAddTo, string filePath )
+        private static void FillCachedNode( MetadataDocument metaDoc, List<TopNode> listToAddTo, Dictionary<string, List<EditedXmlNode>> fullNodes,  string filePath )
         {
             XmlDocument? xmlDocument = Openers.GenericXmlFileLoader( filePath );
             if ( xmlDocument == null ) // invert if and put complaint + continue, remove else and put normal code
@@ -81,11 +81,18 @@ namespace ArcenXE.Utilities
                 }
                 if ( nodeOrComment == null )
                     return;
-
+                // if is partial record, ignore this one and not store in listToAddTo
                 EditedXmlNode node;
                 node = (EditedXmlNode)nodeOrComment;
                 if ( node.NodeCentralID != null )
                 {
+                    if ( node.NodeCentralID.ValueOnDisk != null && !fullNodes.TryGetValue( node.NodeCentralID.ValueOnDisk, out List<EditedXmlNode>? xmlNodesWithID ) )
+                    {
+                        xmlNodesWithID = new List<EditedXmlNode>();
+                        fullNodes[node.NodeCentralID.ValueOnDisk] = xmlNodesWithID;
+                        xmlNodesWithID.Add( node );
+                    }
+
                     TopNode topNode = new TopNode();
                     if ( node.NodeCentralID.ValueOnDisk != null ) // need to look into temp value
                         topNode.CentralID = node.NodeCentralID.ValueOnDisk;
@@ -114,12 +121,14 @@ namespace ArcenXE.Utilities
             public string FolderName = string.Empty;
             public DateTime LastRefreshed = DateTime.UnixEpoch;
             internal readonly List<TopNode> nodes = new List<TopNode>();
+            internal readonly Dictionary<string, List<EditedXmlNode>> fullNodesByName = new Dictionary<string, List<EditedXmlNode>>();
             public List<TopNode> GetNodes( MetadataDocument metaDoc )
             {
                 int RefreshTimeLimitInSeconds = 2;
                 if ( LastRefreshed == DateTime.UnixEpoch || (DateTime.Now - LastRefreshed).TotalSeconds > RefreshTimeLimitInSeconds )
                 {
                     nodes.Clear();
+                    fullNodesByName.Clear();
                     if ( MetadataStorage.CurrentVisMetadata != null )
                         ParseAllTopNodesForNodeDropdown( metaDoc, this );
                 }

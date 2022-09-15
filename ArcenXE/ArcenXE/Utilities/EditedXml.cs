@@ -37,8 +37,18 @@
     #region EditedXmlAttribute
     public class EditedXmlAttribute : IEditedXmlElement
     {
-        public string Name = string.Empty;
-        public AttributeType Type = AttributeType.Unknown; //will be filled by metadata
+        public string Name = string.Empty;      
+        public AttributeType Type
+        {
+            get
+            {
+                if ( RelatedUnionAttribute != null )
+                {
+                    return RelatedUnionAttribute.MetaAttribute.Value.Type;
+                }      
+                return AttributeType.Unknown;
+            }
+        }
         public string? ValueOnDisk = null;
         public string? TempValue = null;
         public bool IsDeleted { get; set; } = false;
@@ -84,9 +94,12 @@
     #endregion
 
     #region UIDSource
+    /// <summary>
+    /// Start with value 1. Use 0 as null value.
+    /// </summary>
     public static class UIDSource
     {
-        private static uint NextID = 0;
+        private static uint NextID = 1;
 
         public static uint GetNext()
         {
@@ -95,7 +108,7 @@
 
         public static void Reset()
         {
-            Interlocked.Exchange( ref NextID, 0 );
+            Interlocked.Exchange( ref NextID, 1 );
         }
     }
     #endregion

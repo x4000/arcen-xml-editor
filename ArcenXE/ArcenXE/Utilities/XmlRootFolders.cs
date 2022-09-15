@@ -4,7 +4,7 @@ namespace ArcenXE.Utilities
 {
     public static class XmlRootFolders
     {
-        private static readonly Dictionary<string, XmlDataTable> xmlDataTables = new Dictionary<string, XmlDataTable>(); // Dictionary<FolderName, XmlDatTable>
+        private static readonly Dictionary<string, XmlDataTable> xmlDataTables = new Dictionary<string, XmlDataTable>();
         private static readonly List<string> xmlDataTableNames = new List<string>(); // Basically a list of folders' names containing XML files
 
         public static XmlDataTable? GetXmlDataTableByName( string tableAndFolderName )

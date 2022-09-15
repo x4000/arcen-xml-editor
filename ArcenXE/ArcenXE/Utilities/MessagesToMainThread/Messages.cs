@@ -23,7 +23,7 @@ namespace ArcenXE.Utilities.MessagesToMainThread
             MainWindow.Instance.FillTopNodesList();
             if ( rootOnly )
             {
-                MainWindow.Instance.SelectedTopNodeIndex = 0;
+                MainWindow.Instance.SelectedTopNodeIndex = 1;
                 MainWindow.Instance.CallXmlVisualizer();
             }
         }

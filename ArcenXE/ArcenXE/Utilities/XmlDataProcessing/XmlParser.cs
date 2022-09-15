@@ -60,8 +60,8 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                     };
                     editedNode.Attributes.Add( att.Name, att );
                     //dump1.Enqueue( attribute.Name + "\t" + attribute.Value );
-                    if ( metaDoc.CentralID != null && att.Name.ToLowerInvariant() == metaDoc.CentralID.Key )
-                        editedNode.Attributes[att.Name].Type = AttributeType.String;
+                    //if ( metaDoc.CentralID != null && att.Name.ToLowerInvariant() == metaDoc.CentralID.Key )
+                    //    editedNode.Attributes[att.Name].Type = AttributeType.String;
 
                     if ( IsTopLevelNode && editedNode.NodeCentralID == null && (string.Equals( att.Name, metaDoc.CentralID?.Key, StringComparison.InvariantCultureIgnoreCase ) || IsRootOnly) )
                     {
