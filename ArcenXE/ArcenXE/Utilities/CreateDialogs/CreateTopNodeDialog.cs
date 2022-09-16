@@ -5,12 +5,12 @@ namespace ArcenXE.Utilities.CreateDialogs
     public partial class CreateTopNodeDialog : Form
     {
         private const string textBoxError = "Empry strings and special characters (excluding _) are not allowed.";
-        private NewFileData? newFileData;
+        private NewTopNodeData? newTopNodeData;
 
-        public CreateTopNodeDialog( out NewFileData? newFileData )
+        public CreateTopNodeDialog( NewTopNodeData? newTopNodeData )
         {
             InitializeComponent();
-            newFileData = this.newFileData;
+            newTopNodeData = this.newTopNodeData;
         }
 
         private void CreateTopNodeDialog_Load( object sender, EventArgs e )
@@ -31,7 +31,7 @@ namespace ArcenXE.Utilities.CreateDialogs
 
         protected void CancelButton_Click( object sender, EventArgs e )
         {
-            newFileData = null;
+            newTopNodeData = null;
             this.Close();
         }
 
@@ -42,7 +42,7 @@ namespace ArcenXE.Utilities.CreateDialogs
                 MessageBox.Show( "The node name is invalid!", "Node name invalid", MessageBoxButtons.OK, MessageBoxIcon.Stop );
                 return;
             }
-            newFileData = new NewFileData( this.NodeNameTextBox.Text );
+            newTopNodeData = new NewTopNodeData( this.NodeNameTextBox.Text );
             this.Close();
         }
     }

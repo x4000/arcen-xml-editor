@@ -561,6 +561,14 @@ namespace ArcenXE.Utilities.XmlDataSavingToDisk
         #endregion
 
         #region GetFinishedXmlDocument
+        public void AddCompleteNode( string node )
+        {
+            output.Append( node );
+            this.NewLine( XmlLeadingWhitespace.None );
+        }
+        #endregion
+
+        #region GetFinishedXmlDocument
         public string GetFinishedXmlDocument()
         {
             return this.output.ToString();

@@ -17,7 +17,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
             {
                 CopyEditedXmlAndFillVis_Message messageSaveXml = new CopyEditedXmlAndFillVis_Message();
                 XmlParser parser = new XmlParser();
-                XmlDocument? doc = Openers.GenericXmlFileLoader( fileName );
+                XmlDocument? doc = Openers.GenericXmlFileLoader( fileName, true );
                 XmlElement? root = doc?.DocumentElement;
                 if ( root != null )
                 {
@@ -42,12 +42,16 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                                 case XmlNodeType.Comment:
                                     EditedXmlComment comment = new EditedXmlComment
                                     {
-                                        Data = node.InnerText
+                                        Data = node.InnerText,
+                                        OuterXml = node.OuterXml,
                                     };
                                     messageSaveXml.Nodes.Add( comment );
                                     break;
+                                case XmlNodeType.Whitespace:
+                                case XmlNodeType.SignificantWhitespace:
+                                    break;
                                 default:
-                                    ArcenDebugging.LogSingleLine( "Why do we have a " + node.NodeType + " directly under the element node?", Verbosity.DoNotShow );
+                                    ArcenDebugging.LogSingleLine( "Why do we have a " + node.NodeType + $" directly under the element in {node.BaseURI}?", Verbosity.DoNotShow );
                                     break;
                             }
                         }

@@ -16,6 +16,9 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                 UID = UIDSource.GetNext(),
                 XmlNodeTagName = element.Name
             };
+            if ( IsTopLevelNode )
+                editedNode.OuterXml = element.OuterXml;
+
             XmlNodeList childNodes = element.ChildNodes;
             if ( childNodes.Count > 0 )
                 foreach ( XmlNode node in childNodes )
@@ -39,6 +42,9 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                                 Data = node.InnerText
                             };
                             editedNode.ChildNodes.Add( childComment );
+                            break;
+                        case XmlNodeType.Whitespace:
+                        case XmlNodeType.SignificantWhitespace:
                             break;
                         default:
                             string complaint = "Why do we have a " + node.NodeType + " directly under the element node?";

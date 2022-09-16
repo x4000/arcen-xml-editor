@@ -1,4 +1,5 @@
-﻿namespace ArcenXE.Utilities
+﻿using System.Xml;
+namespace ArcenXE.Utilities
 {
     #region EditedXmlNode
     public class EditedXmlNode : IEditedXmlNodeOrComment, IEditedXmlElement
@@ -9,9 +10,11 @@
         public Dictionary<string, EditedXmlAttribute> Attributes = new Dictionary<string, EditedXmlAttribute>();
         public List<IEditedXmlNodeOrComment> ChildNodes = new List<IEditedXmlNodeOrComment>();
         public bool IsRootOnly = false;
+        public string OuterXml { get; set; } = string.Empty;
         public bool IsComment => false;
         public bool IsDeleted { get; set; } = false;
         public UnionNode? RelatedUnionNode { get; set; } = null;
+
         /// <summary>
         /// For use in XmlVisualizer only
         /// </summary>
@@ -24,9 +27,11 @@
     {
         public uint UID { get; set; } = 0;
         public string Data = string.Empty;
+        public string OuterXml { get; set; } = string.Empty;
         public bool IsComment => true;
         public bool IsDeleted { get; set; } = false;
         public UnionNode? RelatedUnionNode { get; set; } = null;
+
         /// <summary>
         /// For use in XmlVisualizer only
         /// </summary>
@@ -85,6 +90,7 @@
         public uint UID { get; set; }
         public bool IsComment { get; }
         public UnionNode? RelatedUnionNode { get; set; }
+        public string OuterXml { get; set; }
     }
 
     public interface IEditedXmlElement

@@ -5,14 +5,14 @@ namespace ArcenXE.Utilities.XmlDataSavingToDisk
 {
     public static class SavingToFile
     {
-        public static void Save()
+        public static bool TrySave()
         {
             IEditedXmlNodeOrComment? nodeOrComment = MainWindow.Instance.XmlElementCurrentlyBeingEdited;
             //ArcenDebugging.LogSingleLine( $"Step 1", Verbosity.DoNotShow );
             if ( nodeOrComment == null )
             {
                 ArcenDebugging.LogSingleLine( $"XmlElementCurrentlyBeingEdited is null. Can't save this xml to file!", Verbosity.DoNotShow );
-                return;
+                return false;
             }
 
             XmlWriter xmlOutput = new XmlWriter();
@@ -42,29 +42,44 @@ namespace ArcenXE.Utilities.XmlDataSavingToDisk
                     if ( node.RelatedUnionNode == null )
                     {
                         ArcenDebugging.LogSingleLine( $"RelatedUnionNode inside EditedXmlNode {node.NodeCentralID?.GetEffectiveValue() ?? node.XmlNodeTagName} is null. Can't save this node to file!", Verbosity.DoNotShow );
-                        return;
+                        return false;
                     }
-                    xmlOutput.StartOpenNode( "root", true ).NewLine( XmlLeadingWhitespace.None );
-                    xmlOutput.StartOpenNode( node.RelatedUnionNode.MetaDocument.NodeName, false );
-                    foreach ( KeyValuePair<string, EditedXmlAttribute> att in node.Attributes )
+                    xmlOutput.StartOpenNode( "root", true ).NewLine( XmlLeadingWhitespace.None );                 
+                    // loop over all the current top nodes and add the outerxml to the file for the non selected nodes
+                    foreach ( KeyValuePair<uint, IEditedXmlNodeOrComment> kv in MainWindow.Instance.CurrentXmlTopNodesForVis )
                     {
-                        if ( node.ChildNodes.Count > 0 && att.Key == "name" ) //subnode container, it doesn't need a newline after the only attribute it prints
-                            ReadAttributeFromEditedData( xmlOutput, att, ref justInsertedLineBreak, true );
-                        else
-                            ReadAttributeFromEditedData( xmlOutput, att, ref justInsertedLineBreak, false );
-                    }
-                    xmlOutput.FinishOpenNode( true );
-                    foreach ( EditedXmlNode subNode in node.ChildNodes.Cast<EditedXmlNode>() )
-                    {
-                        xmlOutput.StartOpenNode( subNode.XmlNodeTagName, false );
-                        foreach ( KeyValuePair<string, EditedXmlAttribute> sAtt in subNode.Attributes )
+                        if ( nodeOrComment.UID != kv.Key )
                         {
-                            //ArcenDebugging.LogSingleLine( $"sAtt.Key = {sAtt.Key}!", Verbosity.DoNotShow );
-                            ReadAttributeFromEditedData( xmlOutput, sAtt, ref justInsertedLineBreak, true );
+                            xmlOutput.NewLine( XmlLeadingWhitespace.IncludeAfter );
+                            xmlOutput.AddCompleteNode( kv.Value.OuterXml );                            
                         }
-                        xmlOutput.FinishOpenNodeAndSelfClose();
+                        else
+                        {
+                            xmlOutput.NewLine( XmlLeadingWhitespace.None );
+                            xmlOutput.StartOpenNode( node.RelatedUnionNode.MetaDocument.NodeName, false );
+                            foreach ( KeyValuePair<string, EditedXmlAttribute> att in node.Attributes )
+                            {
+                                if ( node.ChildNodes.Count > 0 && att.Key == "name" ) //subnode container, it doesn't need a newline after the only attribute it prints
+                                    ReadAttributeFromEditedData( xmlOutput, att, ref justInsertedLineBreak, true );
+                                else
+                                    ReadAttributeFromEditedData( xmlOutput, att, ref justInsertedLineBreak, false );
+                            }
+                            xmlOutput.FinishOpenNode( true );
+                            foreach ( EditedXmlNode subNode in node.ChildNodes.Cast<EditedXmlNode>() )
+                            {
+                                xmlOutput.StartOpenNode( subNode.XmlNodeTagName, false );
+                                foreach ( KeyValuePair<string, EditedXmlAttribute> sAtt in subNode.Attributes )
+                                {
+                                    //ArcenDebugging.LogSingleLine( $"sAtt.Key = {sAtt.Key}!", Verbosity.DoNotShow );
+                                    ReadAttributeFromEditedData( xmlOutput, sAtt, ref justInsertedLineBreak, true );
+                                }
+                                xmlOutput.FinishOpenNodeAndSelfClose();
+                            }
+                            xmlOutput.CloseNode( node.RelatedUnionNode.MetaDocument.NodeName, true );
+                        }
+                        //ArcenDebugging.LogSingleLine( finalStringToWrite, Verbosity.DoNotShow );
                     }
-                    xmlOutput.CloseNode( node.RelatedUnionNode.MetaDocument.NodeName, true );
+                    xmlOutput.NewLine( XmlLeadingWhitespace.None );
                     xmlOutput.CloseNode( "root", false );
                 }
 
@@ -72,7 +87,7 @@ namespace ArcenXE.Utilities.XmlDataSavingToDisk
                 if ( node.RelatedUnionNode == null )
                 {
                     ArcenDebugging.LogSingleLine( $"RelatedUnionNode inside Edited Node {node} is null. Can't save this node to file!", Verbosity.DoNotShow );
-                    return;
+                    return false;
                 }
                 //add file name field in vis
                 File.WriteAllText( ProgramPermanentSettings.MainPath + @"\" + node.RelatedUnionNode.MetaDocument.MetadataFolder + @"\" +
@@ -80,6 +95,7 @@ namespace ArcenXE.Utilities.XmlDataSavingToDisk
                 //ArcenDebugging.LogSingleLine( $"Step 5", Verbosity.DoNotShow );
                 //ArcenDebugging.LogSingleLine( $"{node.RelatedUnionNode.MetaDocument.MetadataFolder}", Verbosity.DoNotShow );
             }
+            return true;
         }
 
         private static bool ReadAttributeFromEditedData( XmlWriter xmlOutput, KeyValuePair<string, EditedXmlAttribute> att, ref bool justInsertedLineBreak, bool skipAttributeLeadOut = false )

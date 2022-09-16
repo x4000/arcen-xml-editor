@@ -91,11 +91,11 @@ namespace ArcenXE.Utilities
             //explorer.Show();
         }*/
 
-        public static XmlDocument? GenericXmlFileLoader( string fileName )
+        public static XmlDocument? GenericXmlFileLoader( string fileName, bool preserveWhitespace = false )
         {
             XmlDocument doc = new XmlDocument
             {
-                PreserveWhitespace = false
+                PreserveWhitespace = preserveWhitespace //try preserving it, but refactor all the parsers to accept whitespaces                
             };
             try
             {
