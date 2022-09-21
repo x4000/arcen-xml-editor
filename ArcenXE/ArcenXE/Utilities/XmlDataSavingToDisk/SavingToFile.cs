@@ -5,9 +5,8 @@ namespace ArcenXE.Utilities.XmlDataSavingToDisk
 {
     public static class SavingToFile
     {
-        public static bool TrySave()
+        public static bool TrySave( IEditedXmlNodeOrComment? nodeOrComment, bool isBackupFile )
         {
-            IEditedXmlNodeOrComment? nodeOrComment = MainWindow.Instance.XmlElementCurrentlyBeingEdited;
             //ArcenDebugging.LogSingleLine( $"Step 1", Verbosity.DoNotShow );
             if ( nodeOrComment == null )
             {
@@ -15,7 +14,7 @@ namespace ArcenXE.Utilities.XmlDataSavingToDisk
                 return false;
             }
 
-            XmlWriter xmlOutput = new XmlWriter();
+            XmlWriter xmlOutput = new XmlWriter( true );
             if ( nodeOrComment.IsComment )
             {
                 //todo
@@ -33,7 +32,7 @@ namespace ArcenXE.Utilities.XmlDataSavingToDisk
                     foreach ( KeyValuePair<string, EditedXmlAttribute> att in node.Attributes )
                         ReadAttributeFromEditedData( xmlOutput, att, ref justInsertedLineBreak, false );
                     xmlOutput.FinishOpenNode( true );
-                    xmlOutput.CloseNode( "root", false );
+                    xmlOutput.CloseNode( "root", false, true );
                 }
                 else
                 {
@@ -44,43 +43,51 @@ namespace ArcenXE.Utilities.XmlDataSavingToDisk
                         ArcenDebugging.LogSingleLine( $"RelatedUnionNode inside EditedXmlNode {node.NodeCentralID?.GetEffectiveValue() ?? node.XmlNodeTagName} is null. Can't save this node to file!", Verbosity.DoNotShow );
                         return false;
                     }
-                    xmlOutput.StartOpenNode( "root", true ).NewLine( XmlLeadingWhitespace.None );                 
+                    xmlOutput.StartOpenNode( "root", true ).NewLine( XmlLeadingWhitespace.None );
                     // loop over all the current top nodes and add the outerxml to the file for the non selected nodes
                     foreach ( KeyValuePair<uint, IEditedXmlNodeOrComment> kv in MainWindow.Instance.CurrentXmlTopNodesForVis )
                     {
                         if ( nodeOrComment.UID != kv.Key )
                         {
                             xmlOutput.NewLine( XmlLeadingWhitespace.IncludeAfter );
-                            xmlOutput.AddCompleteNode( kv.Value.OuterXml );                            
+                            xmlOutput.AddCompleteNode( kv.Value.OuterXml );
                         }
                         else
                         {
                             xmlOutput.NewLine( XmlLeadingWhitespace.None );
-                            xmlOutput.StartOpenNode( node.RelatedUnionNode.MetaDocument.NodeName, false );
+
+                            #region ModifiedNode
+                            XmlWriter editedNodeOutput = new XmlWriter( false );
+                            //extra indent to match other nodes
+                            editedNodeOutput.IncrementWhitespace();
+                            editedNodeOutput.StartOpenNode( node.RelatedUnionNode.MetaDocument.NodeName, false );
                             foreach ( KeyValuePair<string, EditedXmlAttribute> att in node.Attributes )
                             {
                                 if ( node.ChildNodes.Count > 0 && att.Key == "name" ) //subnode container, it doesn't need a newline after the only attribute it prints
-                                    ReadAttributeFromEditedData( xmlOutput, att, ref justInsertedLineBreak, true );
+                                    ReadAttributeFromEditedData( editedNodeOutput, att, ref justInsertedLineBreak, true );
                                 else
-                                    ReadAttributeFromEditedData( xmlOutput, att, ref justInsertedLineBreak, false );
+                                    ReadAttributeFromEditedData( editedNodeOutput, att, ref justInsertedLineBreak, false );
                             }
-                            xmlOutput.FinishOpenNode( true );
+                            editedNodeOutput.FinishOpenNode( true );
                             foreach ( EditedXmlNode subNode in node.ChildNodes.Cast<EditedXmlNode>() )
                             {
-                                xmlOutput.StartOpenNode( subNode.XmlNodeTagName, false );
+                                editedNodeOutput.StartOpenNode( subNode.XmlNodeTagName, false );
                                 foreach ( KeyValuePair<string, EditedXmlAttribute> sAtt in subNode.Attributes )
                                 {
                                     //ArcenDebugging.LogSingleLine( $"sAtt.Key = {sAtt.Key}!", Verbosity.DoNotShow );
-                                    ReadAttributeFromEditedData( xmlOutput, sAtt, ref justInsertedLineBreak, true );
+                                    ReadAttributeFromEditedData( editedNodeOutput, sAtt, ref justInsertedLineBreak, true );
                                 }
-                                xmlOutput.FinishOpenNodeAndSelfClose();
+                                editedNodeOutput.FinishOpenNodeAndSelfClose();
                             }
-                            xmlOutput.CloseNode( node.RelatedUnionNode.MetaDocument.NodeName, true );
+                            editedNodeOutput.CloseNode( node.RelatedUnionNode.MetaDocument.NodeName, true, false );
+                            #endregion
+
+                            xmlOutput.AddCompleteNode( editedNodeOutput.GetFinishedXmlDocument() );
                         }
                         //ArcenDebugging.LogSingleLine( finalStringToWrite, Verbosity.DoNotShow );
                     }
                     xmlOutput.NewLine( XmlLeadingWhitespace.None );
-                    xmlOutput.CloseNode( "root", false );
+                    xmlOutput.CloseNode( "root", false, true );
                 }
 
                 //write to file
@@ -90,8 +97,12 @@ namespace ArcenXE.Utilities.XmlDataSavingToDisk
                     return false;
                 }
                 //add file name field in vis
-                File.WriteAllText( ProgramPermanentSettings.MainPath + @"\" + node.RelatedUnionNode.MetaDocument.MetadataFolder + @"\" +
-                                   node.RelatedUnionNode.MetaDocument.MetadataFolder + ".xml", xmlOutput.GetFinishedXmlDocument() );
+                if ( isBackupFile )
+                    File.WriteAllText( ProgramPermanentSettings.MainPath + @"\" + node.RelatedUnionNode.MetaDocument.MetadataFolder + @"\" +
+                                      node.RelatedUnionNode.MetaDocument.MetadataFolder + ".tmp", xmlOutput.GetFinishedXmlDocument() );
+                else
+                    File.WriteAllText( ProgramPermanentSettings.MainPath + @"\" + node.RelatedUnionNode.MetaDocument.MetadataFolder + @"\" +
+                                       node.RelatedUnionNode.MetaDocument.MetadataFolder + ".xml", xmlOutput.GetFinishedXmlDocument() );
                 //ArcenDebugging.LogSingleLine( $"Step 5", Verbosity.DoNotShow );
                 //ArcenDebugging.LogSingleLine( $"{node.RelatedUnionNode.MetaDocument.MetadataFolder}", Verbosity.DoNotShow );
             }

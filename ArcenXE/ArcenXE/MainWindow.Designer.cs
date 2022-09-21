@@ -96,7 +96,7 @@
             this.BigSplitContainer.Panel2.AutoScroll = true;
             this.BigSplitContainer.Panel2.Controls.Add(this.RightSplitContainer);
             this.BigSplitContainer.Size = new System.Drawing.Size(1491, 659);
-            this.BigSplitContainer.SplitterDistance = 169;
+            this.BigSplitContainer.SplitterDistance = 168;
             this.BigSplitContainer.SplitterWidth = 2;
             this.BigSplitContainer.TabIndex = 11;
             // 
@@ -116,8 +116,8 @@
             // 
             this.LeftSplitContainer.Panel2.BackColor = System.Drawing.SystemColors.ControlLight;
             this.LeftSplitContainer.Panel2.Controls.Add(this.FileList);
-            this.LeftSplitContainer.Size = new System.Drawing.Size(169, 659);
-            this.LeftSplitContainer.SplitterDistance = 424;
+            this.LeftSplitContainer.Size = new System.Drawing.Size(168, 659);
+            this.LeftSplitContainer.SplitterDistance = 423;
             this.LeftSplitContainer.SplitterWidth = 2;
             this.LeftSplitContainer.TabIndex = 0;
             // 
@@ -128,7 +128,7 @@
             this.FolderList.ItemHeight = 15;
             this.FolderList.Location = new System.Drawing.Point(0, 0);
             this.FolderList.Name = "FolderList";
-            this.FolderList.Size = new System.Drawing.Size(169, 424);
+            this.FolderList.Size = new System.Drawing.Size(168, 423);
             this.FolderList.TabIndex = 10;
             this.FolderList.SelectedIndexChanged += new System.EventHandler(this.FolderList_SelectedIndexChanged);
             // 
@@ -139,7 +139,7 @@
             this.FileList.ItemHeight = 15;
             this.FileList.Location = new System.Drawing.Point(0, 0);
             this.FileList.Name = "FileList";
-            this.FileList.Size = new System.Drawing.Size(169, 233);
+            this.FileList.Size = new System.Drawing.Size(168, 234);
             this.FileList.TabIndex = 9;
             this.FileList.SelectedIndexChanged += new System.EventHandler(this.FileList_SelectedIndexChanged);
             // 
@@ -158,8 +158,8 @@
             // 
             this.RightSplitContainer.Panel2.AutoScroll = true;
             this.RightSplitContainer.Panel2.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.RightSplitContainer.Size = new System.Drawing.Size(1320, 659);
-            this.RightSplitContainer.SplitterDistance = 243;
+            this.RightSplitContainer.Size = new System.Drawing.Size(1321, 659);
+            this.RightSplitContainer.SplitterDistance = 242;
             this.RightSplitContainer.SplitterWidth = 2;
             this.RightSplitContainer.TabIndex = 0;
             // 
@@ -171,7 +171,7 @@
             this.TopNodesList.ItemHeight = 15;
             this.TopNodesList.Location = new System.Drawing.Point(0, 0);
             this.TopNodesList.Name = "TopNodesList";
-            this.TopNodesList.Size = new System.Drawing.Size(243, 659);
+            this.TopNodesList.Size = new System.Drawing.Size(242, 659);
             this.TopNodesList.TabIndex = 5;
             this.TopNodesList.SelectedIndexChanged += new System.EventHandler(this.TopNodesList_SelectedIndexChanged);
             // 
@@ -393,6 +393,7 @@
             this.Controls.Add(this.BigSplitContainer);
             this.Controls.Add(this.toolStrip2);
             this.Controls.Add(this.toolStrip1);
+            this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.Name = "MainWindow";
             this.Text = "Arcen XE";
             this.Load += new System.EventHandler(this.MainWindow_Load);

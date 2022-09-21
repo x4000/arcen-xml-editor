@@ -32,10 +32,8 @@ namespace ArcenXE.Utilities.CreateDialogs
 
         private void CancelButton_Click( object sender, EventArgs e )
         {
-            ArcenDebugging.LogSingleLine( $"Cancel event", Verbosity.DoNotShow );
             this.newFileData = null;
             this.Dispose();
-            //this.Close();
         }
 
         private void CreateButton_Click( object sender, EventArgs e )

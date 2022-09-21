@@ -7,10 +7,10 @@ namespace ArcenXE.Utilities.CreateDialogs
         private const string textBoxError = "Empry strings and special characters (excluding _) are not allowed.";
         private NewTopNodeData? newTopNodeData;
 
-        public CreateTopNodeDialog( NewTopNodeData? newTopNodeData )
+        public CreateTopNodeDialog( NewTopNodeData newTopNodeData )
         {
             InitializeComponent();
-            newTopNodeData = this.newTopNodeData;
+            this.newTopNodeData = newTopNodeData;
         }
 
         private void CreateTopNodeDialog_Load( object sender, EventArgs e )
@@ -42,7 +42,13 @@ namespace ArcenXE.Utilities.CreateDialogs
                 MessageBox.Show( "The node name is invalid!", "Node name invalid", MessageBoxButtons.OK, MessageBoxIcon.Stop );
                 return;
             }
-            newTopNodeData = new NewTopNodeData( this.NodeNameTextBox.Text );
+            if ( this.newTopNodeData == null )
+            {
+                ArcenDebugging.LogSingleLine( "newTopNodeData is null, can't proceed in the creation ofthe node!", Verbosity.DoNotShow );
+                return;
+            }
+            this.newTopNodeData.NodeName = this.NodeNameTextBox.Text;
+            this.newTopNodeData.IsComment = this.IsCommentCheckBox.Checked;
             this.Close();
         }
     }

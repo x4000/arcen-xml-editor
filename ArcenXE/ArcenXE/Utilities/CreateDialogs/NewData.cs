@@ -2,7 +2,7 @@
 {
     public class NewFileData
     {
-        public string FileName { get; private set; }
+        public string FileName { get; set; }
 
         public NewFileData()
         {
@@ -16,15 +16,18 @@
 
     public class NewTopNodeData
     {
-        public string NodeName { get; private set; }
+        public string NodeName { get; set; }
+        public bool IsComment { get; set; }
 
         public NewTopNodeData()
         {
             this.NodeName = string.Empty;
+            this.IsComment = false;
         }
-        public NewTopNodeData( string name )
+        public NewTopNodeData( string name, bool isComment )
         {
             this.NodeName = name;
+            this.IsComment = isComment;
         }
     }
 }

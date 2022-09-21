@@ -11,6 +11,7 @@ namespace ArcenXE.Utilities.MessagesToMainThread
             bool rootOnly = false;
             if ( mainXmlVis.Count > 0 )
                 mainXmlVis.Clear();
+            ArcenDebugging.LogSingleLine( $"Nodes.Count: {Nodes.Count}", Verbosity.DoNotShow );
             foreach ( IEditedXmlNodeOrComment nodeOrComment in Nodes )
                 if ( nodeOrComment.UID != 0 )
                 {
@@ -22,10 +23,7 @@ namespace ArcenXE.Utilities.MessagesToMainThread
 
             MainWindow.Instance.FillTopNodesList();
             if ( rootOnly )
-            {
                 MainWindow.Instance.SelectedTopNodeIndex = 1;
-                MainWindow.Instance.CallXmlVisualizer();
-            }
         }
     }
 

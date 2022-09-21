@@ -34,6 +34,8 @@
             this.CancelButton = new System.Windows.Forms.Button();
             this.CreateButton = new System.Windows.Forms.Button();
             this.NodeNameErrorProvider = new System.Windows.Forms.ErrorProvider(this.components);
+            this.IsCommentCheckBox = new System.Windows.Forms.CheckBox();
+            this.IsCommentLabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.NodeNameErrorProvider)).BeginInit();
             this.SuspendLayout();
             // 
@@ -62,7 +64,7 @@
             // CancelButton
             // 
             this.CancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.CancelButton.Location = new System.Drawing.Point(319, 65);
+            this.CancelButton.Location = new System.Drawing.Point(319, 77);
             this.CancelButton.Name = "CancelButton";
             this.CancelButton.Size = new System.Drawing.Size(75, 23);
             this.CancelButton.TabIndex = 4;
@@ -73,7 +75,7 @@
             // CreateButton
             // 
             this.CreateButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.CreateButton.Location = new System.Drawing.Point(238, 65);
+            this.CreateButton.Location = new System.Drawing.Point(238, 77);
             this.CreateButton.Name = "CreateButton";
             this.CreateButton.Size = new System.Drawing.Size(75, 23);
             this.CreateButton.TabIndex = 5;
@@ -87,12 +89,32 @@
             this.NodeNameErrorProvider.BlinkStyle = System.Windows.Forms.ErrorBlinkStyle.NeverBlink;
             this.NodeNameErrorProvider.ContainerControl = this;
             // 
+            // IsCommentCheckBox
+            // 
+            this.IsCommentCheckBox.AutoSize = true;
+            this.IsCommentCheckBox.Location = new System.Drawing.Point(87, 56);
+            this.IsCommentCheckBox.Name = "IsCommentCheckBox";
+            this.IsCommentCheckBox.Size = new System.Drawing.Size(15, 14);
+            this.IsCommentCheckBox.TabIndex = 6;
+            this.IsCommentCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // IsCommentLabel
+            // 
+            this.IsCommentLabel.AutoSize = true;
+            this.IsCommentLabel.Location = new System.Drawing.Point(12, 55);
+            this.IsCommentLabel.Name = "IsCommentLabel";
+            this.IsCommentLabel.Size = new System.Drawing.Size(61, 15);
+            this.IsCommentLabel.TabIndex = 7;
+            this.IsCommentLabel.Text = "Comment";
+            // 
             // CreateTopNodeDialog
             // 
             this.AcceptButton = this.CreateButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(406, 100);
+            this.ClientSize = new System.Drawing.Size(406, 112);
+            this.Controls.Add(this.IsCommentLabel);
+            this.Controls.Add(this.IsCommentCheckBox);
             this.Controls.Add(this.CreateButton);
             this.Controls.Add(this.CancelButton);
             this.Controls.Add(this.NodeNameTextBox);
@@ -118,5 +140,7 @@
         private ErrorProvider NodeNameErrorProvider;
         private new Button CancelButton;
         private Button CreateButton;
+        private Label IsCommentLabel;
+        private CheckBox IsCommentCheckBox;
     }
 }

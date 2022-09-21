@@ -20,18 +20,18 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                 editedNode.OuterXml = element.OuterXml;
 
             XmlNodeList childNodes = element.ChildNodes;
-            if ( childNodes.Count > 0 )
+            if ( (IsTopLevelNode && !IsRootOnly) || (!IsTopLevelNode && childNodes.Count > 0) )
                 foreach ( XmlNode node in childNodes )
                 {
                     //ArcenDebugging.LogSingleLine( "Node: " + node.Name + " name=" + ((XmlElement)node).GetAttribute("name"), Verbosity.DoNotShow );
                     switch ( node.NodeType )
                     {
                         case XmlNodeType.Element:
-                            EditedXmlNode? childResult = (EditedXmlNode?)ProcessXmlElement( (XmlElement)node, metaDoc, false ); //task.run on this? risk of losing the correct order of parts, so need a thread-safe structure                         
+                            EditedXmlNode? childResult = (EditedXmlNode?)ProcessXmlElement( (XmlElement)node, metaDoc, false ); //task.run on this? risk of losing the correct order of parts, and need a thread-safe structure
                             if ( childResult != null )
                             {
                                 editedNode.ChildNodes.Add( childResult );
-                                //dump2.Enqueue( $"Node = {node.Name}\t\tchildResult = {childResult.}" );
+                                //dump2.Enqueue( $"Node = {node.Name}\t" );
                             }
                             else
                                 ArcenDebugging.LogSingleLine( "ERROR: Processing of " + ((XmlElement)node).GetAttribute( "key" ) + " node failed.", Verbosity.DoNotShow );
@@ -51,12 +51,12 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                             ArcenDebugging.LogSingleLine( complaint, Verbosity.DoNotShow );
                             return null;
                     }
-                }
-            if ( IsRootOnly )
-                editedNode.IsRootOnly = true;
+                }                
+
             XmlAttributeCollection attributes = element.Attributes;
             if ( attributes.Count > 0 )
             {
+                //ArcenDebugging.LogSingleLine( "it's almost x3 happening", Verbosity.DoNotShow );
                 foreach ( XmlAttribute attribute in attributes )
                 {
                     EditedXmlAttribute att = new EditedXmlAttribute
@@ -68,16 +68,20 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                     //dump1.Enqueue( attribute.Name + "\t" + attribute.Value );
                     //if ( metaDoc.CentralID != null && att.Name.ToLowerInvariant() == metaDoc.CentralID.Key )
                     //    editedNode.Attributes[att.Name].Type = AttributeType.String;
+                    //ArcenDebugging.LogSingleLine( "it's almost x2 happening", Verbosity.DoNotShow );
 
                     if ( IsTopLevelNode && editedNode.NodeCentralID == null && (string.Equals( att.Name, metaDoc.CentralID?.Key, StringComparison.InvariantCultureIgnoreCase ) || IsRootOnly) )
                     {
+                        //ArcenDebugging.LogSingleLine( "it's almost happening", Verbosity.DoNotShow );
                         if ( IsRootOnly )
                         {
+                            //ArcenDebugging.LogSingleLine( "it's happening", Verbosity.DoNotShow );
                             EditedXmlAttribute rootNode = new EditedXmlAttribute
                             {
                                 Name = "name",
                                 ValueOnDisk = "Root Node"
                             };
+                            editedNode.IsRootOnly = true;
                             editedNode.NodeCentralID = rootNode;
                         }
                         else
@@ -86,12 +90,11 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                 }
             }
             else
-            {
                 ArcenDebugging.LogSingleLine( "WARNING: attributes from node " + element.Name + " in file " + element.BaseURI + " are missing.", Verbosity.DoNotShow );
-            }
             return editedNode;
         }
 
+        #region DumpXmlData
         //public static void DumpXmlData()
         //{
         //    string error = "\nattributesData contents: ";
@@ -113,5 +116,6 @@ namespace ArcenXE.Utilities.XmlDataProcessing
         //    }
         //    ArcenDebugging.LogSingleLine( error, Verbosity.DoNotShow );
         //}
+        #endregion
     }
 }

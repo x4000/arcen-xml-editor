@@ -24,10 +24,13 @@ namespace ArcenXE.Utilities.XmlDataSavingToDisk
         }
         public ushort GetPixelsOnCurrentLine() => pixelsOnCurrentLine;
 
-        public XmlWriter()
+        public XmlWriter( bool addHeader )
         {
-            output.Append( "<?xml version=\"1.0\" encoding=\"utf-8\"?>" );
-            output.Append( GetNewLineAndResetCharsOnCurrentLine() );
+            if ( addHeader )
+            {
+                output.Append( "<?xml version=\"1.0\" encoding=\"utf-8\"?>" );
+                output.Append( GetNewLineAndResetCharsOnCurrentLine() );
+            }
         }
 
         #region CalculateIfNewLineIsRequired
@@ -135,14 +138,15 @@ namespace ArcenXE.Utilities.XmlDataSavingToDisk
         /// Rather than having a stack where we pop and end the prior Node, it's much easier for us to read the code
         /// if the code has to explicitly state what the end Node is again.  Otherwise that was going in comments, anyhow.
         /// </summary>
-        public XmlWriter CloseNode( string CloseNodeTag, bool IncludeLeadingWhitespace )
+        public XmlWriter CloseNode( string CloseNodeTag, bool IncludeLeadingWhitespace, bool AddLinebreakAfter )
         {
             DecrementWhitespace();
 
             if ( IncludeLeadingWhitespace )
                 output.Append( currentLeadingWhitespace );
             output.Append( "</" ).Append( CloseNodeTag ).Append( ">" );
-            NewLine( XmlLeadingWhitespace.None );
+            if ( AddLinebreakAfter )
+                NewLine( XmlLeadingWhitespace.None );
             return this;
         }
         #endregion

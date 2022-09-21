@@ -36,10 +36,17 @@ namespace ArcenXE.Visualization
             checkedListBoxPlusButton.SelectionMode = SelectionMode.One;
             checkedListBoxPlusButton.CheckOnClick = true;
             checkedListBoxPlusButton.Tag = new ControlTagInfo( checkedListBoxDropdown ); //merge with struct tag
+
+            toolTip.AutoPopDelay = 0;
+            toolTip.InitialDelay = 0;
+            toolTip.ReshowDelay = 0;
         }
 
-        private const int EXTRA_PIXELS = 18; // should use the genericHeight calculated for the used font
+        private const int EXTRA_PIXELS_W = 18; // should use the genericHeight calculated for the used font
+        private const int EXTRA_PIXELS_H = 8;
+
         private const int AMOUNT_OF_LINES_TO_DISPLAY_IN_CLB = 7;
+        private const int TEXTBOX_HEIGHT = 22;
 
         private static int maxHeightInCurrentRow = 0;
         private static int genericHeightBasedOnFontUsed;
@@ -153,7 +160,7 @@ namespace ArcenXE.Visualization
             {
                 int labelHeight = 0;
                 SizeF generalSize = graphics.MeasureString( "A1BCDEtest0", MainWindow.Instance.RightSplitContainer.Panel2.Font );
-                genericHeightBasedOnFontUsed = (int)Math.Ceiling( generalSize.Height );
+                genericHeightBasedOnFontUsed = Math.Max( (int)Math.Ceiling( generalSize.Height ), TEXTBOX_HEIGHT );
 
                 if ( item is EditedXmlComment comment )
                 {
@@ -185,12 +192,12 @@ namespace ArcenXE.Visualization
                 {
                     #region TopNode
                     if ( node.NodeCentralID != null ) // top node 
-                    { //this code has issues // ?? what issues?
+                    {
                         Label label = labelPool.GetOrAdd( null );
-                        string toWrite = "Top Node Selected: " + node.NodeCentralID.ValueOnDisk;
+                        string toWrite = "Top Node type selected: " + node.XmlNodeTagName;
 
-                        label.Font = new Font( label.Font, FontStyle.Bold );
-                        SizeF size = graphics.MeasureString( toWrite, label.Font );
+                        label.Font = new Font( MainWindow.Instance.Font, FontStyle.Bold );
+                        SizeF size = graphics.MeasureString( toWrite, MainWindow.Instance.Font );
 
                         label.Height = (int)Math.Ceiling( size.Height );
                         label.Width = (int)Math.Ceiling( size.Width );
@@ -330,8 +337,9 @@ namespace ArcenXE.Visualization
 #pragma warning restore CS8622
             } );
             SizeF size = graphics.MeasureString( pair.Key, MainWindow.Instance.RightSplitContainer.Panel2.Font );
-            label.Height = (int)Math.Ceiling( size.Height );
+            label.Height = Math.Max( genericHeightBasedOnFontUsed, (int)Math.Ceiling( size.Height ) );
             label.Width = (int)Math.Ceiling( size.Width );
+            label.TextAlign = ContentAlignment.MiddleLeft;
 
             MoveCaretBasedOnLineBreakBefore( pair.Value, caret, label.Width + 3, maxHeightInCurrentRow );
 
@@ -349,7 +357,7 @@ namespace ArcenXE.Visualization
             uAttribute.Controls.Add( label );
             ((PooledControlTagInfo)label.Tag).RelatedUnionElement = uAttribute;
 
-            caret.MoveHorizontally( label.Width + 3 );
+            GetHeightAndMoveCaretRight( label, caret, label.Width + 3 - EXTRA_PIXELS_W );
             return label.Height;
         }
         #endregion
@@ -742,7 +750,7 @@ namespace ArcenXE.Visualization
                         } );
 
                         numeric1.Bounds = new Rectangle( caret.x, caret.y, ((MetaAttribute_Point)metaAttribute).ContentWidthPx, controlHeight );
-                        caret.MoveHorizontally( ((MetaAttribute_Point)metaAttribute).ContentWidthPx + EXTRA_PIXELS );
+                        caret.MoveHorizontally( ((MetaAttribute_Point)metaAttribute).ContentWidthPx + EXTRA_PIXELS_W );
                         numeric2.Bounds = new Rectangle( caret.x, caret.y, 80, controlHeight );
 
                         numeric1.ThousandsSeparator = true;
@@ -798,7 +806,7 @@ namespace ArcenXE.Visualization
                             ((PooledControlTagInfo)newNumeric.Tag).ControlsCoordinate = Coordinate.y;
                         } );
                         numeric1.Bounds = new Rectangle( caret.x, caret.y, ((MetaAttribute_Vector2)metaAttribute).ContentWidthPx, controlHeight );
-                        caret.MoveHorizontally( ((MetaAttribute_Vector2)metaAttribute).ContentWidthPx + EXTRA_PIXELS );
+                        caret.MoveHorizontally( ((MetaAttribute_Vector2)metaAttribute).ContentWidthPx + EXTRA_PIXELS_W );
                         numeric2.Bounds = new Rectangle( caret.x, caret.y, ((MetaAttribute_Vector2)metaAttribute).ContentWidthPx, controlHeight );
 
                         numeric1.ThousandsSeparator = true;
@@ -870,9 +878,9 @@ namespace ArcenXE.Visualization
                         } );
 
                         numeric1.Bounds = new Rectangle( caret.x, caret.y, ((MetaAttribute_Vector3)metaAttribute).ContentWidthPx, controlHeight );
-                        caret.MoveHorizontally( ((MetaAttribute_Vector3)metaAttribute).ContentWidthPx + EXTRA_PIXELS );
+                        caret.MoveHorizontally( ((MetaAttribute_Vector3)metaAttribute).ContentWidthPx + EXTRA_PIXELS_W );
                         numeric2.Bounds = new Rectangle( caret.x, caret.y, ((MetaAttribute_Vector3)metaAttribute).ContentWidthPx, controlHeight );
-                        caret.MoveHorizontally( ((MetaAttribute_Vector3)metaAttribute).ContentWidthPx + EXTRA_PIXELS );
+                        caret.MoveHorizontally( ((MetaAttribute_Vector3)metaAttribute).ContentWidthPx + EXTRA_PIXELS_W );
                         numeric3.Bounds = new Rectangle( caret.x, caret.y, ((MetaAttribute_Vector3)metaAttribute).ContentWidthPx, controlHeight );
 
                         numeric1.ThousandsSeparator = true;
@@ -950,7 +958,7 @@ namespace ArcenXE.Visualization
         {
             if ( control.Height > maxHeightInCurrentRow )
                 maxHeightInCurrentRow = control.Height;
-            caret.MoveHorizontally( width + EXTRA_PIXELS );
+            caret.MoveHorizontally( width + EXTRA_PIXELS_W );
         }
 
         #region Linking Data in UnionNode
@@ -1018,7 +1026,7 @@ namespace ArcenXE.Visualization
                 case LineBreakType.Always:
                     if ( !justInsertedLineBreak )
                     {
-                        caret.NextLine( height + EXTRA_PIXELS );
+                        caret.NextLine( height + EXTRA_PIXELS_H );
                         justInsertedLineBreak = true;
                     }
                     else
@@ -1027,7 +1035,7 @@ namespace ArcenXE.Visualization
                 case LineBreakType.PreferNot:
                     if ( MainWindow.Instance.RightSplitContainer.Panel2.ClientSize.Width - (caret.x + (upcomingCaretHorizonatalMove * widthMultiplier) + (metaAttribute.ContentWidthPx * widthMultiplier)) < 5 )
                     {
-                        caret.NextLine( height + EXTRA_PIXELS );
+                        caret.NextLine( height + EXTRA_PIXELS_H );
                         justInsertedLineBreak = true;
                     }
                     else
@@ -1041,13 +1049,13 @@ namespace ArcenXE.Visualization
             switch ( metaAttribute.LinebreakAfter )
             {
                 case LineBreakType.Always:
-                    caret.NextLine( height + EXTRA_PIXELS );
+                    caret.NextLine( height + EXTRA_PIXELS_H );
                     justInsertedLineBreak = true;
                     break;
                 case LineBreakType.PreferNot:
                     if ( MainWindow.Instance.RightSplitContainer.Panel2.ClientSize.Width - caret.x < 20 ) // might remove this check?
                     {
-                        caret.NextLine( height + EXTRA_PIXELS );
+                        caret.NextLine( height + EXTRA_PIXELS_H );
                         justInsertedLineBreak = true;
                     }
                     else
@@ -1265,7 +1273,7 @@ namespace ArcenXE.Visualization
             Control control = (Control)sender;
             UnionAttribute? uAttribute = ((ControlTagInfo)control.Tag).RelatedUnionElement as UnionAttribute;
             if ( uAttribute != null )
-                toolTip.SetToolTip( control, uAttribute.MetaAttribute.Value.Tooltip);
+                toolTip.SetToolTip( control, uAttribute.MetaAttribute.Value.Tooltip );
         }
 
         private void CallValidatorAfterFocusLostOrIndexChanged( object? sender, EventArgs e )
