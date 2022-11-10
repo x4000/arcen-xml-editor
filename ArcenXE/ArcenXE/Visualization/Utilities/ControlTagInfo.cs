@@ -24,7 +24,14 @@ namespace ArcenXE.Visualization.Utilities
 
     public class PooledControlTagInfo : ControlTagInfo, IControlTagInfo
     {
-        public Coordinate ControlsCoordinate = Coordinate.None; // only used by numerical updown controls
+        /// <summary>
+        /// Only used by numerical updown controls
+        /// </summary>
+        public Coordinate ControlsCoordinate = Coordinate.None;
+        /// <summary>
+        /// Only used by the buttons that show the attribute list of a node, when clicked
+        /// </summary>
+        public bool IsOpen = false;
         private readonly ReturnControlToPool ferrymanToPool;
 
         public PooledControlTagInfo( Control relatedControl, ReturnControlToPool ferrymanToPool ) : base( relatedControl )
@@ -54,12 +61,30 @@ namespace ArcenXE.Visualization.Utilities
         ErrorProvider RelatedErrorProvider { get; }
     }
 
-    public struct CheckedListBoxTagData
+    public class CheckedListBoxTagData
     {
-        public UnionNode UNode;
-        public Dictionary<string, MetaAttribute_Base> MetaAttributes;
-        public EditedXmlNode Node; // Updated each time the plus button is pressed to match the node from which the CLB was called
-        public XmlVisualizer Vis;
+        public readonly UnionNode UNode;
+        public readonly Dictionary<string, MetaAttribute_Base> MetaAttributes;
+        public readonly EditedXmlNode Node; // Updated each time the plus button is pressed to match the node from which the CLB was called
+        public readonly XmlVisualizer Vis;
+
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+        public CheckedListBoxTagData(UnionNode uNode, Dictionary<string, MetaAttribute_Base> metaAttributes, EditedXmlNode node, XmlVisualizer vis )
+#pragma warning restore CS8618
+        {
+            this.UNode = uNode;            
+            this.MetaAttributes = metaAttributes;
+            this.Node = node;
+            this.Vis = vis;
+            if ( UNode == null )
+                ArcenDebugging.LogSingleLine( "UNode in CheckedListBoxTagData constructor is NULL", Verbosity.ShowAsError );
+            if ( MetaAttributes == null )
+                ArcenDebugging.LogSingleLine( "MetaAttributes in CheckedListBoxTagData constructor is NULL", Verbosity.ShowAsError );
+            if ( Node == null )
+                ArcenDebugging.LogSingleLine( "Node in CheckedListBoxTagData constructor is NULL", Verbosity.ShowAsError );
+            if ( Vis == null )
+                ArcenDebugging.LogSingleLine( "Vis in CheckedListBoxTagData constructor is NULL", Verbosity.ShowAsError );
+        }
     }
 
     public enum Coordinate

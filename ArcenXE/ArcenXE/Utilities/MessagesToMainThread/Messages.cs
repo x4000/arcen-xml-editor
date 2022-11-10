@@ -11,7 +11,7 @@ namespace ArcenXE.Utilities.MessagesToMainThread
             bool rootOnly = false;
             if ( mainXmlVis.Count > 0 )
                 mainXmlVis.Clear();
-            ArcenDebugging.LogSingleLine( $"Nodes.Count: {Nodes.Count}", Verbosity.DoNotShow );
+
             foreach ( IEditedXmlNodeOrComment nodeOrComment in Nodes )
                 if ( nodeOrComment.UID != 0 )
                 {

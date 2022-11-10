@@ -64,7 +64,7 @@ namespace ArcenXE.Visualization.Utilities
                 return;
             }
             IEditedXmlNodeOrComment? item;
-            XmlVisualizer vis = new XmlVisualizer();
+            XmlVisualizer vis = MainWindow.Instance.Visualizer;
             switch ( uItem )
             {
                 case UnionNode uNode when uItem is UnionNode:
@@ -73,7 +73,7 @@ namespace ArcenXE.Visualization.Utilities
                         if ( item != null )
                         {
                             ((IEditedXmlElement)item).IsDeleted = true;
-                            vis.VisualizeSelectedNode( item, uNode.MetaLayer, true );
+                            vis.OuterVisualizeSelectedNode( item, uNode.MetaLayer, forceClearVis: true );
                         }
                     }
                     break;
@@ -122,7 +122,7 @@ namespace ArcenXE.Visualization.Utilities
                                 ((EditedXmlNode)currentXmlNodeOrComment).Attributes[eAtt.Name].IsDeleted = true;
                         }
                         if ( item != null )
-                            vis.VisualizeSelectedNode( item, uAtt.ParentUnionNode.MetaLayer, true );
+                            vis.OuterVisualizeSelectedNode( item, uAtt.ParentUnionNode.MetaLayer, forceClearVis: true );
                     }
                     break;
             }

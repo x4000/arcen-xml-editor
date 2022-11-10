@@ -28,13 +28,6 @@ namespace ArcenXE.Utilities.MetadataProcessing
         {
             if ( layerRoot != null )
             {
-                if ( layerRoot.HasAttribute( "name" ) )
-                    this.Name = layerRoot.GetAttribute( "name" );
-                else if ( layerRoot.Name == "root" )
-                    this.Name = "root";
-                else
-                    ArcenDebugging.LogSingleLine( "INFO: Metadata file \"" + this.ParentDoc.MetadataName + "\" has no \"name\" attribute. Please provide one.", Verbosity.DoNotShow );
-
                 List<XmlNode> nodesAttribute = new List<XmlNode>();
                 List<XmlNode> nodesSubNode = new List<XmlNode>();
 
@@ -86,6 +79,13 @@ namespace ArcenXE.Utilities.MetadataProcessing
                     subNode.ParseLayer( (XmlElement)node );
                     this.SubNodes.Add( subNode.Name, subNode );
                 }
+
+                if ( layerRoot.HasAttribute( ParentDoc.CentralID?.Key ?? "id" ) )
+                    this.Name = layerRoot.GetAttribute( ParentDoc.CentralID?.Key ?? "id" );
+                else if ( layerRoot.Name == "root" )
+                    this.Name = "root";
+                else
+                    ArcenDebugging.LogSingleLine( "INFO: Metadata file \"" + this.ParentDoc.MetadataName + "\" has no \"name\" attribute. Please provide one.", Verbosity.DoNotShow );
             }
             else
             {

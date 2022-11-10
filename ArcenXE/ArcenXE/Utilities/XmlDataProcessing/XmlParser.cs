@@ -78,7 +78,7 @@ namespace ArcenXE.Utilities.XmlDataProcessing
                             //ArcenDebugging.LogSingleLine( "it's happening", Verbosity.DoNotShow );
                             EditedXmlAttribute rootNode = new EditedXmlAttribute
                             {
-                                Name = "name",
+                                Name = "id",
                                 ValueOnDisk = "Root Node"
                             };
                             editedNode.IsRootOnly = true;

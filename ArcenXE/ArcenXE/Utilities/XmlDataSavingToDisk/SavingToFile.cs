@@ -63,7 +63,7 @@ namespace ArcenXE.Utilities.XmlDataSavingToDisk
                             editedNodeOutput.StartOpenNode( node.RelatedUnionNode.MetaDocument.NodeName, false );
                             foreach ( KeyValuePair<string, EditedXmlAttribute> att in node.Attributes )
                             {
-                                if ( node.ChildNodes.Count > 0 && att.Key == "name" ) //subnode container, it doesn't need a newline after the only attribute it prints
+                                if ( node.ChildNodes.Count > 0 && att.Key == MetadataStorage.CurrentVisMetadata?.CentralID?.Key ) //subnode container, it doesn't need a newline after the only attribute it prints
                                     ReadAttributeFromEditedData( editedNodeOutput, att, ref justInsertedLineBreak, true );
                                 else
                                     ReadAttributeFromEditedData( editedNodeOutput, att, ref justInsertedLineBreak, false );

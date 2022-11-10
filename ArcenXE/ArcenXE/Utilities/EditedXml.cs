@@ -5,7 +5,10 @@ namespace ArcenXE.Utilities
     public class EditedXmlNode : IEditedXmlNodeOrComment, IEditedXmlElement
     {
         public uint UID { get; set; } = 0;
-        public string XmlNodeTagName = string.Empty; // string that defines the tag in xml -- used for subnodes
+        /// <summary>
+        /// String that defines the tag in xml -- used for Top Nodes and Sub nodes
+        /// </summary>
+        public string XmlNodeTagName = string.Empty;
         public EditedXmlAttribute? NodeCentralID = null; // if != null, then it's a top node
         public Dictionary<string, EditedXmlAttribute> Attributes = new Dictionary<string, EditedXmlAttribute>();
         public List<IEditedXmlNodeOrComment> ChildNodes = new List<IEditedXmlNodeOrComment>();
@@ -19,6 +22,11 @@ namespace ArcenXE.Utilities
         /// For use in XmlVisualizer only
         /// </summary>
         public Label? CurrentViewControl;
+
+        public IEditedXmlNodeOrComment Clone()
+        {
+            throw new NotImplementedException();
+        }
     }
     #endregion
 
@@ -36,6 +44,11 @@ namespace ArcenXE.Utilities
         /// For use in XmlVisualizer only
         /// </summary>
         public Control? CurrentViewControl;
+
+        public IEditedXmlNodeOrComment Clone()
+        {
+            throw new NotImplementedException();
+        }
     }
     #endregion
 
@@ -91,6 +104,7 @@ namespace ArcenXE.Utilities
         public bool IsComment { get; }
         public UnionNode? RelatedUnionNode { get; set; }
         public string OuterXml { get; set; }
+        public IEditedXmlNodeOrComment Clone();
     }
 
     public interface IEditedXmlElement

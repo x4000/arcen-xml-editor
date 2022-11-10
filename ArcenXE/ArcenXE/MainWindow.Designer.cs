@@ -156,10 +156,9 @@
             // 
             // RightSplitContainer.Panel2
             // 
-            this.RightSplitContainer.Panel2.AutoScroll = true;
             this.RightSplitContainer.Panel2.BackColor = System.Drawing.SystemColors.ControlLight;
             this.RightSplitContainer.Size = new System.Drawing.Size(1321, 659);
-            this.RightSplitContainer.SplitterDistance = 242;
+            this.RightSplitContainer.SplitterDistance = 241;
             this.RightSplitContainer.SplitterWidth = 2;
             this.RightSplitContainer.TabIndex = 0;
             // 
@@ -171,7 +170,7 @@
             this.TopNodesList.ItemHeight = 15;
             this.TopNodesList.Location = new System.Drawing.Point(0, 0);
             this.TopNodesList.Name = "TopNodesList";
-            this.TopNodesList.Size = new System.Drawing.Size(242, 659);
+            this.TopNodesList.Size = new System.Drawing.Size(241, 659);
             this.TopNodesList.TabIndex = 5;
             this.TopNodesList.SelectedIndexChanged += new System.EventHandler(this.TopNodesList_SelectedIndexChanged);
             // 

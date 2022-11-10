@@ -39,7 +39,7 @@ namespace ArcenXE.Utilities
         }
 
         #region FillCachedNode
-        private static void FillCachedNode( MetadataDocument metaDoc, List<TopNode> listToAddTo, Dictionary<string, List<EditedXmlNode>> fullNodes,  string filePath )
+        private static void FillCachedNode( MetadataDocument metaDoc, List<TopNode> listToAddTo, Dictionary<string, List<EditedXmlNode>> fullNodes, string filePath )
         {
             XmlDocument? xmlDocument = Openers.GenericXmlFileLoader( filePath );
             if ( xmlDocument == null ) // invert if and put complaint + continue, remove else and put normal code

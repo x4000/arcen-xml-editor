@@ -2,7 +2,7 @@
 {
     public static class ProgramPermanentSettings //make new settings window
     {
-        public const string MainPath = /*@"D:\vclarge\Arcology5Root\GameData\Configuration";//*/ @"C:\Users\Daniel\ArcenDev\Arcology5\GameData\Configuration";
+        public const string MainPath = /*@"D:\vclarge\Arcology5Root\GameData\Configuration";//*/ @"C:\Users\Daniel\ArcenDev\HotMRoot\GameData\Configuration";
         public readonly static string AssetsPath = AppContext.BaseDirectory.Replace( @"bin\Debug\net6.0-windows", @"Assets\" );
 
 

@@ -40,7 +40,8 @@ namespace ArcenXE
         }
         #endregion
 
-        private readonly XmlVisualizer visualizer = new XmlVisualizer();
+        public readonly XmlVisualizer Visualizer = new XmlVisualizer(); 
+        public readonly VisControls VisControls = new VisControls();
 
         public MainWindow()
         {
@@ -85,6 +86,9 @@ namespace ArcenXE
         {
             this.ErrorLogToolStripButton.Text = "Error List: " + ErrorsWrittenToLog;
             ProgramPermanentSettings.SetPaths();
+            MainWindow.Instance.RightSplitContainer.Panel2.Controls.Add( VisControls );
+            VisControls.Dock = DockStyle.Fill;
+            VisControls.AutoScroll = true;
         }
 
         private void LoadMeta_Click( object sender, EventArgs e )
@@ -208,7 +212,7 @@ namespace ArcenXE
                 TopNodeForVis newNodeForVis = new TopNodeForVis( newTopNodeTextForListBox, 0, false );
                 this.topNodesForVis_List.Add( newNodeForVis );
                 this.topNodesForVis_Dict.Add( newNodeForVis.VisName, newNodeForVis );
-                ArcenDebugging.LogSingleLine( $"CurrentXmlTopNodesForVis.Count = {CurrentXmlTopNodesForVis.Count}", Verbosity.DoNotShow );
+                //ArcenDebugging.LogSingleLine( $"CurrentXmlTopNodesForVis.Count = {CurrentXmlTopNodesForVis.Count}", Verbosity.DoNotShow );
                 foreach ( KeyValuePair<uint, IEditedXmlNodeOrComment> kv in this.CurrentXmlTopNodesForVis )
                 {
                     if ( kv.Value.IsComment ) // colour comments in green
@@ -228,7 +232,7 @@ namespace ArcenXE
                                 TopNodeForVis nodeForVis = new TopNodeForVis( currentValue, kv.Value.UID, false );
                                 this.topNodesForVis_List.Add( nodeForVis );
                                 this.topNodesForVis_Dict.Add( nodeForVis.VisName, nodeForVis );
-                                ArcenDebugging.LogSingleLine( $"nodeForVis.VisName = {nodeForVis.VisName}", Verbosity.DoNotShow );
+                                //ArcenDebugging.LogSingleLine( $"nodeForVis.VisName = {nodeForVis.VisName}", Verbosity.DoNotShow );
                             }
                         }
                     }
@@ -328,7 +332,7 @@ namespace ArcenXE
                     if ( this.CurrentXmlTopNodesForVis.TryGetValue( key, out this.XmlElementCurrentlyBeingEdited ) )
                     {
                         //ApplyAttributeTypeToEditedXml( this.XmlElementCurrentlyBeingEdited );
-                        visualizer.VisualizeSelectedNode( this.XmlElementCurrentlyBeingEdited, MetadataStorage.CurrentVisMetadata?.TopLevelNode, true );
+                        Visualizer.OuterVisualizeSelectedNode( this.XmlElementCurrentlyBeingEdited, MetadataStorage.CurrentVisMetadata?.TopLevelNode, forceClearVis: true );
                     }
                 }
                 else
@@ -338,7 +342,7 @@ namespace ArcenXE
             if ( element != null )
             {
                 XmlElementCurrentlyBeingEdited = element;
-                visualizer.VisualizeSelectedNode( element, MetadataStorage.CurrentVisMetadata?.TopLevelNode );
+                Visualizer.OuterVisualizeSelectedNode( element, MetadataStorage.CurrentVisMetadata?.TopLevelNode, forceClearVis: true );
             }
         }
 
@@ -388,7 +392,7 @@ namespace ArcenXE
         private void SaveToolStripButton_Click( object sender, EventArgs e )
         {
             if ( !SavingToFile.TrySave( this.XmlElementCurrentlyBeingEdited, false ) )
-                MessageBox.Show( "Error while saving! Check the log for details.", "Saving error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+                MessageBox.Show( "Error while saving! Check the log for details.", "Saving error", MessageBoxButtons.OK, MessageBoxIcon.Error );            
         }
 
         #region Debugging
